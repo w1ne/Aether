@@ -122,6 +122,53 @@ impl SvdManager {
 
         Ok(regs)
     }
+
+    /// Write a new value to a specific field in a peripheral register.
+    pub fn write_peripheral_field(
+        &self,
+        core: &mut probe_rs::Core,
+        peripheral_name: &str,
+        register_name: &str,
+        field_name: &str,
+        new_field_value: u64,
+    ) -> Result<()> {
+        let p = self.get_peripheral(peripheral_name)
+            .context(format!("Peripheral {} not found", peripheral_name))?;
+
+        let regs = self.get_registers_info(peripheral_name)?;
+        let reg = regs.iter().find(|r| r.name == register_name)
+            .context(format!("Register {} not found in peripheral {}", register_name, peripheral_name))?;
+
+        let field = reg.fields.iter().find(|f| f.name == field_name)
+            .context(format!("Field {} not found in register {}", field_name, register_name))?;
+
+        let addr = p.base_address + reg.address_offset as u64;
+
+        // 1. Read current value
+        let current_val = match reg.size {
+            8 => core.read_word_8(addr).map(|v| v as u64),
+            16 => core.read_word_16(addr).map(|v| v as u64),
+            32 => core.read_word_32(addr).map(|v| v as u64),
+            64 => core.read_word_64(addr),
+            _ => core.read_word_32(addr).map(|v| v as u64),
+        }.context("Failed to read register for write-modify-read")?;
+
+        // 2. Modify field
+        let mask = ((1u64 << field.bit_width) - 1) << field.bit_offset;
+        let masked_new_val = (new_field_value << field.bit_offset) & mask;
+        let next_val = (current_val & !mask) | masked_new_val;
+
+        // 3. Write back
+        match reg.size {
+            8 => core.write_word_8(addr, next_val as u8),
+            16 => core.write_word_16(addr, next_val as u16),
+            32 => core.write_word_32(addr, next_val as u32),
+            64 => core.write_word_64(addr, next_val),
+            _ => core.write_word_32(addr, next_val as u32),
+        }.context("Failed to write register back")?;
+
+        Ok(())
+    }
 }
 
 /// Simplified representation for UI.
