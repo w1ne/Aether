@@ -16,3 +16,5 @@ anyhow.workspace = true
 log.workspace = true
 env_logger.workspace = true
 serde.workspace = true
+rfd = { workspace = true }
+probe-rs = { workspace = true }

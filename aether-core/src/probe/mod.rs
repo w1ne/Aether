@@ -110,8 +110,8 @@ pub struct TargetInfo {
 impl ProbeManager {
     /// Detect the target chip connected to the opened probe using auto-detection.
     pub fn detect_target(&self, probe: Probe) -> Result<TargetInfo> {
-        use probe_rs::Permissions;
         use probe_rs::config::MemoryRegion;
+        use probe_rs::Permissions;
 
         // Use "auto" to let probe-rs try to detect the chip
         let session = probe
@@ -162,6 +162,18 @@ mod tests {
     }
 
     #[test]
+    fn test_probe_info_with_serial() {
+        let info = ProbeInfo {
+            vendor_id: 0x0483,
+            product_id: 0x3748,
+            serial_number: Some("ABC123".to_string()),
+            probe_type: ProbeType::StLink,
+        };
+        // The current name() implementation doesn't include serial, but we verify it's stored
+        assert_eq!(info.serial_number, Some("ABC123".to_string()));
+    }
+
+    #[test]
     fn test_probe_type_conversion() {
         // Simple sanity check for the enum
         let st_link = ProbeType::StLink;
@@ -178,5 +190,22 @@ mod tests {
         };
         assert_eq!(info.name, "STM32F407VGTx");
         assert_eq!(info.flash_size, 1048576);
+    }
+
+    #[test]
+    fn test_target_info_edge_cases() {
+        let info = TargetInfo {
+            name: "EmptyChip".to_string(),
+            flash_size: 0,
+            ram_size: 0,
+            architecture: "Unknown".to_string(),
+        };
+        assert_eq!(info.flash_size, 0);
+        assert_eq!(info.ram_size, 0);
+    }
+
+    #[test]
+    fn test_probe_manager_default() {
+        let _ = ProbeManager::default();
     }
 }
