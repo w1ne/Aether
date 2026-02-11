@@ -27,6 +27,12 @@ pub enum DebugCommand {
     GetPeripherals,
     GetRegisters(String),
     ReadPeripheralValues(String),
+    WritePeripheralField {
+        peripheral: String,
+        register: String,
+        field: String,
+        value: u64,
+    },
     PollStatus,
     Exit,
 }
@@ -187,6 +193,19 @@ impl SessionHandle {
                         DebugCommand::GetPeripherals => {
                             let info = svd_manager.get_peripherals_info();
                             let _ = evt_tx.send(DebugEvent::Peripherals(info));
+                        }
+                        DebugCommand::WritePeripheralField { peripheral, register, field, value } => {
+                            match svd_manager.write_peripheral_field(&mut core, &peripheral, &register, &field, value) {
+                                Ok(_) => {
+                                    // Refresh values after write
+                                    if let Ok(regs) = svd_manager.read_peripheral_values(&peripheral, &mut core) {
+                                        let _ = evt_tx.send(DebugEvent::Registers(regs));
+                                    }
+                                }
+                                Err(e) => {
+                                    let _ = evt_tx.send(DebugEvent::Error(format!("Failed to write field {}: {}", field, e)));
+                                }
+                            }
                         }
                         DebugCommand::GetRegisters(name) => {
                             match svd_manager.get_registers_info(&name) {

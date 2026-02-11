@@ -567,17 +567,33 @@ impl AetherApp {
                        if is_expanded {
                             ui.indent("fields", |ui| {
                                  for field in &reg.fields {
-                                      let mut field_text = format!("{}: [{}..{}]", 
-                                          field.name, 
-                                          field.bit_offset, 
-                                          field.bit_offset + field.bit_width - 1);
-                                      
-                                  if let Some(val) = reg.value {
-                                       let field_val = field.decode(val);
-                                       field_text = format!("{} = 0x{:X}", field_text, field_val);
-                                  }
-                                      
-                                      ui.label(field_text);
+                                      ui.horizontal(|ui| {
+                                           ui.label(format!("{}: [{}..{}]", 
+                                               field.name, 
+                                               field.bit_offset, 
+                                               field.bit_offset + field.bit_width - 1));
+                                           
+                                           if let Some(val) = reg.value {
+                                                let mut field_val = field.decode(val);
+                                                let field_max = (1u64 << field.bit_width) - 1;
+
+                                                ui.label("=");
+                                                if ui.add(egui::DragValue::new(&mut field_val)
+                                                    .speed(1.0)
+                                                    .range(0..=field_max)
+                                                    .hexadecimal(field.bit_width as usize / 4 + 1, true, false)
+                                                ).changed() {
+                                                     if let Some(handle) = &self.session_handle {
+                                                          let _ = handle.send(aether_core::DebugCommand::WritePeripheralField {
+                                                               peripheral: self.selected_peripheral.as_ref().unwrap().clone(),
+                                                               register: reg.name.clone(),
+                                                               field: field.name.clone(),
+                                                               value: field_val,
+                                                          });
+                                                     }
+                                                }
+                                           }
+                                      });
                                  }
                             });
                        }
