@@ -1,0 +1,23 @@
+[package]
+name = "aether-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+probe-rs.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true
+log.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+[[bench]]
+name = "core_bench"
+harness = false
+path = "../benchmarks/core_bench.rs"
+
+[dev-dependencies]
+criterion.workspace = true

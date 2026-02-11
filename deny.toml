@@ -1,0 +1,43 @@
+[graph]
+targets = [
+    { triple = "x86_64-unknown-linux-gnu" },
+    { triple = "x86_64-pc-windows-msvc" },
+    { triple = "x86_64-apple-darwin" },
+    { triple = "aarch64-apple-darwin" },
+]
+
+[advisories]
+db-path = "~/.cargo/advisories"
+db-urls = ["https://github.com/rustsec/advisories"]
+vulnerability = "deny"
+unmaintained = "warn"
+yanked = "deny"
+notice = "warn"
+ignore = []
+
+[licenses]
+unlicensed = "deny"
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "BSD-3-Clause",
+    "ISC",
+]
+deny = [
+    "GPL-3.0",
+    "AGPL-3.0",
+]
+skip-tree = []
+
+[bans]
+multiple-versions = "warn"
+deny = []
+skip = []
+skip-tree = []
+wildcards = "warn"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []

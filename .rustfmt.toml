@@ -1,0 +1,13 @@
+edition = "2021"
+newline_style = "Unix"
+use_field_init_shorthand = true
+use_try_shorthand = true
+group_imports = "StdExternalCrate"
+imports_granularity = "Crate"
+indent_style = "Block"
+max_width = 100
+tab_spaces = 4
+merge_derives = true
+remove_nested_parens = true
+split_multi_line_dims = true
+use_small_heuristics = "Max"

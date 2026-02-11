@@ -1,0 +1,43 @@
+[workspace]
+resolver = "2"
+members = ["aether-core", "aether-ui"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Aether Contributors"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/aether-debugger/aether"
+
+[workspace.dependencies]
+# Core dependencies
+probe-rs = "0.24"
+anyhow = "1.0"
+thiserror = "1.0"
+log = "0.4"
+env_logger = "0.11"
+
+# UI dependencies
+eframe = { version = "0.28", features = ["glow"] }
+egui = "0.28"
+egui_dock = "0.12"
+crossbeam-channel = "0.5"
+
+# Utility
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+criterion = "0.5"
+
+[workspace.lints.rust]
+unsafe_code = "deny"
+missing_docs = "warn"
+
+[workspace.lints.clippy]
+all = { level = "deny", priority = -1 }
+pedantic = { level = "deny", priority = -1 }
+perf = { level = "deny", priority = -1 }
+nursery = { level = "deny", priority = -1 }
+# Selective allows for common false positives or too-strict rules
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+module_name_repetitions = "allow"
