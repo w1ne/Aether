@@ -109,7 +109,8 @@ pub struct TargetInfo {
 
 impl ProbeManager {
     /// Detect the target chip connected to the opened probe using auto-detection.
-    pub fn detect_target(&self, probe: Probe) -> Result<TargetInfo> {
+    /// Returns the TargetInfo and the active Session.
+    pub fn detect_target(&self, probe: Probe) -> Result<(TargetInfo, probe_rs::Session)> {
         use probe_rs::config::MemoryRegion;
         use probe_rs::Permissions;
 
@@ -132,12 +133,15 @@ impl ProbeManager {
             }
         }
 
-        Ok(TargetInfo {
-            name: target.name.clone(),
-            flash_size,
-            ram_size,
-            architecture: format!("{:?}", target.architecture()),
-        })
+        Ok((
+            TargetInfo {
+                name: target.name.clone(),
+                flash_size,
+                ram_size,
+                architecture: format!("{:?}", target.architecture()),
+            },
+            session,
+        ))
     }
 }
 

@@ -13,6 +13,10 @@ thiserror.workspace = true
 log.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+crossbeam-channel.workspace = true
+capstone = "0.12"
+svd-parser = "0.14"
+svd-rs = "0.14"
 
 [[bench]]
 name = "core_bench"
