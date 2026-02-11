@@ -8,14 +8,32 @@ pub mod disasm;
 pub mod flash;
 pub mod memory;
 pub mod probe;
+pub mod rtt;
 pub mod session;
 pub mod svd;
+pub mod symbols;
 
 // Re-export commonly used types
 pub use debug::DebugManager;
 pub use disasm::DisassemblyManager;
 pub use flash::{FlashManager, FlashingProgress, MpscFlashProgress};
 pub use memory::MemoryManager;
+pub use probe_rs::CoreStatus;
+
+#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
+pub enum VarType {
+    U8,
+    U16,
+    U32,
+    U64,
+    I8,
+    I16,
+    I32,
+    I64,
+    F32,
+    F64,
+}
 pub use probe::{ProbeInfo, ProbeManager, ProbeType, TargetInfo};
 pub use svd::SvdManager;
+pub use symbols::{SymbolManager, SourceInfo};
 pub use session::{DebugCommand, DebugEvent, SessionHandle};

@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["aether-core", "aether-ui"]
+members = ["aether-agent-api","aether-core", "aether-ui"]
 
 [workspace.package]
 version = "0.1.0"
@@ -11,15 +11,21 @@ repository = "https://github.com/aether-debugger/aether"
 
 [workspace.dependencies]
 # Core dependencies
-probe-rs = "0.24"
+probe-rs = { version = "0.31", features = ["builtin-targets"] }
+probe-rs-debug = "0.31"
 anyhow = "1.0"
 thiserror = "1.0"
 log = "0.4"
 env_logger = "0.11"
+svd-parser = "0.14"
+svd-rs = "0.14"
+capstone = "0.12"
+gimli = "0.28"
 
 # UI dependencies
 eframe = { version = "0.28", features = ["glow"] }
 egui = "0.28"
+egui_plot = "0.28"
 egui_dock = "0.12"
 crossbeam-channel = "0.5"
 rfd = "0.14"

@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package aether;
+
+service AetherDebug {
+    // Basic control
+    rpc Halt (Empty) returns (Empty);
+    rpc Resume (Empty) returns (Empty);
+    rpc Step (Empty) returns (Empty);
+    rpc Reset (Empty) returns (Empty);
+
+    // State inspection
+    rpc GetStatus (Empty) returns (StatusResponse);
+    rpc ReadMemory (ReadMemoryRequest) returns (ReadMemoryResponse);
+    rpc ReadRegister (ReadRegisterRequest) returns (ReadRegisterResponse);
+
+    // Event stream
+    rpc SubscribeEvents (Empty) returns (stream DebugEvent);
+}
+
+message Empty {}
+
+message StatusResponse {
+    bool halted = 1;
+    uint64 pc = 2;
+    string core_status = 3;
+}
+
+message ReadMemoryRequest {
+    uint64 address = 1;
+    uint32 length = 2;
+}
+
+message ReadMemoryResponse {
+    bytes data = 1;
+}
+
+message ReadRegisterRequest {
+    uint32 register_number = 1;
+}
+
+message ReadRegisterResponse {
+    uint64 value = 1;
+}
+
+message DebugEvent {
+    oneof event {
+        HaltedEvent halted = 1;
+        ResumedEvent resumed = 2;
+        MemoryEvent memory = 3;
+        RegisterEvent register = 4;
+    }
+}
+
+message HaltedEvent {
+    uint64 pc = 1;
+}
+
+message ResumedEvent {}
+
+message MemoryEvent {
+    uint64 address = 1;
+    bytes data = 2;
+}
+
+message RegisterEvent {
+    uint32 register = 1;
+    uint64 value = 2;
+}

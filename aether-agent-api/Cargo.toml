@@ -1,0 +1,22 @@
+[package]
+name = "aether-agent-api"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+tonic = "0.12"
+prost = "0.13"
+tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
+futures-core = "0.3"
+futures-util = "0.3"
+tokio-stream = "0.1"
+aether-core = { path = "../aether-core" }
+
+[build-dependencies]
+tonic-build = "0.12"
+
+[lints]
+workspace = true
