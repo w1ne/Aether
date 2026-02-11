@@ -1,6 +1,6 @@
 # Aether Debugger Roadmap
 
-**Mission**: Build the fastest, most reliable open-source embedded debugger. Beat Segger Ozone on performance and universality.
+**Mission**: Build the ultimate **Agent Interface** for embedded systems. Serve as the bridge between AI agents and hardware.
 
 ## Core Principles
 - **Fast** - <50ms step latency (10x better than GDB)

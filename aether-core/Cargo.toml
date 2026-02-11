@@ -8,15 +8,20 @@ repository.workspace = true
 
 [dependencies]
 probe-rs.workspace = true
+svd-parser.workspace = true
+svd-rs.workspace = true
+capstone.workspace = true
+probe-rs-debug.workspace = true
+typed-path = "0.12"
+gimli = "0.31"
+object = "0.36"
 anyhow.workspace = true
 thiserror.workspace = true
 log.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 crossbeam-channel.workspace = true
-capstone = "0.12"
-svd-parser = "0.14"
-svd-rs = "0.14"
+tokio = { version = "1.0", features = ["sync"] }
 
 [[bench]]
 name = "core_bench"

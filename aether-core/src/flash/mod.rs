@@ -33,21 +33,15 @@ impl MpscFlashProgress {
     }
 
     /// Convert this to a probe_rs::flashing::FlashProgress.
-    pub fn into_flash_progress(self) -> FlashProgress {
+    pub fn into_flash_progress(self) -> FlashProgress<'static> {
         FlashProgress::new(move |event| {
             let update = match event {
-                ProgressEvent::StartedFilling => FlashingProgress::Started,
-                ProgressEvent::StartedErasing => FlashingProgress::Erasing,
-                ProgressEvent::StartedProgramming { length } => {
-                    FlashingProgress::Programming { total: length }
+                ProgressEvent::Started(_) => FlashingProgress::Started,
+                ProgressEvent::Progress { size, .. } => {
+                    FlashingProgress::Progress { bytes: size as u32 }
                 }
-                ProgressEvent::PageProgrammed { size, .. } => {
-                    FlashingProgress::Progress { bytes: size }
-                }
-                ProgressEvent::FinishedProgramming => FlashingProgress::Finished,
-                ProgressEvent::FailedErasing
-                | ProgressEvent::FailedFilling
-                | ProgressEvent::FailedProgramming => FlashingProgress::Failed,
+                ProgressEvent::Finished(_) => FlashingProgress::Finished,
+                ProgressEvent::Failed(_) => FlashingProgress::Failed,
                 ProgressEvent::DiagnosticMessage { message } => FlashingProgress::Message(message),
                 _ => return,
             };
@@ -72,12 +66,12 @@ impl FlashManager {
         progress: FlashProgress,
     ) -> Result<()> {
         let mut options = DownloadOptions::default();
-        options.progress = Some(progress);
+        options.progress = progress;
 
         probe_rs::flashing::download_file_with_options(
             session,
             path,
-            probe_rs::flashing::Format::Elf,
+            probe_rs::flashing::Format::Elf(Default::default()),
             options,
         )
         .context("Failed to flash ELF file")
@@ -92,7 +86,7 @@ impl FlashManager {
         progress: FlashProgress,
     ) -> Result<()> {
         let mut options = DownloadOptions::default();
-        options.progress = Some(progress);
+        options.progress = progress;
 
         let bin_options = BinOptions { base_address: Some(address), skip: 0 };
 

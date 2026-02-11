@@ -1,8 +1,9 @@
 # Aether: Fast, Reliable Embedded Debugging
 
-Aether is an open-source embedded debugger built to rival Segger Ozone. Fast stepping, zero config, universal probe support.
+Aether is an open-source embedded debugger built to rival Segger Ozone. Its primary function is to serve as an **Agent Interface**—a hub connecting hardware to AI agents.
 
 ## Why Aether?
+- **Agent Interface** - Expose hardware to AI agents via simple API
 - **10x Faster than GDB** - <50ms step latency vs 100-500ms
 - **Zero Config** - Auto-detects probes and chips, just works
 - **Universal** - ST-Link, J-Link, CMSIS-DAP all supported
@@ -10,6 +11,7 @@ Aether is an open-source embedded debugger built to rival Segger Ozone. Fast ste
 - **Rust-First** - Native understanding of Rust types
 
 ## Core Features
+- **Agent API** - Control hardware programmatically
 - **Fast Stepping** - <50ms latency, 60 FPS UI
 - **RTT Logging** - 1MB/s+ non-intrusive logging
 - **Memory/Register Views** - Live updates, SVD peripheral decoding
