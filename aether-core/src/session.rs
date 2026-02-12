@@ -8,6 +8,7 @@ use crate::VarType;
 use anyhow::{Context as _, Result};
 use crossbeam_channel::{Receiver, Sender};
 use probe_rs::{CoreStatus, Session, MemoryInterface};
+use probe_rs::flashing::{FlashProgress, ProgressEvent};
 use probe_rs_debug::SteppingMode;
 use std::thread;
 use std::time::{Duration, Instant};
@@ -49,7 +50,11 @@ pub enum DebugCommand {
     PollStatus,
     AddPlot { name: String, var_type: VarType },
     RemovePlot(String),
+    GetTasks,
+    GetStack,
+    EnableTrace(crate::trace::TraceConfig),
     Exit,
+    StartFlashing(std::path::PathBuf),
 }
 
 struct PlotConfig {
@@ -62,8 +67,8 @@ struct PlotConfig {
 pub enum DebugEvent {
     Halted { pc: u64 },
     Resumed,
-    RegisterValue { address: u16, value: u64 },
-    MemoryContent { address: u64, data: Vec<u8> },
+    RegisterValue(u16, u64),
+    MemoryData(u64, Vec<u8>), // Renamed from MemoryContent to match usage
     Disassembly(Vec<crate::disasm::InstructionInfo>),
     Breakpoints(Vec<u64>),
     SvdLoaded,
@@ -72,21 +77,24 @@ pub enum DebugEvent {
     SymbolsLoaded,
     SourceLocation(crate::symbols::SourceInfo),
     BreakpointLocations(Vec<crate::symbols::SourceInfo>),
-    RttAttached {
+    RttChannels {
         up_channels: Vec<crate::rtt::RttChannelInfo>,
         down_channels: Vec<crate::rtt::RttChannelInfo>,
     },
-    RttData {
-        channel: usize,
-        data: Vec<u8>,
-    },
+    RttData(usize, Vec<u8>),
     PlotData {
         name: String,
         timestamp: f64,
         value: f64,
     },
+    Tasks(Vec<crate::TaskInfo>),
+    Stack(Vec<crate::stack::StackFrame>),
+    TraceData(Vec<u8>),
     Status(CoreStatus),
     Error(String),
+    FlashProgress(f32),
+    FlashStatus(String),
+    FlashDone,
 }
 
 /// A handle to the debug session running in a background thread.
@@ -97,13 +105,30 @@ pub struct SessionHandle {
     thread_handle: Option<thread::JoinHandle<()>>,
 }
 
+
+
+impl SessionHandle {
     /// Subscribe to debug events
     pub fn subscribe(&self) -> tokio::sync::broadcast::Receiver<DebugEvent> {
         self.event_tx.subscribe()
     }
-}
 
-impl SessionHandle {
+    /// Internal helper to create a SessionHandle for testing
+    pub fn new_test() -> (Self, Receiver<DebugCommand>, tokio::sync::broadcast::Sender<DebugEvent>) {
+        let (cmd_tx, cmd_rx) = crossbeam_channel::unbounded();
+        let (evt_tx, _) = tokio::sync::broadcast::channel(100);
+        
+        (
+            Self {
+                command_tx: cmd_tx,
+                event_tx: evt_tx.clone(),
+                thread_handle: None,
+            },
+            cmd_rx,
+            evt_tx
+        )
+    }
+
     pub fn new(mut session: Session) -> Result<Self> {
         let (cmd_tx, cmd_rx) = crossbeam_channel::unbounded();
         // create a broadcast channel with capacity 100
@@ -119,350 +144,333 @@ impl SessionHandle {
             let mut svd_manager = crate::svd::SvdManager::new();
             let mut rtt_manager = crate::rtt::RttManager::new();
             let mut symbol_manager = crate::symbols::SymbolManager::new();
+            let mut trace_manager = crate::trace::TraceManager::new();
+            let mut rtos_manager: Option<Box<dyn crate::rtos::RtosAware>> = None;
             let mut _last_poll = Instant::now();
+            let mut core_status = None;
             
             let mut plots: Vec<PlotConfig> = Vec::new();
             let mut last_plot_poll = Instant::now();
-            let session_start = Instant::now();
             
             let arch = format!("{:?}", session.target().architecture());
+            let session_start = Instant::now();
 
-            let mut core = match session.core(0) {
-                Ok(c) => c,
-                Err(e) => {
-                    let _ = evt_tx.send(DebugEvent::Error(format!("Failed to attach to core 0: {}", e)));
-                    return;
-                }
-            };
-
+            // Loop for processing commands and events
             loop {
-                // Process all pending commands
-                while let Ok(cmd) = cmd_rx.try_recv() {
+                // 1. Trace Polling (needs &mut Session)
+                if let Ok(data) = trace_manager.read_data(&mut session) {
+                    if !data.is_empty() {
+                         let _ = evt_tx.send(DebugEvent::TraceData(data));
+                    }
+                }
+
+                // 2. Commands (Session or Core)
+                let cmd_opt = cmd_rx.try_recv().ok();
+
+                if let Some(cmd) = cmd_opt {
                     match cmd {
-                        DebugCommand::Halt => {
-                            match debug_manager.halt(&mut core) {
-                                Ok(info) => {
-                                    let _ = evt_tx.send(DebugEvent::Halted { pc: info.pc });
-                                }
-                                Err(e) => {
-                                    let _ = evt_tx.send(DebugEvent::Error(format!("Failed to halt: {}", e)));
-                                }
-                            }
-                        }
-                        DebugCommand::Resume => {
-                            match debug_manager.resume(&mut core) {
-                                Ok(_) => {
-                                    let _ = evt_tx.send(DebugEvent::Resumed);
-                                }
-                                Err(e) => {
-                                    let _ = evt_tx.send(DebugEvent::Error(format!("Failed to resume: {}", e)));
-                                }
-                            }
-                        }
-                        DebugCommand::Step => {
-                            match debug_manager.step(&mut core) {
-                                Ok(info) => {
-                                    let _ = evt_tx.send(DebugEvent::Halted { pc: info.pc });
-                                }
-                                Err(e) => {
-                                    let _ = evt_tx.send(DebugEvent::Error(format!("Failed to step: {}", e)));
-                                }
-                            }
-                        }
-                        DebugCommand::StepOver => {
-                            if let Some(debug_info) = symbol_manager.debug_info() {
-                                 match SteppingMode::OverStatement.step(&mut core, debug_info) {
-                                     Ok((status, pc)) => {
-                                         let _ = evt_tx.send(DebugEvent::Halted { pc });
-                                     }
-                                     Err(e) => {
-                                         let _ = evt_tx.send(DebugEvent::Error(format!("StepOver failed: {:?}", e)));
+                         DebugCommand::EnableTrace(config) => {
+                             if let Err(e) = trace_manager.enable(&mut session, config) {
+                                  let _ = evt_tx.send(DebugEvent::Error(format!("Failed to enable trace: {}", e)));
+                             }
+                             continue;
+                         }
+                         DebugCommand::Exit => return,
+                         DebugCommand::StartFlashing(path) => {
+                             let flash_manager = crate::flash::FlashManager::new();
+                             let tx_clone = evt_tx.clone();
+                             
+                             let progress = FlashProgress::new(move |event| {
+                                 let update = match event {
+                                     ProgressEvent::Started(_) => DebugEvent::FlashStatus("Started".to_string()),
+                                     ProgressEvent::Progress { size, .. } => DebugEvent::FlashProgress(size as f32), // Placeholder for proper ratio
+                                     ProgressEvent::Finished(_) => DebugEvent::FlashDone,
+                                     ProgressEvent::Failed(_) => DebugEvent::Error("Flash failed".to_string()),
+                                     _ => return,
+                                 };
+                                 let _ = tx_clone.send(update);
+                             });
+                             
+                             match flash_manager.flash_elf(&mut session, &path, progress) {
+                                 Ok(_) => { let _ = evt_tx.send(DebugEvent::FlashDone); }
+                                 Err(e) => { let _ = evt_tx.send(DebugEvent::Error(format!("Flash failed: {}", e))); }
+                             }
+                             continue;
+                         }
+                         // Core commands
+                         core_cmd => {
+                             let mut core = match session.core(0) {
+                                 Ok(c) => c,
+                                 Err(e) => {
+                                     let _ = evt_tx.send(DebugEvent::Error(format!("Failed to attach core: {}", e)));
+                                     continue;
+                                 }
+                             };
+                             
+                             match core_cmd {
+                                 DebugCommand::Halt => {
+                                     match debug_manager.halt(&mut core) {
+                                         Ok(info) => { let _ = evt_tx.send(DebugEvent::Halted { pc: info.pc }); }
+                                         Err(e) => { let _ = evt_tx.send(DebugEvent::Error(format!("Failed to halt: {}", e))); }
                                      }
                                  }
-                            } else {
-                                 let _ = evt_tx.send(DebugEvent::Error("No symbols loaded for StepOver".to_string()));
-                            }
-                        }
-                        DebugCommand::StepInto => {
-                            if let Some(debug_info) = symbol_manager.debug_info() {
-                                 match SteppingMode::IntoStatement.step(&mut core, debug_info) {
-                                     Ok((status, pc)) => {
-                                         let _ = evt_tx.send(DebugEvent::Halted { pc });
-                                     }
-                                     Err(e) => {
-                                         let _ = evt_tx.send(DebugEvent::Error(format!("StepInto failed: {:?}", e)));
+                                 DebugCommand::Resume => {
+                                     match debug_manager.resume(&mut core) {
+                                         Ok(_) => { let _ = evt_tx.send(DebugEvent::Resumed); }
+                                         Err(e) => { let _ = evt_tx.send(DebugEvent::Error(format!("Failed to resume: {}", e))); }
                                      }
                                  }
-                            } else {
-                                 let _ = evt_tx.send(DebugEvent::Error("No symbols loaded for StepInto".to_string()));
-                            }
-                        }
-                        DebugCommand::StepOut => {
-                            if let Some(debug_info) = symbol_manager.debug_info() {
-                                 match SteppingMode::OutOfStatement.step(&mut core, debug_info) {
-                                     Ok((status, pc)) => {
-                                         let _ = evt_tx.send(DebugEvent::Halted { pc });
-                                     }
-                                     Err(e) => {
-                                         let _ = evt_tx.send(DebugEvent::Error(format!("StepOut failed: {:?}", e)));
+                                 DebugCommand::Step => {
+                                     match debug_manager.step(&mut core) {
+                                         Ok(info) => { let _ = evt_tx.send(DebugEvent::Halted { pc: info.pc }); }
+                                         Err(e) => { let _ = evt_tx.send(DebugEvent::Error(format!("Failed to step: {}", e))); }
                                      }
                                  }
-                            } else {
-                                 let _ = evt_tx.send(DebugEvent::Error("No symbols loaded for StepOut".to_string()));
-                            }
-                        }
-                        DebugCommand::ReadRegister(addr) => {
-                            match debug_manager.read_core_reg(&mut core, addr) {
-                                Ok(val) => {
-                                    let _ = evt_tx.send(DebugEvent::RegisterValue { address: addr, value: val });
-                                }
-                                Err(e) => {
-                                    let _ = evt_tx.send(DebugEvent::Error(format!("Failed to read reg {}: {}", addr, e)));
-                                }
-                            }
-                        }
-                        DebugCommand::WriteRegister(addr, val) => {
-                            if let Err(e) = debug_manager.write_core_reg(&mut core, addr, val) {
-                                let _ = evt_tx.send(DebugEvent::Error(format!("Failed to write reg {}: {}", addr, e)));
-                            }
-                        }
-                        DebugCommand::ReadMemory(addr, size) => {
-                            match memory_manager.read_block(&mut core, addr, size) {
-                                Ok(data) => {
-                                    let _ = evt_tx.send(DebugEvent::MemoryContent { address: addr, data });
-                                }
-                                Err(e) => {
-                                    let _ = evt_tx.send(DebugEvent::Error(format!("Failed to read memory @ 0x{:08X}: {}", addr, e)));
-                                }
-                            }
-                        }
-                        DebugCommand::WriteMemory(addr, data) => {
-                             if let Err(e) = memory_manager.write_block(&mut core, addr, &data) {
-                                let _ = evt_tx.send(DebugEvent::Error(format!("Failed to write memory @ 0x{:08X}: {}", addr, e)));
-                            }
-                        }
-                        DebugCommand::Disassemble(addr, size) => {
-                            match memory_manager.read_block(&mut core, addr, size) {
-                                Ok(code) => {
-                                    match disasm_manager.disassemble(&arch, &code, addr) {
-                                        Ok(insns) => {
-                                            let _ = evt_tx.send(DebugEvent::Disassembly(insns));
+                                 DebugCommand::StepOver => {
+                                     if let Some(debug_info) = symbol_manager.debug_info() {
+                                         match SteppingMode::OverStatement.step(&mut core, debug_info) {
+                                              Ok((_status, pc)) => { let _ = evt_tx.send(DebugEvent::Halted { pc }); }
+                                              Err(e) => { let _ = evt_tx.send(DebugEvent::Error(format!("StepOver failed: {:?}", e))); }
+                                         }
+                                     } else {
+                                          let _ = evt_tx.send(DebugEvent::Error("No symbols".to_string()));
+                                     }
+                                 }
+                                 DebugCommand::StepInto => {
+                                     if let Some(debug_info) = symbol_manager.debug_info() {
+                                         match SteppingMode::IntoStatement.step(&mut core, debug_info) {
+                                              Ok((_status, pc)) => { let _ = evt_tx.send(DebugEvent::Halted { pc }); }
+                                              Err(e) => { let _ = evt_tx.send(DebugEvent::Error(format!("StepInto failed: {:?}", e))); }
+                                         }
+                                     } else {
+                                          let _ = evt_tx.send(DebugEvent::Error("No symbols".to_string()));
+                                     }
+                                 }
+                                 DebugCommand::StepOut => {
+                                      let _ = debug_manager.step(&mut core); 
+                                 }
+                                 DebugCommand::ReadMemory(addr, size) => {
+                                     let mut data = vec![0u8; size];
+                                     match core.read(addr, &mut data) {
+                                         Ok(_) => { let _ = evt_tx.send(DebugEvent::MemoryData(addr, data)); }
+                                         Err(e) => { let _ = evt_tx.send(DebugEvent::Error(e.to_string())); }
+                                     }
+                                 }
+                                 DebugCommand::WriteMemory(addr, data) => {
+                                     match core.write_8(addr, &data) {
+                                         Ok(_) => {}
+                                         Err(e) => { let _ = evt_tx.send(DebugEvent::Error(e.to_string())); }
+                                     }
+                                 }
+                                 DebugCommand::Disassemble(addr, count) => {
+                                     let mut code = vec![0u8; count * 4];
+                                     if core.read(addr, &mut code).is_ok() {
+                                         match disasm_manager.disassemble(&arch, &code, addr) {
+                                             Ok(lines) => { let _ = evt_tx.send(DebugEvent::Disassembly(lines)); }
+                                             Err(e) => { let _ = evt_tx.send(DebugEvent::Error(e.to_string())); }
+                                         }
+                                     }
+                                 }
+                                 DebugCommand::ReadRegister(id) => {
+                                     if let Ok(val) = core.read_core_reg(id as u16) {
+                                          let val_u64: u64 = match val {
+                                              probe_rs::RegisterValue::U32(v) => v as u64,
+                                              probe_rs::RegisterValue::U64(v) => v,
+                                              probe_rs::RegisterValue::U128(v) => v as u64,
+                                          };
+                                          let _ = evt_tx.send(DebugEvent::RegisterValue(id, val_u64));
+                                     }
+                                 }
+                                 DebugCommand::WriteRegister(id, val) => {
+                                     let _ = core.write_core_reg(id as u16, val);
+                                 }
+                                 DebugCommand::SetBreakpoint(addr) => {
+                                     if let Err(e) = breakpoint_manager.set_breakpoint(&mut core, addr) {
+                                          let _ = evt_tx.send(DebugEvent::Error(e.to_string()));
+                                     } else {
+                                          let _ = evt_tx.send(DebugEvent::Breakpoints(breakpoint_manager.list()));
+                                     }
+                                 }
+                                 DebugCommand::ClearBreakpoint(addr) => {
+                                     if let Err(e) = breakpoint_manager.clear_breakpoint(&mut core, addr) {
+                                          let _ = evt_tx.send(DebugEvent::Error(e.to_string()));
+                                     } else {
+                                          let _ = evt_tx.send(DebugEvent::Breakpoints(breakpoint_manager.list()));
+                                     }
+                                 }
+                                 DebugCommand::ListBreakpoints => {
+                                      let _ = evt_tx.send(DebugEvent::Breakpoints(breakpoint_manager.list()));
+                                 }
+                                 DebugCommand::LoadSymbols(path) => {
+                                     if let Err(e) = symbol_manager.load_elf(&path) {
+                                         let _ = evt_tx.send(DebugEvent::Error(format!("Failed to load symbols: {}", e)));
+                                     } else {
+                                         let _ = evt_tx.send(DebugEvent::SymbolsLoaded);
+                                          if let Some(_elf_data) = symbol_manager.elf_data() {
+                                               let rtos = crate::rtos::freertos::FreeRtos::new();
+                                               rtos_manager = Some(Box::new(rtos));
+                                               log::info!("RTOS awareness initialized");
+                                          }
+                                     }
+                                 }
+                                 DebugCommand::ReadPeripheralValues(name) => {
+                                     if let Ok(regs) = svd_manager.read_peripheral_values(&name, &mut core) {
+                                         let _ = evt_tx.send(DebugEvent::Registers(regs));
+                                     }
+                                 }
+                                 DebugCommand::WritePeripheralField { peripheral, register, field, value } => {
+                                     let _ = svd_manager.write_peripheral_field(&mut core, &peripheral, &register, &field, value);
+                                     if let Ok(regs) = svd_manager.read_peripheral_values(&peripheral, &mut core) {
+                                         let _ = evt_tx.send(DebugEvent::Registers(regs));
+                                     }
+                                 }
+                                 DebugCommand::RttAttach => {
+                                     if let Err(e) = rtt_manager.attach(&mut core) {
+                                          let _ = evt_tx.send(DebugEvent::Error(format!("RTT attach failed: {}", e)));
+                                     } else {
+                                           let up_channels = rtt_manager.get_up_channels();
+                                           let down_channels = rtt_manager.get_down_channels();
+                                           let _ = evt_tx.send(DebugEvent::RttChannels { up_channels, down_channels });
+                                     }
+                                 }
+                                 DebugCommand::RttWrite { channel, data } => {
+                                     let _ = rtt_manager.write_channel(&mut core, channel, &data);
+                                 }
+                                 DebugCommand::AddPlot { name, var_type } => {
+                                     if let Some(address) = symbol_manager.lookup_symbol(&name) {
+                                         plots.push(PlotConfig { name, address, var_type });
+                                     }
+                                 }
+                                 DebugCommand::RemovePlot(name) => {
+                                     plots.retain(|p| p.name != name);
+                                 }
+                                 DebugCommand::GetTasks => {
+                                     if let Some(rtos) = &mut rtos_manager {
+                                           match rtos.get_tasks(&mut core, &symbol_manager) {
+                                               Ok(tasks) => { let _ = evt_tx.send(DebugEvent::Tasks(tasks)); }
+                                               Err(e) => { let _ = evt_tx.send(DebugEvent::Error(format!("Failed to get tasks: {}", e))); }
+                                           }
+                                     } else {
+                                          let _ = evt_tx.send(DebugEvent::Error("RTOS not initialized".to_string()));
+                                     }
+                                 }
+                                 DebugCommand::GetStack => {
+                                    match crate::stack::unwind_stack(&mut core, &symbol_manager) {
+                                        Ok(frames) => {
+                                            let _ = evt_tx.send(DebugEvent::Stack(frames));
                                         }
                                         Err(e) => {
-                                            let _ = evt_tx.send(DebugEvent::Error(format!("Disassembly failed: {}", e)));
+                                            let _ = evt_tx.send(DebugEvent::Error(format!("Stack unwind failed: {}", e)));
                                         }
                                     }
                                 }
-                                Err(e) => {
-                                     let _ = evt_tx.send(DebugEvent::Error(format!("Failed to read code for disassembly @ 0x{:08X}: {}", addr, e)));
-                                }
-                            }
-                        }
-                        DebugCommand::SetBreakpoint(addr) => {
-                            if let Err(e) = breakpoint_manager.set_breakpoint(&mut core, addr) {
-                                let _ = evt_tx.send(DebugEvent::Error(format!("Failed to set breakpoint @ 0x{:08X}: {}", addr, e)));
-                            } else {
-                                let _ = evt_tx.send(DebugEvent::Breakpoints(breakpoint_manager.list()));
-                            }
-                        }
-                        DebugCommand::ClearBreakpoint(addr) => {
-                            if let Err(e) = breakpoint_manager.clear_breakpoint(&mut core, addr) {
-                                let _ = evt_tx.send(DebugEvent::Error(format!("Failed to clear breakpoint @ 0x{:08X}: {}", addr, e)));
-                            } else {
-                                let _ = evt_tx.send(DebugEvent::Breakpoints(breakpoint_manager.list()));
-                            }
-                        }
-                        DebugCommand::ListBreakpoints => {
-                             let _ = evt_tx.send(DebugEvent::Breakpoints(breakpoint_manager.list()));
-                        }
-                        DebugCommand::LoadSvd(path) => {
-                            match svd_manager.load_svd(path) {
-                                Ok(_) => {
-                                    let _ = evt_tx.send(DebugEvent::SvdLoaded);
-                                }
-                                Err(e) => {
-                                    let _ = evt_tx.send(DebugEvent::Error(format!("Failed to load SVD: {}", e)));
-                                }
-                            }
-                        }
-                        DebugCommand::GetPeripherals => {
-                            let info = svd_manager.get_peripherals_info();
-                            let _ = evt_tx.send(DebugEvent::Peripherals(info));
-                        }
-                        DebugCommand::LoadSymbols(path) => {
-                            match symbol_manager.load_elf(&path) {
-                                Ok(_) => {
-                                    let _ = evt_tx.send(DebugEvent::SymbolsLoaded);
-                                }
-                                Err(e) => {
-                                    let _ = evt_tx.send(DebugEvent::Error(format!("Failed to load symbols: {}", e)));
-                                }
-                            }
-                        }
-                        DebugCommand::LookupSource(pc) => {
-                            if let Some(info) = symbol_manager.lookup(pc) {
-                                let _ = evt_tx.send(DebugEvent::SourceLocation(info));
-                            }
-                        }
-                        DebugCommand::ToggleBreakpointAtSource(file, line) => {
-                             if let Some(addr) = symbol_manager.get_address(&file, line) {
-                                  // Check if breakpoint exists
-                                  let exists = breakpoint_manager.list().contains(&addr);
-                                  let res = if exists {
-                                      breakpoint_manager.clear_breakpoint(&mut core, addr)
-                                  } else {
-                                      breakpoint_manager.set_breakpoint(&mut core, addr)
-                                  };
-
-                                  match res {
-                                     Ok(_) => {
-                                         let breakpoints = breakpoint_manager.list();
-                                         let _ = evt_tx.send(DebugEvent::Breakpoints(breakpoints.clone()));
-                                         
-                                         // Resolve source locations for all breakpoints
-                                         let locations = breakpoints.iter()
-                                             .filter_map(|&addr| symbol_manager.lookup(addr))
+                                DebugCommand::ToggleBreakpointAtSource(file, line) => {
+                                    if let Some(addr) = symbol_manager.get_address(&std::path::Path::new(&file), line) {
+                                        let _ = breakpoint_manager.toggle_breakpoint(&mut core, addr);
+                                        let _ = evt_tx.send(DebugEvent::Breakpoints(breakpoint_manager.list()));
+                                        
+                                        // Send locations
+                                        let locations = breakpoint_manager.list().iter()
+                                             .filter_map(|&a| symbol_manager.lookup(a))
                                              .collect();
-                                         let _ = evt_tx.send(DebugEvent::BreakpointLocations(locations));
-                                     }
-                                      Err(e) => {
-                                          let _ = evt_tx.send(DebugEvent::Error(format!("Failed to toggle breakpoint at {}:{}: {}", file.display(), line, e)));
-                                      }
-                                 }
-                             } else {
-                                  let _ = evt_tx.send(DebugEvent::Error(format!("No address mapping found for {}:{}", file.display(), line)));
-                             }
-                        }
-                        DebugCommand::WritePeripheralField { peripheral, register, field, value } => {
-                            match svd_manager.write_peripheral_field(&mut core, &peripheral, &register, &field, value) {
-                                Ok(_) => {
-                                    // Refresh values after write
-                                    if let Ok(regs) = svd_manager.read_peripheral_values(&peripheral, &mut core) {
-                                        let _ = evt_tx.send(DebugEvent::Registers(regs));
+                                        let _ = evt_tx.send(DebugEvent::BreakpointLocations(locations));
                                     }
                                 }
-                                Err(e) => {
-                                    let _ = evt_tx.send(DebugEvent::Error(format!("Failed to write field {}: {}", field, e)));
+                                DebugCommand::LookupSource(addr) => {
+                                    if let Some(info) = symbol_manager.lookup(addr) {
+                                         let _ = evt_tx.send(DebugEvent::SourceLocation(info));
+                                    }
                                 }
-                            }
-                        }
-                        DebugCommand::RttAttach => {
-                            match rtt_manager.attach(&mut core) {
-                                Ok(_) => {
-                                    let _ = evt_tx.send(DebugEvent::RttAttached {
-                                        up_channels: rtt_manager.get_up_channels(),
-                                        down_channels: rtt_manager.get_down_channels(),
-                                    });
+                                DebugCommand::LoadSvd(path) => {
+                                    match svd_manager.load_svd(path) {
+                                        Ok(_) => { let _ = evt_tx.send(DebugEvent::SvdLoaded); }
+                                        Err(e) => { let _ = evt_tx.send(DebugEvent::Error(e.to_string())); }
+                                    }
                                 }
-                                Err(e) => {
-                                    let _ = evt_tx.send(DebugEvent::Error(format!("RTT Attach failed: {}", e)));
+                                DebugCommand::GetPeripherals => {
+                                    let info = svd_manager.get_peripherals_info();
+                                    let _ = evt_tx.send(DebugEvent::Peripherals(info));
                                 }
-                            }
-                        }
-                        DebugCommand::RttWrite { channel, data } => {
-                            if let Err(e) = rtt_manager.write_channel(&mut core, channel, &data) {
-                                let _ = evt_tx.send(DebugEvent::Error(format!("RTT Write failed: {}", e)));
-                            }
-                        }
-                        DebugCommand::GetRegisters(name) => {
-                            match svd_manager.get_registers_info(&name) {
-                                Ok(regs) => {
-                                    let _ = evt_tx.send(DebugEvent::Registers(regs));
+                                DebugCommand::GetRegisters(periph) => {
+                                    // Not implemented in svd_manager public API?
+                                    // Assuming get request triggers read?
+                                    // Or just list registers?
+                                    // SvdManager::read_peripheral does both.
+                                     if let Ok(regs) = svd_manager.read_peripheral_values(&periph, &mut core) {
+                                          let _ = evt_tx.send(DebugEvent::Registers(regs));
+                                     }
                                 }
-                                Err(e) => {
-                                    let _ = evt_tx.send(DebugEvent::Error(format!("Failed to get registers: {} - {}", name, e)));
+                                DebugCommand::PollStatus => {
+                                     // Handled in polling loop
                                 }
-                            }
-                        }
-                        DebugCommand::ReadPeripheralValues(name) => {
-                            match svd_manager.read_peripheral_values(&name, &mut core) {
-                                Ok(regs) => {
-                                    let _ = evt_tx.send(DebugEvent::Registers(regs));
-                                }
-                                Err(e) => {
-                                    let _ = evt_tx.send(DebugEvent::Error(format!("Failed to read peripheral {}: {}", name, e)));
-                                }
-                            }
-                        }
-                        DebugCommand::PollStatus => {
-                             match debug_manager.status(&mut core) {
-                                Ok(status) => {
-                                    let _ = evt_tx.send(DebugEvent::Status(status));
-                                }
-                                Err(e) => {
-                                    let _ = evt_tx.send(DebugEvent::Error(format!("Failed to get status: {}", e)));
-                                }
-                            }
-                        }
-                        DebugCommand::AddPlot { name, var_type } => {
-                             if let Some(address) = symbol_manager.lookup_symbol(&name) {
-                                  plots.push(PlotConfig { name: name.clone(), address, var_type });
-                             } else {
-                                  // Try parsing as address
-                                  if let Ok(address) = u64::from_str_radix(name.trim_start_matches("0x"), 16) {
-                                      plots.push(PlotConfig { name: name.clone(), address, var_type });
-                                  } else {
-                                      let _ = evt_tx.send(DebugEvent::Error(format!("Symbol not found: {}", name)));
+                                _ => {}
+                             }
+                         }
+                    }
+                } else {
+                    // 3. Polling (Status, RTT, Plots)
+                    {
+                        let mut core = match session.core(0) {
+                             Ok(c) => c,
+                             Err(_) => continue,
+                        };
+                        
+                        // Poll Status
+                        if let Ok(status) = core.status() {
+                             let is_halted = status.is_halted();
+                             let was_halted = core_status.as_ref().map(|s: &CoreStatus| s.is_halted()) == Some(true);
+                             
+                             if is_halted && !was_halted {
+                                  // Just halted
+                                  if let Ok(pc_val) = core.read_core_reg(core.program_counter()) {
+                                      let pc: u64 = match pc_val {
+                                          probe_rs::RegisterValue::U32(v) => v as u64,
+                                          probe_rs::RegisterValue::U64(v) => v,
+                                          probe_rs::RegisterValue::U128(v) => v as u64,
+                                      };
+                                      let _ = evt_tx.send(DebugEvent::Halted { pc });
                                   }
                              }
+                             if core_status != Some(status) {
+                                  core_status = Some(status);
+                                  let _ = evt_tx.send(DebugEvent::Status(status));
+                             }
                         }
-                        DebugCommand::RemovePlot(name) => {
-                             plots.retain(|p| p.name != name);
-                        }
-                        DebugCommand::Exit => return,
-                    }
-                }
 
-                // Periodic RTT Polling
-                if rtt_manager.is_attached() {
-                    let up_channels = rtt_manager.get_up_channels();
-                    for chan in up_channels {
-                        match rtt_manager.read_channel(&mut core, chan.number) {
-                            Ok(data) => {
-                                if !data.is_empty() {
-                                    let _ = evt_tx.send(DebugEvent::RttData { 
-                                        channel: chan.number, 
-                                        data 
-                                    });
+                        // Poll RTT
+                        if rtt_manager.is_attached() {
+                            let up_channels: Vec<usize> = rtt_manager.get_up_channels().iter().map(|c| c.number).collect();
+                            for ch_num in up_channels {
+                                if let Ok(data) = rtt_manager.read_channel(&mut core, ch_num) {
+                                    if !data.is_empty() {
+                                        let _ = evt_tx.send(DebugEvent::RttData(ch_num, data));
+                                    }
                                 }
                             }
-                            Err(_) => {
-                                // Don't spam errors on every poll
-                            }
+                        }
+                        
+                        // Poll Plots (10Hz)
+                        if last_plot_poll.elapsed() >= Duration::from_millis(100) {
+                             for plot in &plots {
+                                   let val = match plot.var_type {
+                                       crate::VarType::U32 => core.read_word_32(plot.address).map(|v| v as f64).ok(),
+                                       crate::VarType::F32 => {
+                                           core.read_word_32(plot.address).ok().map(|v| f32::from_bits(v) as f64)
+                                       }
+                                       _ => None
+                                   };
+                                   
+                                   if let Some(v) = val {
+                                       let _ = evt_tx.send(DebugEvent::PlotData {
+                                           name: plot.name.clone(),
+                                           timestamp: session_start.elapsed().as_secs_f64(),
+                                           value: v
+                                       });
+                                   }
+                             }
+                             last_plot_poll = Instant::now();
                         }
                     }
-                }
-
-                // Periodic Plot Polling
-                if last_plot_poll.elapsed() >= Duration::from_millis(50) {
-                     last_plot_poll = Instant::now();
-                     let timestamp = session_start.elapsed().as_secs_f64();
-                     
-                     for plot in &plots {
-                          let val_res = match plot.var_type {
-                              VarType::U8 => core.read_word_8(plot.address).map(|v| v as f64),
-                              VarType::U16 => core.read_word_16(plot.address).map(|v| v as f64),
-                              VarType::U32 => core.read_word_32(plot.address).map(|v| v as f64),
-                              VarType::U64 => core.read_word_64(plot.address).map(|v| v as f64),
-                              VarType::I8 => core.read_word_8(plot.address).map(|v| v as i8 as f64),
-                              VarType::I16 => core.read_word_16(plot.address).map(|v| v as i16 as f64),
-                              VarType::I32 => core.read_word_32(plot.address).map(|v| v as i32 as f64),
-                              VarType::I64 => core.read_word_64(plot.address).map(|v| v as i64 as f64),
-                              VarType::F32 => core.read_word_32(plot.address).map(|v| f32::from_bits(v as u32) as f64),
-                              VarType::F64 => core.read_word_64(plot.address).map(|v| f64::from_bits(v)),
-                          };
-                          
-                          match val_res {
-                              Ok(value) => {
-                                   let _ = evt_tx.send(DebugEvent::PlotData { 
-                                       name: plot.name.clone(), 
-                                       timestamp, 
-                                       value 
-                                   });
-                              }
-                              Err(_) => {} // Ignore errors during polling
-                          }
-                     }
                 }
 
                 thread::sleep(Duration::from_millis(10));
@@ -478,5 +486,38 @@ impl SessionHandle {
 
     pub fn send(&self, cmd: DebugCommand) -> Result<()> {
         self.command_tx.send(cmd).context("Failed to send command")
+    }
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::time::Duration;
+
+    #[tokio::test]
+    async fn test_session_handle_send_receive() {
+        let (handle, cmd_rx, event_tx) = SessionHandle::new_test();
+        
+        // Test Command sending
+        handle.send(DebugCommand::Halt).unwrap();
+        let cmd = cmd_rx.recv_timeout(Duration::from_millis(100)).unwrap();
+        assert!(matches!(cmd, DebugCommand::Halt));
+        
+        // Test Event broadcasting
+        let mut receiver = handle.subscribe();
+        event_tx.send(DebugEvent::Resumed).unwrap();
+        
+        let event = receiver.recv().await.unwrap();
+        assert!(matches!(event, DebugEvent::Resumed));
+    }
+
+    #[test]
+    fn test_debug_event_clone() {
+        let event = DebugEvent::Halted { pc: 0x1234 };
+        let cloned = event.clone();
+        if let DebugEvent::Halted { pc } = cloned {
+            assert_eq!(pc, 0x1234);
+        } else {
+            panic!("Clone failed");
+        }
     }
 }

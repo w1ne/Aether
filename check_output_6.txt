@@ -1,0 +1,68 @@
+    Checking aether-core v0.1.0 (/home/andrii/Projects/AetherDebugger/aether-core)
+warning: unused import: `std::sync::Arc`
+  --> aether-core/src/session.rs:15:5
+   |
+15 | use std::sync::Arc;
+   |     ^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused imports: `Dwarf`, `EndianSlice`, `SectionId`, and `Unit`
+ --> aether-core/src/symbols/mod.rs:6:13
+  |
+6 | ...::{Dwarf, EndianSlice, RunTimeEndian, SectionId, AttributeValue, Unit};
+  |       ^^^^^  ^^^^^^^^^^^                 ^^^^^^^^^                  ^^^^
+
+warning: unused import: `Core`
+ --> aether-core/src/trace.rs:1:25
+  |
+1 | use probe_rs::{Session, Core};
+  |                         ^^^^
+
+warning: unused variable: `memory_manager`
+   --> aether-core/src/session.rs:139:17
+    |
+139 | ...   let memory_manager = crate::...
+    |           ^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+help: you might have meant to pattern match on the similarly named struct `MemoryManager`
+    |
+139 -             let memory_manager = crate::MemoryManager::new();
+139 +             let memory::MemoryManager = crate::MemoryManager::new();
+    |
+help: if this is intentional, prefix it with an underscore
+    |
+139 |             let _memory_manager = crate::MemoryManager::new();
+    |                 +
+
+warning: unused variable: `elf_data`
+   --> aether-core/src/session.rs:307:55
+    |
+307 | ...let Some(elf_data) = symbol_man...
+    |             ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_elf_data`
+
+warning: variable does not need to be mutable
+  --> aether-core/src/stack.rs:86:9
+   |
+86 |     let mut current_lr = lr_val;
+   |         ----^^^^^^^^^^
+   |         |
+   |         help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `session`
+  --> aether-core/src/trace.rs:25:30
+   |
+25 | ...ut self, session: &mut Session, ...
+   |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_session`
+
+warning: unused variable: `session`
+  --> aether-core/src/trace.rs:41:33
+   |
+41 | ...ut self, session: &mut Session) ...
+   |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_session`
+
+warning: `aether-core` (lib) generated 8 warnings (run `cargo fix --lib -p aether-core` to apply 8 suggestions)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.96s

@@ -30,3 +30,4 @@ path = "../benchmarks/core_bench.rs"
 
 [dev-dependencies]
 criterion.workspace = true
+tokio = { version = "1.0", features = ["macros", "rt", "rt-multi-thread", "time"] }

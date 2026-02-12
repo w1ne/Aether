@@ -1,0 +1,389 @@
+    Checking aether-core v0.1.0 (/home/andrii/Projects/AetherDebugger/aether-core)
+error[E0433]: failed to resolve: could not find `FreeRTOS` in `freertos`
+   --> aether-core/src/session.rs:289:88
+    |
+289 | ...ertos::FreeRTOS::new(&mut ...
+    |           ^^^^^^^^
+    |           |
+    |           could not find `FreeRTOS` in `freertos`
+    |           help: a struct with a similar name exists: `FreeRtos`
+
+warning: unused imports: `Dwarf`, `EndianSlice`, `SectionId`, and `Unit`
+ --> aether-core/src/symbols/mod.rs:6:13
+  |
+6 | ...::{Dwarf, EndianSlice, RunTimeEndian, SectionId, AttributeValue, Unit};
+  |       ^^^^^  ^^^^^^^^^^^                 ^^^^^^^^^                  ^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `Core`
+ --> aether-core/src/trace.rs:1:25
+  |
+1 | use probe_rs::{Session, Core};
+  |                         ^^^^
+
+error[E0599]: no method named `flash` found for struct `FlashManager` in the current scope
+   --> aether-core/src/session.rs:182:50
+    |
+182 | ...h_manager.flash(&mut sessi...
+    |              ^^^^^
+    |
+   ::: aether-core/src/flash/mod.rs:54:1
+    |
+ 54 | pub struct FlashManager;
+    | ----------------------- method `flash` not found for this struct
+    |
+help: there is a method `flash_bin` with a similar name
+    |
+182 |                              match flash_manager.flash_bin(&mut session, &path, progress, status) {
+    |                                                       ++++
+
+error[E0599]: the method `read` exists for struct `MemoryManager`, but its trait bounds were not satisfied
+   --> aether-core/src/session.rs:241:59
+    |
+241 | ...ry_manager.read(&mut core,...
+    |               ^^^^
+    |
+   ::: aether-core/src/memory/mod.rs:9:1
+    |
+  9 | pub struct MemoryManager;
+    | ------------------------ method `read` not found for this struct because it doesn't satisfy `MemoryManager: MemoryInterface` or `_: CoreMemoryInterface`
+    |
+    = note: the following trait bounds were not satisfied:
+            `MemoryManager: probe_rs::memory::CoreMemoryInterface`
+            which is required by `MemoryManager: MemoryInterface`
+note: the trait `probe_rs::memory::CoreMemoryInterface` must be implemented
+   --> /home/andrii/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/probe-rs-0.31.0/src/memory/mod.rs:396:1
+    |
+396 | pub trait CoreMemoryInterface {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: items from traits can only be used if the trait is implemented and in scope
+    = note: the following traits define an item `read`, perhaps you need to implement one of them:
+            candidate #1: `MemoryInterface`
+            candidate #2: `ReadCacheOps`
+            candidate #3: `ReadRef`
+            candidate #4: `bincode::de::read::Reader`
+            candidate #5: `digest::XofReader`
+            candidate #6: `object::read::read_cache::ReadCacheOps`
+            candidate #7: `object::read::read_cache::ReadCacheOps`
+            candidate #8: `object::read::read_ref::ReadRef`
+            candidate #9: `object::read::read_ref::ReadRef`
+            candidate #10: `std::io::Read`
+            candidate #11: `zerocopy::pointer::invariant::Alignment`
+
+error[E0282]: type annotations needed
+   --> aether-core/src/session.rs:243:92
+    |
+243 | ...or(e.to_string())); }
+    |       ^ cannot infer type
+
+error[E0308]: mismatched types
+   --> aether-core/src/session.rs:247:84
+    |
+247 | ...er.write_8(&mut core, addr, &data) {
+    |       -------                  ^^^^^ expected `u8`, found `&Vec<u8>`
+    |       |
+    |       arguments to this method are incorrect
+    |
+    = note:   expected type `u8`
+            found reference `&Vec<u8>`
+note: method defined here
+   --> aether-core/src/memory/mod.rs:39:12
+    |
+ 39 | ...fn write_8(&self, core: &mut Core, address: u64, value: u8) -...
+    |       ^^^^^^^                                       ---------
+
+error[E0308]: arguments to this method are incorrect
+   --> aether-core/src/session.rs:253:59
+    |
+253 | ...er.disassemble(&mut core, addr, count as usize) {
+    |       ^^^^^^^^^^^ ---------  ----  -------------- unexpected argument #3 of type `usize`
+    |                   |          |
+    |                   |          argument #2 of type `&[u8]` is missing
+    |                   expected `&str`, found `&mut Core<'_>`
+    |
+    = note:      expected reference `&str`
+            found mutable reference `&mut probe_rs::Core<'_>`
+note: method defined here
+   --> aether-core/src/disasm/mod.rs:25:12
+    |
+ 25 |     pub fn disassemble(
+    |            ^^^^^^^^^^^
+ 26 |         &self,
+ 27 |         arch: &str,
+    |         ----------
+ 28 |         code: &[u8],
+    |         -----------
+help: did you mean
+    |
+253 -                                      match disasm_manager.disassemble(&mut core, addr, count as usize) {
+253 +                                      match disasm_manager.disassemble(/* &str */, /* &[u8] */, addr) {
+    |
+
+error[E0282]: type annotations needed
+   --> aether-core/src/session.rs:260:93
+    |
+260 | ...alue(id, val.into()));
+    |             ^^^ cannot infer type
+
+error[E0599]: no method named `set_hw_breakpoint` found for struct `BreakpointManager` in the current scope
+   --> aether-core/src/session.rs:267:73
+    |
+267 | ...ger.set_hw_breakpoint(&mut...
+    |        ^^^^^^^^^^^^^^^^^
+    |
+   ::: aether-core/src/debug/breakpoint.rs:8:1
+    |
+  8 | pub struct BreakpointManager {
+    | ---------------------------- method `set_hw_breakpoint` not found for this struct
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+    = note: the following trait defines an item `set_hw_breakpoint`, perhaps you need to implement it:
+            candidate #1: `CoreInterface`
+help: there is a method `set_breakpoint` with a similar name
+    |
+267 -                                      if let Err(e) = breakpoint_manager.set_hw_breakpoint(&mut core, addr) {
+267 +                                      if let Err(e) = breakpoint_manager.set_breakpoint(&mut core, addr) {
+    |
+
+error[E0282]: type annotations needed
+   --> aether-core/src/session.rs:268:81
+    |
+268 | ...or(e.to_string()));
+    |       ^ cannot infer type
+
+error[E0599]: no method named `clear_hw_breakpoint` found for struct `BreakpointManager` in the current scope
+   --> aether-core/src/session.rs:274:73
+    |
+274 | ...er.clear_hw_breakpoint(&mu...
+    |       ^^^^^^^^^^^^^^^^^^^
+    |
+   ::: aether-core/src/debug/breakpoint.rs:8:1
+    |
+  8 | pub struct BreakpointManager {
+    | ---------------------------- method `clear_hw_breakpoint` not found for this struct
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+    = note: the following trait defines an item `clear_hw_breakpoint`, perhaps you need to implement it:
+            candidate #1: `CoreInterface`
+help: there is a method `clear_breakpoint` with a similar name
+    |
+274 -                                      if let Err(e) = breakpoint_manager.clear_hw_breakpoint(&mut core, addr) {
+274 +                                      if let Err(e) = breakpoint_manager.clear_breakpoint(&mut core, addr) {
+    |
+
+error[E0282]: type annotations needed
+   --> aether-core/src/session.rs:275:81
+    |
+275 | ...or(e.to_string()));
+    |       ^ cannot infer type
+
+error[E0599]: no method named `read_peripheral` found for struct `SvdManager` in the current scope
+   --> aether-core/src/session.rs:297:68
+    |
+297 | ...ager.read_peripheral(&mut ...
+    |         ^^^^^^^^^^^^^^^
+    |
+   ::: aether-core/src/svd/mod.rs:12:1
+    |
+ 12 | pub struct SvdManager {
+    | --------------------- method `read_peripheral` not found for this struct
+    |
+help: there is a method `read_peripheral_values` with a similar name
+    |
+297 |                                      if let Ok(regs) = svd_manager.read_peripheral_values(&mut core, &name) {
+    |                                                                                   +++++++
+
+error[E0599]: no method named `write_field` found for struct `SvdManager` in the current scope
+   --> aether-core/src/session.rs:302:58
+    |
+302 | ...anager.write_field(&mut co...
+    |           ^^^^^^^^^^^
+    |
+   ::: aether-core/src/svd/mod.rs:12:1
+    |
+ 12 | pub struct SvdManager {
+    | --------------------- method `write_field` not found for this struct
+    |
+help: there is a method `write_peripheral_field` with a similar name
+    |
+302 |                                      let _ = svd_manager.write_peripheral_field(&mut core, &peripheral, &register, &field, value);
+    |                                                                +++++++++++
+
+error[E0599]: no method named `read_peripheral` found for struct `SvdManager` in the current scope
+   --> aether-core/src/session.rs:303:68
+    |
+303 | ...ager.read_peripheral(&mut ...
+    |         ^^^^^^^^^^^^^^^
+    |
+   ::: aether-core/src/svd/mod.rs:12:1
+    |
+ 12 | pub struct SvdManager {
+    | --------------------- method `read_peripheral` not found for this struct
+    |
+help: there is a method `read_peripheral_values` with a similar name
+    |
+303 |                                      if let Ok(regs) = svd_manager.read_peripheral_values(&mut core, &peripheral) {
+    |                                                                                   +++++++
+
+error[E0599]: no method named `get_channels` found for struct `RttManager` in the current scope
+   --> aether-core/src/session.rs:311:70
+    |
+311 | ...anager.get_channels();
+    |           ^^^^^^^^^^^^
+    |
+   ::: aether-core/src/rtt/mod.rs:13:1
+    |
+ 13 | pub struct RttManager {
+    | --------------------- method `get_channels` not found for this struct
+    |
+help: there is a method `get_up_channels` with a similar name
+    |
+311 |                                           let channels = rtt_manager.get_up_channels();
+    |                                                                          +++
+
+error[E0599]: the method `write` exists for struct `RttManager`, but its trait bounds were not satisfied
+   --> aether-core/src/session.rs:316:58
+    |
+316 | ..._manager.write(&mut core, ...
+    |             ^^^^^ method cannot be called on `RttManager` due to unsatisfied trait bounds
+    |
+   ::: aether-core/src/rtt/mod.rs:13:1
+    |
+ 13 | pub struct RttManager {
+    | --------------------- method `write` not found for this struct because it doesn't satisfy `RttManager: MemoryInterface` or `RttManager: probe_rs::memory::CoreMemoryInterface`
+    |
+    = note: the following trait bounds were not satisfied:
+            `RttManager: probe_rs::memory::CoreMemoryInterface`
+            which is required by `RttManager: MemoryInterface`
+note: the trait `probe_rs::memory::CoreMemoryInterface` must be implemented
+   --> /home/andrii/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/probe-rs-0.31.0/src/memory/mod.rs:396:1
+    |
+396 | pub trait CoreMemoryInterface {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: items from traits can only be used if the trait is implemented and in scope
+    = note: the following traits define an item `write`, perhaps you need to implement one of them:
+            candidate #1: `Hasher`
+            candidate #2: `MemoryInterface`
+            candidate #3: `Writer`
+            candidate #4: `bincode::enc::write::Writer`
+            candidate #5: `gimli::write::writer::Writer`
+            candidate #6: `itoa::private::Sealed`
+            candidate #7: `std::io::Write`
+            candidate #8: `stlink::usb_interface::StLinkUsb`
+
+error[E0061]: this method takes 2 arguments but 1 argument was supplied
+   --> aether-core/src/session.rs:328:54
+    |
+328 | ...os.get_tasks(&mut core) {
+    |       ^^^^^^^^^----------- argument #2 of type `&SymbolManager` is missing
+    |
+note: method defined here
+   --> aether-core/src/rtos/mod.rs:10:8
+    |
+ 10 | ...fn get_tasks(&self, core: &mut dyn MemoryInterface, symbols: &...
+    |       ^^^^^^^^^                                        -------
+help: provide the argument
+    |
+328 |                                           match rtos.get_tasks(&mut core, /* &SymbolManager */) {
+    |                                                                         ++++++++++++++++++++++
+
+error[E0599]: no method named `toggle_hw_breakpoint` found for struct `BreakpointManager` in the current scope
+   --> aether-core/src/session.rs:348:68
+    |
+348 | ...er.toggle_hw_breakpoint(&m...
+    |       ^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: aether-core/src/debug/breakpoint.rs:8:1
+    |
+  8 | pub struct BreakpointManager {
+    | ---------------------------- method `toggle_hw_breakpoint` not found for this struct
+    |
+help: there is a method `clear_breakpoint` with a similar name
+    |
+348 -                                         let _ = breakpoint_manager.toggle_hw_breakpoint(&mut core, addr);
+348 +                                         let _ = breakpoint_manager.clear_breakpoint(&mut core, addr);
+    |
+
+error[E0599]: no method named `read_peripheral` found for struct `SvdManager` in the current scope
+   --> aether-core/src/session.rs:378:67
+    |
+378 | ...ager.read_peripheral(&mut ...
+    |         ^^^^^^^^^^^^^^^
+    |
+   ::: aether-core/src/svd/mod.rs:12:1
+    |
+ 12 | pub struct SvdManager {
+    | --------------------- method `read_peripheral` not found for this struct
+    |
+help: there is a method `read_peripheral_values` with a similar name
+    |
+378 |                                     if let Ok(regs) = svd_manager.read_peripheral_values(&mut core, &periph) {
+    |                                                                                  +++++++
+
+error[E0282]: type annotations needed for `&_`
+   --> aether-core/src/session.rs:399:81
+    |
+399 | ...f().map(|s| s.is_halted())...
+    |             ^  - type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type, where the placeholders `_` are specified
+    |
+399 |                              if status.is_halted() && core_status.as_ref().map(|s: &T| s.is_halted()) != Some(true) {
+    |                                                                                  ++++
+
+error[E0599]: no method named `poll` found for struct `RttManager` in the current scope
+   --> aether-core/src/session.rs:411:37
+    |
+411 | ..._manager.poll(&mut core);
+    |             ^^^^ method not found in `RttManager`
+    |
+   ::: aether-core/src/rtt/mod.rs:13:1
+    |
+ 13 | pub struct RttManager {
+    | --------------------- method `poll` not found for this struct
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+    = note: the following traits define an item `poll`, perhaps you need to implement one of them:
+            candidate #1: `Future`
+            candidate #2: `futures_lite::future::FutureExt`
+
+error[E0599]: no method named `get_output` found for struct `RttManager` in the current scope
+   --> aether-core/src/session.rs:412:58
+    |
+412 | ...anager.get_output() {
+    |           ^^^^^^^^^^ method not found in `RttManager`
+    |
+   ::: aether-core/src/rtt/mod.rs:13:1
+    |
+ 13 | pub struct RttManager {
+    | --------------------- method `get_output` not found for this struct
+
+warning: variable does not need to be mutable
+  --> aether-core/src/stack.rs:86:9
+   |
+86 |     let mut current_lr = lr_val;
+   |         ----^^^^^^^^^^
+   |         |
+   |         help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `session`
+  --> aether-core/src/trace.rs:25:30
+   |
+25 | ... self, session: &mut Sessio...
+   |           ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_session`
+   |
+   = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `session`
+  --> aether-core/src/trace.rs:41:33
+   |
+41 | ... self, session: &mut Sessio...
+   |           ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_session`
+
+Some errors have detailed explanations: E0061, E0282, E0308, E0433, E0599.
+For more information about an error, try `rustc --explain E0061`.
+warning: `aether-core` (lib) generated 5 warnings
+error: could not compile `aether-core` (lib) due to 22 previous errors; 5 warnings emitted

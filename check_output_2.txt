@@ -1,0 +1,260 @@
+    Checking aether-core v0.1.0 (/home/andrii/Projects/AetherDebugger/aether-core)
+error: expected pattern, found `let`
+   --> aether-core/src/session.rs:240:29
+    |
+240 | ...   let mut data = vec![0u8...
+    |       ^^^
+    |
+help: remove the unnecessary `let` keyword
+    |
+240 -                             let mut data = vec![0u8; size];
+240 +                             mut data = vec![0u8; size];
+    |
+
+error: expected one of `=>`, `@`, `if`, or `|`, found `=`
+   --> aether-core/src/session.rs:240:42
+    |
+240 | ...mut data = vec![0u8; size];
+    |             ^
+    |             |
+    |             expected one of `=>`, `@`, `if`, or `|`
+    |             help: use a fat arrow to start a match arm: `=>`
+
+error: `match` arm body without braces
+   --> aether-core/src/session.rs:240:44
+    |
+240 |                               let mut data = vec!...
+    |  __________________________________________-_^
+    | |                                          |
+    | |                                          while parsing the `match` arm starting here
+241 | |                             match core.read(add...
+242 | |                                 Ok(_) => { let ...
+243 | |                                 Err(e) => { let...
+244 | |                             }
+    | |_____________________________^ these statements are not surrounded by a body
+    |
+help: surround the statements with a body
+    |
+240 ~                             let mut data = { vec![0u8; size];
+241 |                             match core.read(addr, &mut data) {
+242 |                                 Ok(_) => { let _ = evt_tx.send(DebugEvent::MemoryData(addr, data)); }
+243 |                                 Err(e) => { let _ = evt_tx.send(DebugEvent::Error(e.to_string())); }
+244 ~                             } }
+    |
+
+error: expected pattern, found `let`
+   --> aether-core/src/session.rs:251:38
+    |
+251 | ...   let mut code = vec![0u8...
+    |       ^^^
+    |
+help: remove the unnecessary `let` keyword
+    |
+251 -                                      let mut code = vec![0u8; count * 4];
+251 +                                      mut code = vec![0u8; count * 4];
+    |
+
+error: expected one of `=>`, `@`, `if`, or `|`, found `=`
+   --> aether-core/src/session.rs:251:51
+    |
+251 | ...mut code = vec![0u8; count...
+    |             ^
+    |             |
+    |             expected one of `=>`, `@`, `if`, or `|`
+    |             help: use a fat arrow to start a match arm: `=>`
+
+error: `match` arm body without braces
+   --> aether-core/src/session.rs:251:53
+    |
+251 |                                        let mut code = vec!...
+    |  ___________________________________________________-_^
+    | |                                                   |
+    | |                                                   while parsing the `match` arm starting here
+252 | |                                      if core.read(addr, ...
+253 | |                                          match disasm_ma...
+254 | |                                              Ok(lines) =...
+...   |
+257 | |                                      }
+    | |______________________________________^ these statements are not surrounded by a body
+    |
+help: surround the statements with a body
+    |
+251 ~                                      let mut code = { vec![0u8; count * 4];
+252 |                                      if core.read(addr, &mut code).is_ok() {
+...
+256 |                                          }
+257 ~                                      } }
+    |
+
+warning: unused imports: `Dwarf`, `EndianSlice`, `SectionId`, and `Unit`
+ --> aether-core/src/symbols/mod.rs:6:13
+  |
+6 | ...::{Dwarf, EndianSlice, RunTimeEndian, SectionId, AttributeValue, Unit};
+  |       ^^^^^  ^^^^^^^^^^^                 ^^^^^^^^^                  ^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `Core`
+ --> aether-core/src/trace.rs:1:25
+  |
+1 | use probe_rs::{Session, Core};
+  |                         ^^^^
+
+error[E0308]: arguments to this method are incorrect
+   --> aether-core/src/session.rs:182:50
+    |
+179 | ...c::new(move |p| { let _ = ...
+    |           -------- the found closure
+180 | ...:new(move |s: String| { le...
+    |         ---------------- the found closure
+181 | ...
+182 | ...er.flash_bin(&mut session,...
+    |       ^^^^^^^^^
+    |
+note: expected `u64`, found `Arc<{closure@session.rs:179:54}>`
+   --> aether-core/src/session.rs:182:81
+    |
+182 | ..., &path, progress, status) {
+    |             ^^^^^^^^
+    = note: expected type `u64`
+             found struct `Arc<{closure@aether-core/src/session.rs:179:54: 179:62}>`
+note: expected `FlashProgress<'_>`, found `Arc<{closure@session.rs:180:52}>`
+   --> aether-core/src/session.rs:182:91
+    |
+182 | ...progress, status) {
+    |              ^^^^^^
+    = note: expected struct `FlashProgress<'_>`
+               found struct `Arc<{closure@aether-core/src/session.rs:180:52: 180:68}>`
+note: method defined here
+   --> aether-core/src/flash/mod.rs:81:12
+    |
+ 81 |     pub fn flash_bin(
+    |            ^^^^^^^^^
+...
+ 85 |         address: u64,
+    |         ------------
+ 86 |         progress: FlashProgress,
+    |         -----------------------
+
+error[E0282]: type annotations needed
+   --> aether-core/src/session.rs:260:93
+    |
+260 | ...alue(id, val.into()));
+    |             ^^^ cannot infer type
+
+error[E0061]: this function takes 0 arguments but 2 arguments were supplied
+   --> aether-core/src/session.rs:289:65
+    |
+289 | ... = crate::rtos::freertos::FreeRtos::new(&mut core, elf_data) {
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ---------  -------- unexpected argument #2 of type `&[u8]`
+    |                                            |
+    |                                            unexpected argument #1 of type `&mut probe_rs::Core<'_>`
+    |
+note: associated function defined here
+   --> aether-core/src/rtos/freertos.rs:10:12
+    |
+ 10 |     pub fn new() -> Self {
+    |            ^^^
+help: remove the extra arguments
+    |
+289 -                                               if let Ok(rtos) = crate::rtos::freertos::FreeRtos::new(&mut core, elf_data) {
+289 +                                               if let Ok(rtos) = crate::rtos::freertos::FreeRtos::new() {
+    |
+
+error[E0308]: mismatched types
+   --> aether-core/src/session.rs:289:54
+    |
+289 | ...et Ok(rtos) = crate::rtos::freertos::FreeRtos::new(&mut core, elf_data) {
+    |       ^^^^^^^^   --------------------------------------------------------- this expression has type `FreeRtos`
+    |       |
+    |       expected `FreeRtos`, found `Result<_, _>`
+    |
+    = note: expected struct `FreeRtos`
+                 found enum `Result<_, _>`
+
+error[E0599]: the method `write` exists for struct `RttManager`, but its trait bounds were not satisfied
+   --> aether-core/src/session.rs:316:58
+    |
+316 | ..._manager.write(&mut core, ...
+    |             ^^^^^ method cannot be called on `RttManager` due to unsatisfied trait bounds
+    |
+   ::: aether-core/src/rtt/mod.rs:13:1
+    |
+ 13 | pub struct RttManager {
+    | --------------------- method `write` not found for this struct because it doesn't satisfy `RttManager: MemoryInterface` or `RttManager: probe_rs::memory::CoreMemoryInterface`
+    |
+    = note: the following trait bounds were not satisfied:
+            `RttManager: probe_rs::memory::CoreMemoryInterface`
+            which is required by `RttManager: MemoryInterface`
+note: the trait `probe_rs::memory::CoreMemoryInterface` must be implemented
+   --> /home/andrii/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/probe-rs-0.31.0/src/memory/mod.rs:396:1
+    |
+396 | pub trait CoreMemoryInterface {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: items from traits can only be used if the trait is implemented and in scope
+    = note: the following traits define an item `write`, perhaps you need to implement one of them:
+            candidate #1: `Hasher`
+            candidate #2: `MemoryInterface`
+            candidate #3: `Writer`
+            candidate #4: `bincode::enc::write::Writer`
+            candidate #5: `gimli::write::writer::Writer`
+            candidate #6: `itoa::private::Sealed`
+            candidate #7: `std::io::Write`
+            candidate #8: `stlink::usb_interface::StLinkUsb`
+
+error[E0599]: no method named `toggle_breakpoint` found for struct `BreakpointManager` in the current scope
+   --> aether-core/src/session.rs:348:68
+    |
+348 | ...ger.toggle_breakpoint(&mut...
+    |        ^^^^^^^^^^^^^^^^^
+    |
+   ::: aether-core/src/debug/breakpoint.rs:8:1
+    |
+  8 | pub struct BreakpointManager {
+    | ---------------------------- method `toggle_breakpoint` not found for this struct
+    |
+help: there is a method `set_breakpoint` with a similar name
+    |
+348 -                                         let _ = breakpoint_manager.toggle_breakpoint(&mut core, addr);
+348 +                                         let _ = breakpoint_manager.set_breakpoint(&mut core, addr);
+    |
+
+error[E0282]: type annotations needed for `&_`
+   --> aether-core/src/session.rs:399:81
+    |
+399 | ...f().map(|s| s.is_halted())...
+    |             ^  - type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type, where the placeholders `_` are specified
+    |
+399 |                              if status.is_halted() && core_status.as_ref().map(|s: &T| s.is_halted()) != Some(true) {
+    |                                                                                  ++++
+
+warning: variable does not need to be mutable
+  --> aether-core/src/stack.rs:86:9
+   |
+86 |     let mut current_lr = lr_val;
+   |         ----^^^^^^^^^^
+   |         |
+   |         help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `session`
+  --> aether-core/src/trace.rs:25:30
+   |
+25 | ... self, session: &mut Sessio...
+   |           ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_session`
+   |
+   = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `session`
+  --> aether-core/src/trace.rs:41:33
+   |
+41 | ... self, session: &mut Sessio...
+   |           ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_session`
+
+Some errors have detailed explanations: E0061, E0282, E0308, E0599.
+For more information about an error, try `rustc --explain E0061`.
+warning: `aether-core` (lib) generated 5 warnings
+error: could not compile `aether-core` (lib) due to 13 previous errors; 5 warnings emitted

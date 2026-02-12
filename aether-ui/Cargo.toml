@@ -8,6 +8,7 @@ repository.workspace = true
 
 [dependencies]
 aether-core = { path = "../aether-core" }
+aether-agent-api = { path = "../aether-agent-api" }
 eframe.workspace = true
 egui.workspace = true
 egui_plot.workspace = true
@@ -20,4 +21,4 @@ serde.workspace = true
 rfd = { workspace = true }
 probe-rs = { workspace = true }
 syntect = "5.2"
-tokio = { version = "1.0", features = ["sync"] }
+tokio = { version = "1.0", features = ["sync", "rt", "net", "time", "macros"] }

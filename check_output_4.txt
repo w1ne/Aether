@@ -1,0 +1,66 @@
+    Checking aether-core v0.1.0 (/home/andrii/Projects/AetherDebugger/aether-core)
+error[E0425]: cannot find type `CoreRegisterValue` in crate `probe_rs`
+   --> aether-core/src/session.rs:418:57
+    |
+418 | ...s::CoreRegisterValue = cor...
+    |       ^^^^^^^^^^^^^^^^^ help: an enum with a similar name exists: `RegisterValue`
+    |
+   ::: /home/andrii/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/probe-rs-0.31.0/src/core/registers.rs:233:1
+    |
+233 | pub enum RegisterValue {
+    | ---------------------- similarly named enum `RegisterValue` defined here
+
+warning: unused import: `std::sync::Arc`
+  --> aether-core/src/session.rs:15:5
+   |
+15 | use std::sync::Arc;
+   |     ^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused imports: `Dwarf`, `EndianSlice`, `SectionId`, and `Unit`
+ --> aether-core/src/symbols/mod.rs:6:13
+  |
+6 | ...::{Dwarf, EndianSlice, RunTimeEndian, SectionId, AttributeValue, Unit};
+  |       ^^^^^  ^^^^^^^^^^^                 ^^^^^^^^^                  ^^^^
+
+warning: unused import: `Core`
+ --> aether-core/src/trace.rs:1:25
+  |
+1 | use probe_rs::{Session, Core};
+  |                         ^^^^
+
+error[E0282]: type annotations needed
+   --> aether-core/src/session.rs:274:62
+    |
+274 | ...4: u64 = val.try_into().un...
+    |             ^^^ cannot infer type
+
+warning: variable does not need to be mutable
+  --> aether-core/src/stack.rs:86:9
+   |
+86 |     let mut current_lr = lr_val;
+   |         ----^^^^^^^^^^
+   |         |
+   |         help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `session`
+  --> aether-core/src/trace.rs:25:30
+   |
+25 | ... self, session: &mut Sessio...
+   |           ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_session`
+   |
+   = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `session`
+  --> aether-core/src/trace.rs:41:33
+   |
+41 | ... self, session: &mut Sessio...
+   |           ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_session`
+
+Some errors have detailed explanations: E0282, E0425.
+For more information about an error, try `rustc --explain E0282`.
+warning: `aether-core` (lib) generated 6 warnings
+error: could not compile `aether-core` (lib) due to 2 previous errors; 6 warnings emitted

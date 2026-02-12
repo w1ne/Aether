@@ -9,9 +9,12 @@ pub mod flash;
 pub mod memory;
 pub mod probe;
 pub mod rtt;
+pub mod rtos;
 pub mod session;
 pub mod svd;
 pub mod symbols;
+pub mod stack;
+pub mod trace;
 
 // Re-export commonly used types
 pub use debug::DebugManager;
@@ -33,7 +36,28 @@ pub enum VarType {
     F32,
     F64,
 }
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct TaskInfo {
+    pub name: String,
+    pub priority: u32,
+    pub state: TaskState,
+    pub stack_usage: u32,
+    pub stack_size: u32,
+    pub handle: u32, // address of TCB
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
+pub enum TaskState {
+    Running,
+    Ready,
+    Blocked,
+    Suspended,
+    Deleted,
+    Unknown,
+}
 pub use probe::{ProbeInfo, ProbeManager, ProbeType, TargetInfo};
 pub use svd::SvdManager;
 pub use symbols::{SymbolManager, SourceInfo};
 pub use session::{DebugCommand, DebugEvent, SessionHandle};
+pub use stack::StackFrame;

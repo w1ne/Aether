@@ -1,0 +1,131 @@
+    Checking aether-core v0.1.0 (/home/andrii/Projects/AetherDebugger/aether-core)
+error[E0433]: failed to resolve: use of undeclared type `FlashProgress`
+   --> aether-core/src/session.rs:180:45
+    |
+180 | ...ss = FlashProgress::new(mo...
+    |         ^^^^^^^^^^^^^ use of undeclared type `FlashProgress`
+    |
+help: consider importing this struct
+    |
+  6 + use probe_rs::flashing::FlashProgress;
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `ProgressEvent`
+   --> aether-core/src/session.rs:182:38
+    |
+182 | ...     ProgressEvent::Starte...
+    |         ^^^^^^^^^^^^^ use of undeclared type `ProgressEvent`
+    |
+help: consider importing one of these enums
+    |
+  6 + use crate::flash::ProgressEvent;
+    |
+  6 + use probe_rs::flashing::ProgressEvent;
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `ProgressEvent`
+   --> aether-core/src/session.rs:183:38
+    |
+183 | ...     ProgressEvent::Progre...
+    |         ^^^^^^^^^^^^^ use of undeclared type `ProgressEvent`
+    |
+help: consider importing one of these enums
+    |
+  6 + use crate::flash::ProgressEvent;
+    |
+  6 + use probe_rs::flashing::ProgressEvent;
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `ProgressEvent`
+   --> aether-core/src/session.rs:184:38
+    |
+184 | ...     ProgressEvent::Finish...
+    |         ^^^^^^^^^^^^^ use of undeclared type `ProgressEvent`
+    |
+help: consider importing one of these enums
+    |
+  6 + use crate::flash::ProgressEvent;
+    |
+  6 + use probe_rs::flashing::ProgressEvent;
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `ProgressEvent`
+   --> aether-core/src/session.rs:185:38
+    |
+185 | ...     ProgressEvent::Failed...
+    |         ^^^^^^^^^^^^^ use of undeclared type `ProgressEvent`
+    |
+help: consider importing one of these enums
+    |
+  6 + use crate::flash::ProgressEvent;
+    |
+  6 + use probe_rs::flashing::ProgressEvent;
+    |
+
+warning: unused import: `std::sync::Arc`
+  --> aether-core/src/session.rs:14:5
+   |
+14 | use std::sync::Arc;
+   |     ^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused imports: `Dwarf`, `EndianSlice`, `SectionId`, and `Unit`
+ --> aether-core/src/symbols/mod.rs:6:13
+  |
+6 | ...::{Dwarf, EndianSlice, RunTimeEndian, SectionId, AttributeValue, Unit};
+  |       ^^^^^  ^^^^^^^^^^^                 ^^^^^^^^^                  ^^^^
+
+warning: unused import: `Core`
+ --> aether-core/src/trace.rs:1:25
+  |
+1 | use probe_rs::{Session, Core};
+  |                         ^^^^
+
+error[E0282]: type annotations needed
+   --> aether-core/src/session.rs:273:62
+    |
+273 | ...4: u64 = val.into();
+    |             ^^^ cannot infer type
+
+error[E0282]: type annotations needed
+   --> aether-core/src/session.rs:417:39
+    |
+417 | ...et pc = core.read_core_reg(core.program_counter()...
+    |       ^^
+418 | ...et _ = evt_tx.send(DebugEvent::Halted { pc: pc.in...
+    |                                                -- type must be known at this point
+    |
+help: consider giving `pc` an explicit type
+    |
+417 |                                   let pc: /* Type */ = core.read_core_reg(core.program_counter()).unwrap_or(0u32.into());
+    |                                         ++++++++++++
+
+warning: variable does not need to be mutable
+  --> aether-core/src/stack.rs:86:9
+   |
+86 |     let mut current_lr = lr_val;
+   |         ----^^^^^^^^^^
+   |         |
+   |         help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `session`
+  --> aether-core/src/trace.rs:25:30
+   |
+25 | ... self, session: &mut Sessio...
+   |           ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_session`
+   |
+   = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `session`
+  --> aether-core/src/trace.rs:41:33
+   |
+41 | ... self, session: &mut Sessio...
+   |           ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_session`
+
+Some errors have detailed explanations: E0282, E0433.
+For more information about an error, try `rustc --explain E0282`.
+warning: `aether-core` (lib) generated 6 warnings
+error: could not compile `aether-core` (lib) due to 7 previous errors; 6 warnings emitted

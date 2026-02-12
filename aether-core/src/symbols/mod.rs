@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use probe_rs_debug::DebugInfo;
 use serde::{Serialize, Deserialize};
 use object::{Object, ObjectSection, ObjectSymbol};
-use gimli::{Dwarf, EndianSlice, RunTimeEndian, SectionId, AttributeValue};
+use gimli::{RunTimeEndian, AttributeValue};
 use std::borrow::Cow;
 
 /// Information about a source code location.
@@ -66,6 +66,10 @@ impl SymbolManager {
 
     pub fn debug_info(&self) -> Option<&DebugInfo> {
         self.debug_info.as_ref()
+    }
+
+    pub fn elf_data(&self) -> Option<&[u8]> {
+        self.elf_data.as_deref()
     }
 
     /// Map a source location to a program counter address.
@@ -174,5 +178,23 @@ impl SymbolManager {
 impl Default for SymbolManager {
     fn default() -> Self {
         Self::new()
+    }
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_symbol_manager_initial_state() {
+        let mgr = SymbolManager::new();
+        assert!(!mgr.has_symbols());
+        assert!(mgr.elf_data().is_none());
+    }
+
+    #[test]
+    fn test_symbol_lookup_no_symbols() {
+        let mgr = SymbolManager::new();
+        assert!(mgr.lookup_symbol("main").is_none());
+        assert!(mgr.lookup(0x1000).is_none());
     }
 }

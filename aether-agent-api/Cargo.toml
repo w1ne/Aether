@@ -12,11 +12,12 @@ prost = "0.13"
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 futures-core = "0.3"
 futures-util = "0.3"
-tokio-stream = "0.1"
+tokio-stream = { version = "0.1", features = ["sync"] }
 aether-core = { path = "../aether-core" }
 
 [build-dependencies]
 tonic-build = "0.12"
+protoc-bin-vendored = "3.0"
 
 [lints]
 workspace = true
