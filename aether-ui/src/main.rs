@@ -9,6 +9,7 @@ use syntect::easy::HighlightLines;
 use std::sync::mpsc;
 use std::sync::Arc;
 use aether_core::VarType;
+use serde::{Serialize, Deserialize};
 
 fn main() -> eframe::Result<()> {
     env_logger::init();
@@ -92,6 +93,7 @@ struct AetherApp {
     
     // RTOS State
     tasks: Vec<aether_core::TaskInfo>,
+    timeline_events: Vec<TimelineEvent>,
 
     // Stack State
     stack_frames: Vec<aether_core::StackFrame>,
@@ -99,6 +101,14 @@ struct AetherApp {
     // Syntax Highlighting
     syntax_set: SyntaxSet,
     theme_set: ThemeSet,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TimelineEvent {
+    pub task_handle: u32,
+    pub task_name: String,
+    pub start_time: f64,
+    pub end_time: Option<f64>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
@@ -109,6 +119,7 @@ enum DebugTab {
     Plot,
     Tasks,
     Stack,
+    Timeline,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -164,6 +175,7 @@ impl AetherApp {
             new_plot_name: String::new(),
             new_plot_type: VarType::U32,
             tasks: Vec::new(),
+            timeline_events: Vec::new(),
             stack_frames: Vec::new(),
             syntax_set: SyntaxSet::load_defaults_newlines(),
             theme_set: ThemeSet::load_defaults(),
@@ -484,6 +496,28 @@ impl AetherApp {
                     aether_core::DebugEvent::Tasks(tasks) => {
                         self.tasks = tasks;
                     }
+                    aether_core::DebugEvent::TaskSwitch { from, to, timestamp } => {
+                        // 1. Close previous task if it exists
+                        if let Some(from_handle) = from {
+                            if let Some(event) = self.timeline_events.iter_mut().rev().find(|e| e.task_handle == from_handle && e.end_time.is_none()) {
+                                event.end_time = Some(timestamp);
+                            }
+                        }
+                        
+                        // 2. Open new task
+                        let name = self.tasks.iter().find(|t| t.handle == to).map(|t| t.name.clone()).unwrap_or_else(|| format!("0x{:08X}", to));
+                        self.timeline_events.push(TimelineEvent {
+                            task_handle: to,
+                            task_name: name,
+                            start_time: timestamp,
+                            end_time: None,
+                        });
+                        
+                        // Prune history (keep last 500 events for performance)
+                        if self.timeline_events.len() > 500 {
+                            self.timeline_events.remove(0);
+                        }
+                    }
                     aether_core::DebugEvent::Stack(frames) => {
                         self.stack_frames = frames;
                     }
@@ -640,6 +674,72 @@ impl AetherApp {
                 ui.label("No tasks discovered. Ensure FreeRTOS is running and symbols are loaded.");
             }
         });
+    }
+
+    fn draw_timeline_view(&mut self, ui: &mut egui::Ui) {
+        ui.heading("Execution Timeline");
+        
+        if ui.button("🗑 Clear Timeline").clicked() {
+            self.timeline_events.clear();
+        }
+        
+        ui.separator();
+
+        let plot = egui_plot::Plot::new("timeline_plot")
+            .legend(egui_plot::Legend::default())
+            .height(400.0)
+            .show_x(true)
+            .show_y(false)
+            .allow_zoom(true)
+            .allow_drag(true);
+
+        plot.show(ui, |plot_ui| {
+            // Group events by task handle to assign vertical slots
+            let mut task_slots: HashMap<u32, f64> = HashMap::new();
+            let mut sorted_handles: Vec<u32> = self.tasks.iter().map(|t| t.handle).collect();
+            // Add handles from events that might not be in tasks list yet
+            for event in &self.timeline_events {
+                if !sorted_handles.contains(&event.task_handle) {
+                    sorted_handles.push(event.task_handle);
+                }
+            }
+            sorted_handles.sort();
+
+            for (i, handle) in sorted_handles.iter().enumerate() {
+                task_slots.insert(*handle, i as f64);
+            }
+
+            for event in &self.timeline_events {
+                if let Some(&slot) = task_slots.get(&event.task_handle) {
+                    let start = event.start_time;
+                    let end = event.end_time.unwrap_or_else(|| {
+                        // If it's the latest event, assume it's still running
+                        start + 0.05 // Tiny filler for visualization if no end yet
+                    });
+
+                    // Draw a box for the execution period
+                    let rect = egui_plot::PlotPoints::from_iter(vec![
+                        [start, slot - 0.4],
+                        [end, slot - 0.4],
+                        [end, slot + 0.4],
+                        [start, slot + 0.4],
+                        [start, slot - 0.4],
+                    ]);
+                    
+                    let color = egui::Color32::from_rgb(
+                        ((event.task_handle >> 16) & 0xFF) as u8,
+                        ((event.task_handle >> 8) & 0xFF) as u8,
+                        (event.task_handle & 0xFF) as u8,
+                    ).gamma_multiply(0.8);
+
+                    plot_ui.polygon(egui_plot::Polygon::new(rect)
+                        .fill_color(color)
+                        .name(&event.task_name));
+                }
+            }
+        });
+
+        ui.label("Vertical axis shows different RTOS tasks. Horizontal axis is session time (s).");
     }
 
     fn draw_stack_view(&mut self, ui: &mut egui::Ui) {
@@ -1302,6 +1402,7 @@ impl eframe::App for AetherApp {
                 ui.selectable_value(&mut self.active_tab, DebugTab::Tasks, "🧵 Tasks");
                 ui.selectable_value(&mut self.active_tab, DebugTab::RTT, "💬 RTT");
                 ui.selectable_value(&mut self.active_tab, DebugTab::Stack, "📚 Stack");
+                ui.selectable_value(&mut self.active_tab, DebugTab::Timeline, "🕒 Timeline");
             });
             ui.separator();
             
@@ -1311,6 +1412,7 @@ impl eframe::App for AetherApp {
                     DebugTab::RTT => self.draw_rtt_view(ui),
                     DebugTab::Tasks => self.draw_tasks_view(ui),
                     DebugTab::Stack => self.draw_stack_view(ui),
+                    DebugTab::Timeline => self.draw_timeline_view(ui),
                     _ => {}
                 }
             });
@@ -1336,6 +1438,7 @@ impl eframe::App for AetherApp {
             ui.horizontal(|ui| {
                 ui.selectable_value(&mut self.active_tab, DebugTab::Source, "📄 Source");
                 ui.selectable_value(&mut self.active_tab, DebugTab::Plot, "📈 Plot");
+                ui.selectable_value(&mut self.active_tab, DebugTab::Timeline, "🕒 Timeline");
                 // Using hidden state to switch between these for now as central tabs
             });
             
@@ -1348,6 +1451,7 @@ impl eframe::App for AetherApp {
                     });
                 }
                 DebugTab::Plot => self.draw_plot_view(ui),
+                DebugTab::Timeline => self.draw_timeline_view(ui),
                 _ => {
                     // Falls back to Source if we selected a SideTab but want central view
                     self.draw_source_view(ui);

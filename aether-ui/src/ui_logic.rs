@@ -25,6 +25,7 @@ pub fn get_task_state_display(state: TaskState) -> &'static str {
         TaskState::Blocked => "🟡 Blocked",
         TaskState::Suspended => "⚪ Suspended",
         TaskState::Deleted => "🔴 Deleted",
+        TaskState::Pending => "⏳ Pending",
         TaskState::Unknown => "❓ Unknown",
     }
 }
