@@ -12,10 +12,10 @@ AetherDebugger employs a multi-layered testing strategy to balance development s
 - **Scope**: Public APIs of crates, interaction between `aether-core` and its dependencies. Mocking external hardware where necessary.
 - **Command**: `cargo test --test integration_tests`
 
-## 3. End-to-End (E2E) Tests (System-wide)
-- **Location**: `tests/e2e/` (planned)
-- **Scope**: UI interactions triggering DAP server commands and verifying responses.
-- **Command**: `npm test` (in `aether-ui`) or specialized test runners.
+## 3. End-to-End (E2E) Tests (Behavioral)
+- **Location**: `aether-core/tests/e2e_scenarios.rs`
+- **Scope**: Validating high-level user workflows as documented in [USE_CASES.md](file:///home/andrii/Projects/AetherDebugger/docs/USE_CASES.md).
+- **Command**: `cargo test -p aether-core --test e2e_scenarios`
 
 ## 4. Benchmarking
 - **Location**: `benchmarks/`

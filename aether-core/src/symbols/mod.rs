@@ -15,6 +15,13 @@ pub struct SourceInfo {
     pub function: Option<String>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TypeInfo {
+    pub name: String,
+    pub value_formatted_string: String,
+    pub kind: String, // "Enum", "Struct", "Primitive"
+}
+
 /// Manager for handling debugging symbols (DWARF).
 pub struct SymbolManager {
     debug_info: Option<DebugInfo>,
@@ -159,7 +166,6 @@ impl SymbolManager {
         None
     }
 
-    /// Lookup a symbol address by name from the ELF symbol table.
     pub fn lookup_symbol(&self, name: &str) -> Option<u64> {
         let data = self.elf_data.as_ref()?;
         let obj = object::File::parse(&**data).ok()?;
@@ -172,6 +178,17 @@ impl SymbolManager {
             }
         }
         None
+    }
+
+    /// Resolve a raw value into a high-level TypeInfo using DWARF.
+    pub fn resolve_variable(&self, _name: &str, _value: u64) -> Option<TypeInfo> {
+        // TODO: Implement DWARF type tree walking
+        // For now, return a placeholder to satisfy the interface
+        Some(TypeInfo {
+            name: _name.to_string(),
+            value_formatted_string: format!("0x{:X}", _value),
+            kind: "Primitive".to_string(),
+        })
     }
 }
 

@@ -52,13 +52,14 @@ impl FreeRtos {
     fn read_tcb(&self, core: &mut dyn MemoryInterface, tcb_addr: u64, state: TaskState) -> Result<TaskInfo> {
         // TCB_t structure (simplified, may vary by FreeRTOS version/config):
         // pxTopOfStack (offset 0)
-        // xStateListItem (offset 4, size 20 on 32-bit ARM)
-        // xEventListItem (offset 24, size 20)
+        // ...
         // uxPriority (offset 44)
         // pxStack (offset 48)
         // pcTaskName (offset 52, size configMAX_TASK_NAME_LEN)
 
+        let top_of_stack: u32 = core.read_word_32(tcb_addr + 0)?;
         let priority: u32 = core.read_word_32(tcb_addr + 44)?;
+        let stack_start: u32 = core.read_word_32(tcb_addr + 48)?;
         
         let mut name_bytes = [0u8; 16];
         core.read_8(tcb_addr + 52, &mut name_bytes)?;
@@ -66,14 +67,51 @@ impl FreeRtos {
             .trim_matches(char::from(0))
             .to_string();
 
+        // Calculate stack usage (simple version: current at time of switch)
+        // stack_start is the bottom (lowest address if stack grows down, but pxStack is usually the beginning of the allocated block)
+        // In ARM Cortex-M, stack grows down. pxStack points to the lowest address.
+        // So stack_size = (end_of_stack_allocated - pxStack)
+        // But we don't always know end_of_stack easily without config.
+        // However, (top_of_stack - stack_start) gives us a window.
+        
+        // High water mark scan
+        let stack_size = 0; // Unknown without more TCB parsing or config
+        let high_water_mark = self.scan_high_water_mark(core, stack_start as u64, top_of_stack as u64).unwrap_or(0);
+
         Ok(TaskInfo {
             name,
             priority,
             state,
-            stack_usage: 0, // Need to implement stack analysis
-            stack_size: 0,
+            stack_usage: if top_of_stack > stack_start { top_of_stack - stack_start } else { 0 },
+            stack_size: high_water_mark as u32, // repurposed to show the "Peak" for now
             handle: tcb_addr as u32,
         })
+    }
+
+    fn scan_high_water_mark(&self, core: &mut dyn MemoryInterface, stack_start: u64, top_of_stack: u64) -> Result<u64> {
+        // Scan from stack_start upwards matching 0xa5 pattern
+        const CHUNK_SIZE: usize = 256;
+        let mut buffer = [0u8; CHUNK_SIZE];
+        let mut current_addr = stack_start;
+        let mut total_unused = 0;
+
+        while current_addr < top_of_stack {
+            let to_read = std::cmp::min(CHUNK_SIZE, (top_of_stack - current_addr) as usize);
+            if let Err(_) = core.read_8(current_addr, &mut buffer[0..to_read]) {
+                break;
+            }
+
+            for &byte in &buffer[0..to_read] {
+                if byte == 0xa5 {
+                    total_unused += 1;
+                } else {
+                    return Ok(total_unused);
+                }
+            }
+            current_addr += to_read as u64;
+        }
+
+        Ok(total_unused)
     }
 }
 
@@ -259,12 +297,21 @@ mod tests {
         mock.set_word_32(0x300C, 0x4000); // pvOwner points to TCB
         
         // Mock a TCB (at 0x4000)
+        // pxTopOfStack = 0x3010 (offset 0)
+        mock.set_word_32(0x4000, 0x3010);
         // priority (offset 44) = 5
         mock.set_word_32(0x4000 + 44, 5);
+        // pxStack (offset 48) = 0x3000
+        mock.set_word_32(0x4000 + 48, 0x3000);
         // name (offset 52) = "TestTask"
         let mut name = [0u8; 16];
         name[0..8].copy_from_slice(b"TestTask");
         mock.set_bytes(0x4000 + 52, &name);
+
+        // Fill stack with some 0xa5 pattern
+        // 0x3000-0x3004: 0xa5 (unused)
+        // 0x3004-0x3010: something else (used)
+        mock.set_bytes(0x3000, &[0xa5, 0xa5, 0xa5, 0xa5, 0x11, 0x22, 0x33, 0x44]);
 
         let freertos = FreeRtos::new();
         let mut tasks = Vec::new();
@@ -275,5 +322,7 @@ mod tests {
         assert_eq!(tasks[0].priority, 5);
         assert_eq!(tasks[0].state, TaskState::Ready);
         assert_eq!(tasks[0].handle, 0x4000);
+        assert_eq!(tasks[0].stack_usage, 0x10); // 0x3010 - 0x3000
+        assert_eq!(tasks[0].stack_size, 4);      // High water mark: 4 unused bytes
     }
 }

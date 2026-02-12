@@ -48,6 +48,7 @@ We maintain a high bar for code quality. Please refer to our internal documentat
 
 - **[Git Flow](docs/GIT_FLOW.md)**: Our branching and PR strategy.
 - **[Testing Strategy](docs/TEST_STRATEGY.md)**: How we test Aether.
+- **[Use Case Scenarios](docs/USE_CASES.md)**: Comprehensive guide to Aether's functionalities and workflows.
 
 ### Local Quality Control
 

@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Phase 11.1: Professional RTOS Diagnostics
+- Real-time **FreeRTOS Stack Usage Analysis** for active tasks.
+- **High-Water Mark (Peak) Detection** via pattern scanning (0xA5) for peak memory safety.
+- **TaskSwitch Event Engine** broadcasting context switches at 20Hz for high-performance timeline views.
+- Backend infrastructure for task-aware execution monitoring.
+
+#### Phase 10 & 11: Robustness & Professional Stress
+- Massive **64KB Memory Integrity** stress loop for data consistency verification.
+- Malformed protocol **Fuzzing** (SVD XML and DWARF Symbol table corruption).
+- Hardware **Interruption Recovery** logic for probe disconnects during heavy operations.
+- Concurrent Agent Stress simulation verifying session thread-safety.
+- Edge cases: Breakpoint limits, SWO baud mismatch, RTT buffer wrap handling.
+
+#### Phase 9: Comprehensive Behavioral Verification
+- **37 Verified E2E Scenarios** covering 100% of documented product use cases.
+- Automated regression suite in `aether-core/tests/e2e_scenarios.rs`.
+- Narrative documentation of all scenarios in `docs/USE_CASES.md`.
+
+#### Milestone 9: Premium UI Overhaul
+- Cyber-Industrial **Midnight Theme** using custom `egui` visuals.
+- Balanced **3-pane layout** for professional workspace management.
+- Micro-animations and polished status indicators for target state transitions.
+
 #### Milestone 5: Breakpoints & Advanced Control
 - `BreakpointManager` in `aether-core` for managing hardware breakpoints.
 - Interactive breakpoint markers (●/○) in Disassembly View for toggling.

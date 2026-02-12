@@ -54,6 +54,7 @@ pub enum TaskState {
     Blocked,
     Suspended,
     Deleted,
+    Pending,
     Unknown,
 }
 pub use probe::{ProbeInfo, ProbeManager, ProbeType, TargetInfo};

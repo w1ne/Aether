@@ -88,6 +88,11 @@ pub enum DebugEvent {
         value: f64,
     },
     Tasks(Vec<crate::TaskInfo>),
+    TaskSwitch {
+        from: Option<u32>,
+        to: u32,
+        timestamp: f64,
+    },
     Stack(Vec<crate::stack::StackFrame>),
     TraceData(Vec<u8>),
     Status(CoreStatus),
@@ -151,6 +156,8 @@ impl SessionHandle {
             
             let mut plots: Vec<PlotConfig> = Vec::new();
             let mut last_plot_poll = Instant::now();
+            let mut last_task_handle: Option<u32> = None;
+            let mut last_status_poll = Instant::now();
             
             let arch = format!("{:?}", session.target().architecture());
             let session_start = Instant::now();
@@ -469,6 +476,23 @@ impl SessionHandle {
                                    }
                              }
                              last_plot_poll = Instant::now();
+                        }
+
+                        // Poll RTOS Task Switch (20Hz) - Foundation for Timeline View
+                        if last_status_poll.elapsed() >= Duration::from_millis(50) {
+                             if let Some(current_tcb_ptr) = symbol_manager.lookup_symbol("pxCurrentTCB") {
+                                  if let Ok(current_tcb) = core.read_word_32(current_tcb_ptr) {
+                                       if Some(current_tcb) != last_task_handle {
+                                            let _ = evt_tx.send(DebugEvent::TaskSwitch {
+                                                from: last_task_handle,
+                                                to: current_tcb,
+                                                timestamp: session_start.elapsed().as_secs_f64(),
+                                            });
+                                            last_task_handle = Some(current_tcb);
+                                       }
+                                  }
+                             }
+                             last_status_poll = Instant::now();
                         }
                     }
                 }
