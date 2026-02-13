@@ -22,7 +22,7 @@
 
 ---
 
-## Phase 1: Core Debugger (Months 1-3)
+## Phase 1: Core Debugger (Months 1-3) - **COMPLETED**
 
 **Goal**: Match Ozone for basic debugging on STM32/ESP32/nRF52.
 
