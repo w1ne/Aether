@@ -15,7 +15,7 @@ async fn test_agent_api_basic_ops() {
     let port = 50055; // For test simplicity, ideally find a free port
     let server_handle = handle.clone();
     tokio::spawn(async move {
-        if let Err(e) = run_server(server_handle, port).await {
+        if let Err(e) = run_server(server_handle, "127.0.0.1", port).await {
             eprintln!("Test server error: {}", e);
         }
     });

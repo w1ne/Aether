@@ -49,7 +49,42 @@ message DebugEvent {
         ResumedEvent resumed = 2;
         MemoryEvent memory = 3;
         RegisterEvent register = 4;
+        TasksEvent tasks = 5;
+        TaskSwitchEvent task_switch = 6;
+        PlotEvent plot = 7;
+        RttEvent rtt = 8;
     }
+}
+
+message TasksEvent {
+    repeated TaskInfo tasks = 1;
+}
+
+message TaskInfo {
+    string name = 1;
+    uint32 priority = 2;
+    string state = 3;
+    uint32 stack_usage = 4;
+    uint32 stack_size = 5;
+    uint32 handle = 6;
+    string task_type = 7;
+}
+
+message TaskSwitchEvent {
+    optional uint32 from = 1;
+    uint32 to = 2;
+    double timestamp = 3;
+}
+
+message PlotEvent {
+    string name = 1;
+    double timestamp = 2;
+    double value = 3;
+}
+
+message RttEvent {
+    uint32 channel = 1;
+    bytes data = 2;
 }
 
 message HaltedEvent {

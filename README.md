@@ -1,67 +1,52 @@
-# Aether: Fast, Reliable Embedded Debugging
+# Aether
 
-Aether is an open-source embedded debugger built to rival Segger Ozone. Its primary function is to serve as an **Agent Interface**—a hub connecting hardware to AI agents.
+Open-source embedded debugger with gRPC API for programmatic hardware control.
 
-## Why Aether?
-- **Agent Interface** - Expose hardware to AI agents via simple API
-- **10x Faster than GDB** - <50ms step latency vs 100-500ms
-- **Zero Config** - Auto-detects probes and chips, just works
-- **Universal** - ST-Link, J-Link, CMSIS-DAP all supported
-- **Free** - No $2000 license required
-- **Rust-First** - Native understanding of Rust types
+## What it does
 
-## Core Features
-- **Agent API** - Control hardware programmatically
-- **Fast Stepping** - <50ms latency, 60 FPS UI
-- **RTT Logging** - 1MB/s+ non-intrusive logging
-- **Memory/Register Views** - Live updates, SVD peripheral decoding
-- **Source Debugging** - DWARF symbols, breakpoints, call stacks
-- **Rust Types** - Pretty-print Vec, Option, Result
+- **Debug ARM Cortex-M** via ST-Link, J-Link, or CMSIS-DAP probes
+- **gRPC API** for programmatic control (halt, step, read memory, set breakpoints)
+- **RTT logging** with 1MB/s throughput
+- **DWARF symbols** for source-level debugging
+- **SVD peripheral decoding** for register inspection
+- **Rust type support** (Vec, Option, Result pretty-printing)
 
-## 🏗️ Architecture
-- **aether-core**: High-performance backend handling probe communication and symbol mapping.
-- **aether-ui**: GPU-accelerated immediate-mode GUI (`egui`) for 60 FPS responsiveness.
+## Architecture
 
-## 🛠️ Getting Started
+- `aether-core` - Probe communication, symbol resolution, RTT handling
+- `aether-ui` - egui-based GUI
+- `aether-agent-api` - gRPC server for remote control
+
+## Quick Start
 
 ### Prerequisites
-- [Rust](https://rustup.rs/) (latest stable)
-- **Linux**: `libusb-1.0-0-dev` and `libudev-dev`
-- **Windows**: [Zadig](https://zadig.akeo.ie/) may be needed for some probes (handled automatically in future versions).
+- Rust (latest stable)
+- Linux: `libusb-1.0-0-dev`, `libudev-dev`
+- Windows: May need [Zadig](https://zadig.akeo.ie/) for USB driver setup
 
 ### Build & Run
 ```bash
-# Clone the repository
 git clone https://github.com/aether-debugger/aether.git
 cd aether
-
-# Build the project
-cargo build
-
-# Run the UI
 cargo run --package aether-ui
 ```
 
-## 🛠️ Development
+The UI will auto-detect connected debug probes.
 
-We maintain a high bar for code quality. Please refer to our internal documentation before contributing:
+## Development
 
-- **[Git Flow](docs/GIT_FLOW.md)**: Our branching and PR strategy.
-- **[Testing Strategy](docs/TEST_STRATEGY.md)**: How we test Aether.
-- **[Use Case Scenarios](docs/USE_CASES.md)**: Comprehensive guide to Aether's functionalities and workflows.
+See [docs/](docs/) for:
+- [Git Flow](docs/GIT_FLOW.md) - Branching strategy
+- [Testing Strategy](docs/TEST_STRATEGY.md) - Test requirements
+- [Use Cases](docs/USE_CASES.md) - Feature documentation
 
-### Local Quality Control
+### Pre-commit hooks
+```bash
+pip install pre-commit
+pre-commit install
+```
 
-To ensure your code meets our standards, we use `pre-commit` hooks.
+Runs `rustfmt`, `clippy`, and `cargo check` on commit.
 
-1. **Install pre-commit**: `pip install pre-commit`
-2. **Install hooks**: `pre-commit install`
-
-Hooks will automatically run `rustfmt`, `clippy`, and `cargo check` on every commit.
-
-## 📄 License
-Licensed under either of:
-- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
-- MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
-
-at your option.
+## License
+Apache-2.0 OR MIT

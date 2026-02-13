@@ -10,6 +10,7 @@ use std::sync::mpsc;
 use std::sync::Arc;
 use aether_core::VarType;
 use serde::{Serialize, Deserialize};
+use tokio_stream::StreamExt;
 
 fn main() -> eframe::Result<()> {
     env_logger::init();
@@ -26,6 +27,13 @@ fn main() -> eframe::Result<()> {
         native_options,
         Box::new(|cc| Ok(Box::new(AetherApp::new(cc)))),
     )
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+enum RttDisplayMode {
+    Text,
+    Hex,
+    Binary,
 }
 
 struct AetherApp {
@@ -72,7 +80,9 @@ struct AetherApp {
     rtt_up_channels: Vec<aether_core::rtt::RttChannelInfo>,
     rtt_down_channels: Vec<aether_core::rtt::RttChannelInfo>,
     rtt_selected_channel: Option<usize>,
+    rtt_display_modes: HashMap<usize, RttDisplayMode>,
     rtt_buffers: std::collections::HashMap<usize, String>,
+    rtt_raw_buffers: std::collections::HashMap<usize, Vec<u8>>,
     rtt_input: String,
     
     // Tabs state
@@ -86,10 +96,15 @@ struct AetherApp {
     source_cache: HashMap<PathBuf, (Vec<String>, Vec<egui::text::LayoutJob>)>,
     
     // Plot State
-    plots: HashMap<String, Vec<[f64; 2]>>,
+    plots: HashMap<String, std::collections::VecDeque<[f64; 2]>>,
     plot_names: Vec<String>,
     new_plot_name: String,
     new_plot_type: VarType,
+    
+    // Remote Connection State
+    remote_host: String,
+    remote_port: String,
+    is_remote: bool,
     
     // RTOS State
     tasks: Vec<aether_core::TaskInfo>,
@@ -167,9 +182,11 @@ impl AetherApp {
             rtt_up_channels: Vec::new(),
             rtt_down_channels: Vec::new(),
             rtt_selected_channel: None,
+            rtt_display_modes: std::collections::HashMap::new(),
             rtt_buffers: std::collections::HashMap::new(),
+            rtt_raw_buffers: std::collections::HashMap::new(),
             rtt_input: String::new(),
-            active_tab: DebugTab::Peripherals,
+            active_tab: DebugTab::Source,
             symbols_loaded: false,
             source_info: None,
             breakpoint_locations: Vec::new(),
@@ -179,6 +196,9 @@ impl AetherApp {
             plot_names: Vec::new(),
             new_plot_name: String::new(),
             new_plot_type: VarType::U32,
+            remote_host: "localhost".to_string(),
+            remote_port: "50051".to_string(),
+            is_remote: false,
             tasks: Vec::new(),
             timeline_events: Vec::new(),
             stack_frames: Vec::new(),
@@ -200,6 +220,44 @@ impl AetherApp {
                 self.connection_status = ConnectionStatus::Error;
             }
         }
+    }
+
+    fn connect_remote(&mut self) {
+        let host = self.remote_host.clone();
+        let port = self.remote_port.parse::<u16>().unwrap_or(50051);
+        self.connection_status = ConnectionStatus::Connecting;
+        self.is_remote = true;
+        self.status_message = format!("Connecting to remote agent at {}:{}...", host, port);
+
+        let (evt_tx, evt_rx) = tokio::sync::broadcast::channel(1024);
+        self.event_receiver = Some(evt_rx);
+
+        std::thread::spawn(move || {
+            let rt = tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .unwrap();
+            
+            rt.block_on(async {
+                let endpoint = format!("http://{}:{}", host, port);
+                match aether_agent_api::proto::aether_debug_client::AetherDebugClient::connect(endpoint).await {
+                    Ok(mut client) => {
+                        // Success!
+                        if let Ok(response) = client.subscribe_events(aether_agent_api::proto::Empty {}).await {
+                             let mut stream = response.into_inner();
+                             while let Some(Ok(proto_event)) = stream.next().await {
+                                  if let Some(core_event) = aether_agent_api::map_proto_event_to_core(proto_event) {
+                                       let _ = evt_tx.send(core_event);
+                                  }
+                             }
+                        }
+                    }
+                    Err(e) => {
+                        log::error!("Remote connection failed: {}", e);
+                    }
+                }
+            });
+        });
     }
 
     fn connect_probe(&mut self) {
@@ -237,7 +295,7 @@ impl AetherApp {
                                              .unwrap();
                                          
                                          rt.block_on(async {
-                                             if let Err(e) = aether_agent_api::run_server(server_handle, 50051).await {
+                                             if let Err(e) = aether_agent_api::run_server(server_handle, "0.0.0.0", 50051).await {
                                                  log::error!("Agent API Server Error: {}", e);
                                              }
                                          });
@@ -479,6 +537,14 @@ impl AetherApp {
                         }
                     }
                     aether_core::DebugEvent::RttData(channel, data) => {
+                        // Store raw bytes for Hex/Binary views
+                        let raw_buf = self.rtt_raw_buffers.entry(channel).or_default();
+                        raw_buf.extend_from_slice(&data);
+                        if raw_buf.len() > 65536 {
+                            let truncate_at = raw_buf.len() - 65536;
+                            raw_buf.drain(0..truncate_at);
+                        }
+
                         let text = String::from_utf8_lossy(&data).to_string();
                         self.rtt_buffers.entry(channel).or_default().push_str(&text);
                         // Limit buffer size to 64KB for performance
@@ -489,15 +555,13 @@ impl AetherApp {
                         }
                     }
                     aether_core::DebugEvent::PlotData { name, timestamp, value } => {
-                        self.plots.entry(name.clone()).or_insert_with(Vec::new).push([timestamp, value]);
+                        let deque = self.plots.entry(name.clone()).or_insert_with(std::collections::VecDeque::new);
+                        deque.push_back([timestamp, value]);
+                        if deque.len() > 100_000 {
+                            deque.pop_front();
+                        }
                         if !self.plot_names.contains(&name) {
                             self.plot_names.push(name.clone());
-                        }
-                        // Prune old data? Maybe keep last 1000 points.
-                        if let Some(vec) = self.plots.get_mut(&name) {
-                            if vec.len() > 1000 {
-                                vec.remove(0);
-                            }
                         }
                     }
                     aether_core::DebugEvent::Tasks(tasks) => {
@@ -1231,6 +1295,14 @@ impl AetherApp {
             if self.rtt_attached {
                 ui.label("✅ Attached");
             }
+
+            ui.add_space(8.0);
+            if let Some(chan_num) = self.rtt_selected_channel {
+                let mode = self.rtt_display_modes.entry(chan_num).or_insert(RttDisplayMode::Text);
+                ui.label("View:");
+                ui.selectable_value(mode, RttDisplayMode::Text, "Text");
+                ui.selectable_value(mode, RttDisplayMode::Hex, "Hex");
+            }
         });
 
         if !self.rtt_attached {
@@ -1251,18 +1323,40 @@ impl AetherApp {
         ui.separator();
 
         if let Some(chan_num) = self.rtt_selected_channel {
-            let buffer = self.rtt_buffers.entry(chan_num).or_insert_with(String::new);
+            let mode = *self.rtt_display_modes.get(&chan_num).unwrap_or(&RttDisplayMode::Text);
             
             egui::ScrollArea::vertical()
                 .id_source("rtt_scroll")
                 .stick_to_bottom(true)
                 .show(ui, |ui| {
-                    ui.add(egui::TextEdit::multiline(buffer)
-                        .font(egui::TextStyle::Monospace)
-                        .code_editor()
-                        .lock_focus(false)
-                        .desired_width(f32::INFINITY)
-                        .desired_rows(20));
+                    match mode {
+                        RttDisplayMode::Text => {
+                            let buffer = self.rtt_buffers.entry(chan_num).or_insert_with(String::new);
+                            ui.add(egui::TextEdit::multiline(buffer)
+                                .font(egui::TextStyle::Monospace)
+                                .code_editor()
+                                .lock_focus(false)
+                                .desired_width(f32::INFINITY)
+                                .desired_rows(20));
+                        }
+                        RttDisplayMode::Hex => {
+                            let raw = self.rtt_raw_buffers.entry(chan_num).or_insert_with(Vec::new);
+                            let mut hex_text = String::new();
+                            for chunk in raw.chunks(16) {
+                                for byte in chunk {
+                                    hex_text.push_str(&format!("{:02X} ", byte));
+                                }
+                                hex_text.push('\n');
+                            }
+                            ui.add(egui::TextEdit::multiline(&mut hex_text)
+                                .font(egui::TextStyle::Monospace)
+                                .code_editor()
+                                .lock_focus(false)
+                                .desired_width(f32::INFINITY)
+                                .desired_rows(20));
+                        }
+                        _ => { ui.label("Binary mode not implemented yet"); }
+                    }
                 });
 
             ui.horizontal(|ui| {
@@ -1489,7 +1583,7 @@ impl eframe::App for AetherApp {
                         }
                     });
                     
-                    egui::ScrollArea::vertical().id_source("probes").max_height(150.0).show(ui, |ui| {
+                    egui::ScrollArea::vertical().id_source("probes").max_height(100.0).show(ui, |ui| {
                         for (i, probe) in self.probes.iter().enumerate() {
                             let is_selected = self.selected_probe == Some(i);
                             if ui.selectable_label(is_selected, format!("▷ {}", probe.name())).clicked() {
@@ -1497,6 +1591,20 @@ impl eframe::App for AetherApp {
                             }
                         }
                     });
+
+                    ui.separator();
+                    ui.label(egui::RichText::new("🌐 Remote").strong());
+                    ui.horizontal(|ui| {
+                        ui.label("Host:");
+                        ui.text_edit_singleline(&mut self.remote_host);
+                    });
+                    ui.horizontal(|ui| {
+                        ui.label("Port:");
+                        ui.text_edit_singleline(&mut self.remote_port);
+                    });
+                    if ui.button("🚀 Connect Remote").clicked() {
+                        self.connect_remote();
+                    }
                 });
             });
 

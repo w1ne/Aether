@@ -101,12 +101,79 @@ pub fn map_core_event_to_proto(event: CoreDebugEvent) -> Option<DebugEvent> {
                 value 
             }))
         }),
-        _ => None // Ignore other events for now
+        CoreDebugEvent::Tasks(tasks) => Some(DebugEvent {
+            event: Some(proto::debug_event::Event::Tasks(proto::TasksEvent {
+                tasks: tasks.into_iter().map(|t| proto::TaskInfo {
+                    name: t.name,
+                    priority: t.priority,
+                    state: format!("{:?}", t.state),
+                    stack_usage: t.stack_usage,
+                    stack_size: t.stack_size,
+                    handle: t.handle,
+                    task_type: format!("{:?}", t.task_type),
+                }).collect()
+            }))
+        }),
+        CoreDebugEvent::TaskSwitch { from, to, timestamp } => Some(DebugEvent {
+            event: Some(proto::debug_event::Event::TaskSwitch(proto::TaskSwitchEvent {
+                from,
+                to,
+                timestamp,
+            }))
+        }),
+        CoreDebugEvent::PlotData { name, timestamp, value } => Some(DebugEvent {
+            event: Some(proto::debug_event::Event::Plot(proto::PlotEvent {
+                name,
+                timestamp,
+                value,
+            }))
+        }),
+        CoreDebugEvent::RttData(channel, data) => Some(DebugEvent {
+            event: Some(proto::debug_event::Event::Rtt(proto::RttEvent {
+                channel: channel as u32,
+                data,
+            }))
+        }),
+        _ => None
     }
 }
 
-pub async fn run_server(session: Arc<SessionHandle>, port: u16) -> Result<(), Box<dyn std::error::Error>> {
-    let addr = format!("0.0.0.0:{}", port).parse()?;
+pub fn map_proto_event_to_core(event: DebugEvent) -> Option<CoreDebugEvent> {
+    match event.event? {
+        proto::debug_event::Event::Halted(h) => Some(CoreDebugEvent::Halted { pc: h.pc }),
+        proto::debug_event::Event::Resumed(_) => Some(CoreDebugEvent::Resumed),
+        proto::debug_event::Event::Memory(m) => Some(CoreDebugEvent::MemoryData(m.address, m.data)),
+        proto::debug_event::Event::Register(r) => Some(CoreDebugEvent::RegisterValue(r.register as u16, r.value)),
+        proto::debug_event::Event::Tasks(t) => Some(CoreDebugEvent::Tasks(t.tasks.into_iter().map(|ti| aether_core::TaskInfo {
+            name: ti.name,
+            priority: ti.priority,
+            state: match ti.state.as_str() {
+                "Running" => aether_core::TaskState::Running,
+                "Blocked" => aether_core::TaskState::Blocked,
+                "Ready" => aether_core::TaskState::Ready,
+                _ => aether_core::TaskState::Ready,
+            },
+            stack_usage: ti.stack_usage,
+            stack_size: ti.stack_size,
+            handle: ti.handle,
+            task_type: if ti.task_type == "Async" { aether_core::TaskType::Async } else { aether_core::TaskType::Thread },
+        }).collect())),
+        proto::debug_event::Event::TaskSwitch(ts) => Some(CoreDebugEvent::TaskSwitch {
+            from: ts.from,
+            to: ts.to,
+            timestamp: ts.timestamp,
+        }),
+        proto::debug_event::Event::Plot(p) => Some(CoreDebugEvent::PlotData {
+            name: p.name,
+            timestamp: p.timestamp,
+            value: p.value,
+        }),
+        proto::debug_event::Event::Rtt(r) => Some(CoreDebugEvent::RttData(r.channel as usize, r.data)),
+    }
+}
+
+pub async fn run_server(session: Arc<SessionHandle>, host: &str, port: u16) -> Result<(), Box<dyn std::error::Error>> {
+    let addr = format!("{}:{}", host, port).parse()?;
     let service = AetherDebugService::new(session);
 
     println!("Agent API Server listening on {}", addr);
