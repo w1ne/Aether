@@ -1,9 +1,18 @@
-# Changelog
+## [Unreleased]
 
-All notable changes to the Aether Debugger project will be documented in this file.
+### Added
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+#### Milestone 6: SVD Peripheral Integration
+- `SvdManager` for parsing SVD files and extracting peripheral/register info.
+- Live peripheral register reading from target memory.
+- Bitfield decoding with automatic value extraction.
+- UI: 5-column layout with dedicated Peripherals view.
+- Hierarchical peripheral tree with expandable registers.
+- 'Read Values' button for live hardware inspection.
+
+#### Phase 6.3: SVD Field Editing
+- Interactive editing of peripheral register fields via `DragValue`.
+- Write-back support for modified register fields.
 
 ## [0.1.0] - 2026-02-13
 
@@ -31,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cyber-Industrial **Midnight Theme** using custom `egui` visuals.
 - Balanced **3-pane layout** for professional workspace management.
 - Micro-animations and polished status indicators for target state transitions.
+
 
 #### Milestone 5: Breakpoints & Advanced Control
 - `BreakpointManager` in `aether-core` for managing hardware breakpoints.

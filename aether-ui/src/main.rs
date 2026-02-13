@@ -312,7 +312,7 @@ impl AetherApp {
         std::thread::spawn(move || {
             // Need a slight delay to ensure previous session dropped?
             std::thread::sleep(std::time::Duration::from_millis(100));
-
+            
             let probe_manager = aether_core::ProbeManager::new();
             match probe_manager.open_probe(probe_index) {
                 Ok(probe) => {
@@ -794,6 +794,7 @@ impl AetherApp {
         });
     }
 
+
     fn draw_memory_view(&mut self, ui: &mut egui::Ui) {
         ui.heading("Memory View");
         
@@ -833,7 +834,6 @@ impl AetherApp {
              }
         });
     }
-
     fn draw_disassembly_view(&mut self, ui: &mut egui::Ui) {
         ui.heading("Disassembly");
         
@@ -1428,7 +1428,11 @@ impl eframe::App for AetherApp {
                     if let Some(status) = self.core_status {
                         ui.label(format!("State: {:?}", status));
                     }
+
+                    ui.separator();
+                    self.draw_disassembly_view(ui);
                 });
+
             });
             ui.add_space(4.0);
         });

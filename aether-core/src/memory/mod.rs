@@ -51,9 +51,9 @@ impl Default for MemoryManager {
         Self::new()
     }
 }
+
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::*;
 
     struct MockMemory {
@@ -171,3 +171,4 @@ mod tests {
         assert_eq!(mgr.read_block(&mut mock, 0x2000, 8).unwrap(), data);
     }
 }
+

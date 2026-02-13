@@ -68,7 +68,7 @@ pub enum DebugEvent {
     Halted { pc: u64 },
     Resumed,
     RegisterValue(u16, u64),
-    MemoryData(u64, Vec<u8>), // Renamed from MemoryContent to match usage
+    MemoryData(u64, Vec<u8>),
     Disassembly(Vec<crate::disasm::InstructionInfo>),
     Breakpoints(Vec<u64>),
     SvdLoaded,
@@ -110,8 +110,6 @@ pub struct SessionHandle {
     thread_handle: Option<thread::JoinHandle<()>>,
 }
 
-
-
 impl SessionHandle {
     /// Subscribe to debug events
     pub fn subscribe(&self) -> tokio::sync::broadcast::Receiver<DebugEvent> {
@@ -133,6 +131,7 @@ impl SessionHandle {
             evt_tx
         )
     }
+
 
     pub fn new(mut session: Session) -> Result<Self> {
         let (cmd_tx, cmd_rx) = crossbeam_channel::unbounded();
@@ -543,5 +542,6 @@ mod tests {
         } else {
             panic!("Clone failed");
         }
-    }
+
+}
 }

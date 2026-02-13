@@ -1,6 +1,6 @@
 //! SVD parsing and register decoding module.
 
-use anyhow::{Context as _, Result};
+use anyhow::{Context, Result};
 use svd_parser as svd;
 use svd_rs as rs;
 use std::fs;
