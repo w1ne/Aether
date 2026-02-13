@@ -1,4 +1,5 @@
 pub mod freertos;
+pub mod embassy;
 
 use crate::{TaskInfo};
 use crate::symbols::SymbolManager;
@@ -11,9 +12,15 @@ pub trait RtosAware: Send {
 }
 
 pub fn detect_rtos(symbols: &SymbolManager) -> Option<Box<dyn RtosAware>> {
-    // Check if FreeRTOS symbols are present
+    // 1. FreeRTOS
     if symbols.lookup_symbol("pxReadyTasksLists").is_some() {
         return Some(Box::new(freertos::FreeRtos::new()));
     }
+    
+    // 2. Embassy
+    if symbols.lookup_symbol("__embassy_executor_global").is_some() {
+        return Some(Box::new(embassy::Embassy::new()));
+    }
+
     None
 }

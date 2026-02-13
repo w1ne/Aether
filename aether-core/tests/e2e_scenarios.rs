@@ -58,6 +58,7 @@ async fn test_scenario_rtos_tasks_discovery() {
             stack_usage: 128,
             stack_size: 1024,
             handle: 0x20001000,
+            task_type: aether_core::TaskType::Thread,
         },
         aether_core::TaskInfo {
             name: "IdleTask".to_string(),
@@ -66,6 +67,7 @@ async fn test_scenario_rtos_tasks_discovery() {
             stack_usage: 64,
             stack_size: 512,
             handle: 0x20002000,
+            task_type: aether_core::TaskType::Thread,
         },
     ];
     
@@ -556,6 +558,7 @@ async fn test_scenario_rust_async_observability() {
             stack_usage: 256,
             stack_size: 2048,
             handle: 0x20002000,
+            task_type: aether_core::TaskType::Async,
         },
         aether_core::TaskInfo {
             name: "Sensor_Poll".to_string(),
@@ -564,6 +567,7 @@ async fn test_scenario_rust_async_observability() {
             stack_usage: 128,
             stack_size: 1024,
             handle: 0x20003000,
+            task_type: aether_core::TaskType::Async,
         }
     ];
     event_tx.send(DebugEvent::Tasks(async_tasks)).unwrap();
@@ -753,7 +757,7 @@ async fn test_error_source_not_found() {
 
 #[tokio::test]
 async fn test_error_stack_corrupted() {
-    let (handle, cmd_rx, event_tx) = SessionHandle::new_test();
+    let (handle, _cmd_rx, event_tx) = SessionHandle::new_test();
     let handle = Arc::new(handle);
     let mut receiver = handle.subscribe();
     
@@ -1074,4 +1078,144 @@ async fn test_fuzz_corrupt_symbols() {
     if let DebugEvent::Error(msg) = ev {
         assert!(msg.contains("Invalid compilation unit"));
     }
+}
+
+#[tokio::test]
+async fn test_scenario_dwarf_variable_resolution() {
+    let (handle, cmd_rx, event_tx) = SessionHandle::new_test();
+    let handle = Arc::new(handle);
+    
+    // 1. User wants to watch a complex variable "config"
+    handle.send(DebugCommand::WatchVariable("config".to_string())).expect("Failed to send WatchVariable");
+    
+    // 2. Verify Command received by core
+    let cmd = cmd_rx.try_recv().expect("Core did not receive WatchVariable command");
+    if let DebugCommand::WatchVariable(name) = cmd {
+        assert_eq!(name, "config");
+    } else {
+        panic!("Expected WatchVariable command, got {:?}", cmd);
+    }
+    
+    // 3. Verify propagation starts
+    let mut receiver = handle.subscribe();
+    
+    // 4. Simulate SymbolManager resolving the variable into a nested structure
+    let mock_info = aether_core::symbols::TypeInfo {
+        name: "config".to_string(),
+        value_formatted_string: "struct Config".to_string(),
+        kind: "Struct".to_string(),
+        address: Some(0x20000000),
+        members: Some(vec![
+            aether_core::symbols::TypeInfo {
+                name: "enabled".to_string(),
+                value_formatted_string: "true".to_string(),
+                kind: "Primitive".to_string(),
+                address: Some(0x20000000),
+                members: None,
+            },
+            aether_core::symbols::TypeInfo {
+                name: "threshold".to_string(),
+                value_formatted_string: "42".to_string(),
+                kind: "Primitive".to_string(),
+                address: Some(0x20000004),
+                members: None,
+            },
+        ]),
+    };
+    
+    event_tx.send(DebugEvent::VariableResolved(mock_info.clone())).expect("Failed to broadcast VariableResolved event");
+    
+    // 5. Verify propagation to UI
+    let event: DebugEvent = timeout(Duration::from_millis(100), receiver.recv())
+        .await
+        .expect("Timeout waiting for VariableResolved event")
+        .expect("Failed to receive event");
+        
+    match event {
+        DebugEvent::VariableResolved(info) => {
+            assert_eq!(info.name, "config");
+            assert_eq!(info.kind, "Struct");
+            let members = info.members.as_ref().expect("Members should be resolved");
+            assert_eq!(members.len(), 2);
+            assert_eq!(members[0].name, "enabled");
+            assert_eq!(members[1].name, "threshold");
+        },
+        _ => panic!("Expected VariableResolved event, got {:?}", event),
+    }
+}
+#[tokio::test]
+async fn test_stress_large_scale_task_switching() {
+    let (handle, _cmd_rx, event_tx) = SessionHandle::new_test();
+    let handle = Arc::new(handle);
+    let mut receiver = handle.subscribe();
+    
+    // 1. Simulate 50 concurrent tasks
+    let mut tasks = Vec::new();
+    for i in 0..50 {
+        tasks.push(aether_core::TaskInfo {
+            name: format!("Task_{}", i),
+            priority: (i % 8) as u32,
+            state: TaskState::Ready,
+            stack_usage: 100,
+            stack_size: 1000,
+            handle: 0x20000000 + (i * 0x100) as u32,
+            task_type: aether_core::TaskType::Thread,
+        });
+    }
+    event_tx.send(DebugEvent::Tasks(tasks.clone())).unwrap();
+
+    // 2. Simulate rapid task switching for all 50 tasks
+    for i in 0..100 {
+        let to_index = i % 50;
+        let from_index = if i > 0 { Some((i - 1) % 50) } else { None };
+        
+        event_tx.send(DebugEvent::TaskSwitch {
+            from: from_index.map(|idx| tasks[idx].handle),
+            to: tasks[to_index].handle,
+            timestamp: i as f64 * 0.01,
+        }).unwrap();
+    }
+
+    // 3. Verify event propagation
+    let mut count = 0;
+    while let Ok(event) = timeout(Duration::from_millis(100), receiver.recv()).await {
+        if let Ok(DebugEvent::TaskSwitch { .. }) = event {
+            count += 1;
+        }
+        if count >= 100 { break; }
+    }
+    assert_eq!(count, 100);
+}
+
+#[tokio::test]
+async fn test_perf_rtt_10khz_simulation() {
+    let (handle, _cmd_rx, event_tx) = SessionHandle::new_test();
+    let handle = Arc::new(handle);
+    let mut receiver = handle.subscribe();
+    
+    // Simulate 10,000 RTT messages per second (10 per millisecond)
+    let start = std::time::Instant::now();
+    let message_count = 1000;
+    
+    for i in 0..message_count {
+        event_tx.send(DebugEvent::RttData(0, format!("log message {}\n", i).into_bytes())).unwrap();
+    }
+    
+    // 2. Verify we can consume them without lag (within 1 second for 1000 messages)
+    let mut received = 0;
+    while let Ok(msg) = timeout(Duration::from_millis(500), receiver.recv()).await {
+        match msg {
+            Ok(DebugEvent::RttData(_, _)) => {
+                received += 1;
+            }
+            Err(e) => {
+                panic!("Receiver lagged or failed during perf test: {:?}", e);
+            }
+            _ => {}
+        }
+        if received >= message_count { break; }
+    }
+    
+    assert_eq!(received, message_count);
+    assert!(start.elapsed() < Duration::from_secs(1));
 }

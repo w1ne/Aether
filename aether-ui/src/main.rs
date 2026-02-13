@@ -10,6 +10,7 @@ use std::sync::mpsc;
 use std::sync::Arc;
 use aether_core::VarType;
 use serde::{Serialize, Deserialize};
+use tokio_stream::StreamExt;
 
 fn main() -> eframe::Result<()> {
     env_logger::init();
@@ -26,6 +27,13 @@ fn main() -> eframe::Result<()> {
         native_options,
         Box::new(|cc| Ok(Box::new(AetherApp::new(cc)))),
     )
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+enum RttDisplayMode {
+    Text,
+    Hex,
+    Binary,
 }
 
 struct AetherApp {
@@ -72,7 +80,9 @@ struct AetherApp {
     rtt_up_channels: Vec<aether_core::rtt::RttChannelInfo>,
     rtt_down_channels: Vec<aether_core::rtt::RttChannelInfo>,
     rtt_selected_channel: Option<usize>,
+    rtt_display_modes: HashMap<usize, RttDisplayMode>,
     rtt_buffers: std::collections::HashMap<usize, String>,
+    rtt_raw_buffers: std::collections::HashMap<usize, Vec<u8>>,
     rtt_input: String,
     
     // Tabs state
@@ -86,10 +96,15 @@ struct AetherApp {
     source_cache: HashMap<PathBuf, (Vec<String>, Vec<egui::text::LayoutJob>)>,
     
     // Plot State
-    plots: HashMap<String, Vec<[f64; 2]>>,
+    plots: HashMap<String, std::collections::VecDeque<[f64; 2]>>,
     plot_names: Vec<String>,
     new_plot_name: String,
     new_plot_type: VarType,
+    
+    // Remote Connection State
+    remote_host: String,
+    remote_port: String,
+    is_remote: bool,
     
     // RTOS State
     tasks: Vec<aether_core::TaskInfo>,
@@ -97,6 +112,10 @@ struct AetherApp {
 
     // Stack State
     stack_frames: Vec<aether_core::StackFrame>,
+
+    // Watch State
+    watched_variables: Vec<aether_core::symbols::TypeInfo>,
+    variable_input: String,
     
     // Syntax Highlighting
     syntax_set: SyntaxSet,
@@ -120,6 +139,7 @@ enum DebugTab {
     Tasks,
     Stack,
     Timeline,
+    Variables,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -162,9 +182,11 @@ impl AetherApp {
             rtt_up_channels: Vec::new(),
             rtt_down_channels: Vec::new(),
             rtt_selected_channel: None,
+            rtt_display_modes: std::collections::HashMap::new(),
             rtt_buffers: std::collections::HashMap::new(),
+            rtt_raw_buffers: std::collections::HashMap::new(),
             rtt_input: String::new(),
-            active_tab: DebugTab::Peripherals,
+            active_tab: DebugTab::Source,
             symbols_loaded: false,
             source_info: None,
             breakpoint_locations: Vec::new(),
@@ -174,9 +196,14 @@ impl AetherApp {
             plot_names: Vec::new(),
             new_plot_name: String::new(),
             new_plot_type: VarType::U32,
+            remote_host: "localhost".to_string(),
+            remote_port: "50051".to_string(),
+            is_remote: false,
             tasks: Vec::new(),
             timeline_events: Vec::new(),
             stack_frames: Vec::new(),
+            watched_variables: Vec::new(),
+            variable_input: String::new(),
             syntax_set: SyntaxSet::load_defaults_newlines(),
             theme_set: ThemeSet::load_defaults(),
         }
@@ -193,6 +220,44 @@ impl AetherApp {
                 self.connection_status = ConnectionStatus::Error;
             }
         }
+    }
+
+    fn connect_remote(&mut self) {
+        let host = self.remote_host.clone();
+        let port = self.remote_port.parse::<u16>().unwrap_or(50051);
+        self.connection_status = ConnectionStatus::Connecting;
+        self.is_remote = true;
+        self.status_message = format!("Connecting to remote agent at {}:{}...", host, port);
+
+        let (evt_tx, evt_rx) = tokio::sync::broadcast::channel(1024);
+        self.event_receiver = Some(evt_rx);
+
+        std::thread::spawn(move || {
+            let rt = tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .unwrap();
+            
+            rt.block_on(async {
+                let endpoint = format!("http://{}:{}", host, port);
+                match aether_agent_api::proto::aether_debug_client::AetherDebugClient::connect(endpoint).await {
+                    Ok(mut client) => {
+                        // Success!
+                        if let Ok(response) = client.subscribe_events(aether_agent_api::proto::Empty {}).await {
+                             let mut stream = response.into_inner();
+                             while let Some(Ok(proto_event)) = stream.next().await {
+                                  if let Some(core_event) = aether_agent_api::map_proto_event_to_core(proto_event) {
+                                       let _ = evt_tx.send(core_event);
+                                  }
+                             }
+                        }
+                    }
+                    Err(e) => {
+                        log::error!("Remote connection failed: {}", e);
+                    }
+                }
+            });
+        });
     }
 
     fn connect_probe(&mut self) {
@@ -230,7 +295,7 @@ impl AetherApp {
                                              .unwrap();
                                          
                                          rt.block_on(async {
-                                             if let Err(e) = aether_agent_api::run_server(server_handle, 50051).await {
+                                             if let Err(e) = aether_agent_api::run_server(server_handle, "0.0.0.0", 50051).await {
                                                  log::error!("Agent API Server Error: {}", e);
                                              }
                                          });
@@ -472,6 +537,14 @@ impl AetherApp {
                         }
                     }
                     aether_core::DebugEvent::RttData(channel, data) => {
+                        // Store raw bytes for Hex/Binary views
+                        let raw_buf = self.rtt_raw_buffers.entry(channel).or_default();
+                        raw_buf.extend_from_slice(&data);
+                        if raw_buf.len() > 65536 {
+                            let truncate_at = raw_buf.len() - 65536;
+                            raw_buf.drain(0..truncate_at);
+                        }
+
                         let text = String::from_utf8_lossy(&data).to_string();
                         self.rtt_buffers.entry(channel).or_default().push_str(&text);
                         // Limit buffer size to 64KB for performance
@@ -482,15 +555,13 @@ impl AetherApp {
                         }
                     }
                     aether_core::DebugEvent::PlotData { name, timestamp, value } => {
-                        self.plots.entry(name.clone()).or_insert_with(Vec::new).push([timestamp, value]);
+                        let deque = self.plots.entry(name.clone()).or_insert_with(std::collections::VecDeque::new);
+                        deque.push_back([timestamp, value]);
+                        if deque.len() > 100_000 {
+                            deque.pop_front();
+                        }
                         if !self.plot_names.contains(&name) {
                             self.plot_names.push(name.clone());
-                        }
-                        // Prune old data? Maybe keep last 1000 points.
-                        if let Some(vec) = self.plots.get_mut(&name) {
-                            if vec.len() > 1000 {
-                                vec.remove(0);
-                            }
                         }
                     }
                     aether_core::DebugEvent::Tasks(tasks) => {
@@ -542,6 +613,14 @@ impl AetherApp {
                     }
                     aether_core::DebugEvent::BreakpointLocations(locs) => {
                         self.breakpoint_locations = locs;
+                    }
+                    aether_core::DebugEvent::VariableResolved(info) => {
+                        // If variable already in watch list, update it, otherwise add it
+                        if let Some(pos) = self.watched_variables.iter().position(|v| v.name == info.name) {
+                            self.watched_variables[pos] = info;
+                        } else {
+                            self.watched_variables.push(info);
+                        }
                     }
                     aether_core::DebugEvent::Error(e) => {
                          self.failed_requests.push(e.clone());
@@ -634,96 +713,169 @@ impl AetherApp {
     }
 
     fn draw_tasks_view(&mut self, ui: &mut egui::Ui) {
-        ui.heading("RTOS Task Awareness");
+        ui.horizontal(|ui| {
+            ui.heading("🛰️ RTOS Analysis");
+            ui.add_space(8.0);
+            if ui.button("🔄 Refresh").clicked() {
+                if let Some(h) = &self.session_handle {
+                    let _ = h.send(aether_core::DebugCommand::GetTasks);
+                }
+            }
+        });
         
-        if ui.button("🔄 Refresh Tasks").clicked() {
-            if let Some(h) = &self.session_handle {
-                let _ = h.send(aether_core::DebugCommand::GetTasks);
+        ui.separator();
+
+        // Calculate CPU usage percentages for the last 1 second
+        let mut cpu_stats: HashMap<u32, f64> = HashMap::new();
+        let now = self.timeline_events.iter().map(|e| e.end_time.unwrap_or(e.start_time)).fold(0.0, f64::max);
+        let window = 1.0; // 1 second window
+        let start_window = (now - window).max(0.0);
+        
+        for event in &self.timeline_events {
+            let start = event.start_time.max(start_window);
+            let end = event.end_time.unwrap_or(now).max(start_window);
+            
+            if end > start {
+                let duration = end - start;
+                *cpu_stats.entry(event.task_handle).or_insert(0.0) += duration;
             }
         }
 
-        ui.separator();
-
         egui::ScrollArea::vertical().show(ui, |ui| {
+            
             egui::Grid::new("tasks_grid")
                 .striped(true)
-                .num_columns(5)
-                .spacing([40.0, 4.0])
+                .num_columns(7)
+                .spacing([25.0, 8.0])
                 .show(ui, |ui| {
-                    ui.label("Name");
-                    ui.label("State");
-                    ui.label("Priority");
-                    ui.label("Handle");
-                    ui.label("Stack");
+                    ui.label(egui::RichText::new("Type").strong());
+                    ui.label(egui::RichText::new("Task Name").strong());
+                    ui.label(egui::RichText::new("State").strong());
+                    ui.label(egui::RichText::new("Prio").strong());
+                    ui.label(egui::RichText::new("CPU%").strong());
+                    ui.label(egui::RichText::new("Handle").strong());
+                    ui.label(egui::RichText::new("Stack Usage").strong());
                     ui.end_row();
 
                     for task in &self.tasks {
+                        let type_icon = match task.task_type {
+                            aether_core::TaskType::Thread => "🧵",
+                            aether_core::TaskType::Async => "⚡",
+                        };
+                        ui.label(type_icon);
+
                         ui.label(&task.name);
                         
                         let state_text = ui_logic::get_task_state_display(task.state);
-                        ui.label(state_text);
+                        let state_color = match task.state {
+                             aether_core::TaskState::Running => egui::Color32::from_rgb(0, 255, 0),
+                             aether_core::TaskState::Ready => egui::Color32::from_rgb(0, 200, 255),
+                             _ => egui::Color32::GRAY,
+                        };
+                        ui.label(egui::RichText::new(state_text).color(state_color));
                         
                         ui.label(task.priority.to_string());
-                        ui.label(format!("0x{:08X}", task.handle));
-                        ui.label(format!("{} / {}", task.stack_usage, task.stack_size));
+                        
+                        // CPU Usage %
+                        let cpu_usage = cpu_stats.get(&task.handle).cloned().unwrap_or(0.0) / window * 100.0;
+                        ui.label(format!("{:.1}%", cpu_usage.min(100.0)));
+                        
+                        ui.monospace(format!("0x{:08X}", task.handle));
+                        
+                        // Stack Usage Bar
+                        let stack_fraction = if task.stack_size > 0 {
+                            task.stack_usage as f32 / task.stack_size as f32
+                        } else {
+                            0.0
+                        };
+                        
+                        ui.horizontal(|ui| {
+                            let bar_color = if stack_fraction > 0.9 {
+                                egui::Color32::RED
+                            } else if stack_fraction > 0.7 {
+                                egui::Color32::YELLOW
+                            } else {
+                                egui::Color32::from_rgb(0, 255, 150)
+                            };
+                            
+                            ui.add(egui::ProgressBar::new(stack_fraction)
+                                .text(format!("{} / {}", task.stack_usage, task.stack_size))
+                                .fill(bar_color)
+                                .desired_width(120.0));
+                        });
+                        
                         ui.end_row();
                     }
                 });
             
             if self.tasks.is_empty() {
-                ui.label("No tasks discovered. Ensure FreeRTOS is running and symbols are loaded.");
+                ui.add_space(20.0);
+                ui.label(egui::RichText::new("No RTOS tasks detected.").italics().color(egui::Color32::GRAY));
+                ui.label("Ensure FreeRTOS is running and symbols are correctly loaded.");
             }
         });
     }
 
     fn draw_timeline_view(&mut self, ui: &mut egui::Ui) {
-        ui.heading("Execution Timeline");
-        
-        if ui.button("🗑 Clear Timeline").clicked() {
-            self.timeline_events.clear();
-        }
+        ui.horizontal(|ui| {
+            ui.heading("📊 Execution Timeline");
+            ui.add_space(8.0);
+            if ui.button("🗑 Clear").clicked() {
+                self.timeline_events.clear();
+            }
+        });
         
         ui.separator();
 
+        // Prepare task mappings for labels and coloring
+        let mut sorted_handles: Vec<u32> = self.tasks.iter().map(|t| t.handle).collect();
+        for event in &self.timeline_events {
+            if !sorted_handles.contains(&event.task_handle) {
+                sorted_handles.push(event.task_handle);
+            }
+        }
+        sorted_handles.sort();
+
+        let mut task_slots: HashMap<u32, f64> = HashMap::new();
+        let mut slot_to_name: HashMap<i32, String> = HashMap::new();
+        for (i, handle) in sorted_handles.iter().enumerate() {
+            task_slots.insert(*handle, i as f64);
+            let name = self.tasks.iter().find(|t| t.handle == *handle).map(|t| t.name.clone()).unwrap_or_else(|| format!("0x{:08X}", handle));
+            slot_to_name.insert(i as i32, name);
+        }
+
         let plot = egui_plot::Plot::new("timeline_plot")
-            .legend(egui_plot::Legend::default())
             .height(400.0)
             .show_x(true)
-            .show_y(false)
-            .allow_zoom(true)
+            .show_y(true)
+            .y_axis_formatter(move |val, _range| {
+                slot_to_name.get(&(val.value.round() as i32)).cloned().unwrap_or_default()
+            })
+            .label_formatter(|name, value| {
+                if name.is_empty() {
+                    format!("Time: {:.3}s", value.x)
+                } else {
+                    format!("Task: {}\nTime: {:.3}s", name, value.x)
+                }
+            })
+            .allow_zoom([true, false]) // Zoom mostly on X axis for timeline
             .allow_drag(true);
 
         plot.show(ui, |plot_ui| {
-            // Group events by task handle to assign vertical slots
-            let mut task_slots: HashMap<u32, f64> = HashMap::new();
-            let mut sorted_handles: Vec<u32> = self.tasks.iter().map(|t| t.handle).collect();
-            // Add handles from events that might not be in tasks list yet
-            for event in &self.timeline_events {
-                if !sorted_handles.contains(&event.task_handle) {
-                    sorted_handles.push(event.task_handle);
-                }
-            }
-            sorted_handles.sort();
-
-            for (i, handle) in sorted_handles.iter().enumerate() {
-                task_slots.insert(*handle, i as f64);
-            }
-
             for event in &self.timeline_events {
                 if let Some(&slot) = task_slots.get(&event.task_handle) {
                     let start = event.start_time;
                     let end = event.end_time.unwrap_or_else(|| {
-                        // If it's the latest event, assume it's still running
-                        start + 0.05 // Tiny filler for visualization if no end yet
+                        // If it's the latest event, show it ending at "now" (max start + buffer)
+                        self.timeline_events.iter().map(|e| e.end_time.unwrap_or(e.start_time)).fold(start, f64::max) + 0.01
                     });
 
-                    // Draw a box for the execution period
                     let rect = egui_plot::PlotPoints::from_iter(vec![
-                        [start, slot - 0.4],
-                        [end, slot - 0.4],
-                        [end, slot + 0.4],
-                        [start, slot + 0.4],
-                        [start, slot - 0.4],
+                        [start, slot - 0.35],
+                        [end, slot - 0.35],
+                        [end, slot + 0.35],
+                        [start, slot + 0.35],
+                        [start, slot - 0.35],
                     ]);
                     
                     let color = egui::Color32::from_rgb(
@@ -734,11 +886,13 @@ impl AetherApp {
 
                     plot_ui.polygon(egui_plot::Polygon::new(rect)
                         .fill_color(color)
-                        .name(&event.task_name));
+                        .name(format!("{} (Duration: {:.1}ms)", event.task_name, (end - start) * 1000.0)));
                 }
             }
         });
 
+        ui.add_space(4.0);
+        ui.label(egui::RichText::new("💡 Hint: Use mouse wheel to zoom X-axis. Click and drag to pan.").small().color(egui::Color32::GRAY));
         ui.label("Vertical axis shows different RTOS tasks. Horizontal axis is session time (s).");
     }
 
@@ -1034,6 +1188,103 @@ impl AetherApp {
         }
     }
 
+    fn draw_variables_view(&mut self, ui: &mut egui::Ui) {
+        ui.horizontal(|ui| {
+            ui.heading("🔍 Variable Watch");
+            ui.add_space(8.0);
+            if ui.button("🔄 Refresh All").clicked() {
+                if let Some(handle) = &self.session_handle {
+                    for var in &self.watched_variables {
+                        let _ = handle.send(aether_core::DebugCommand::WatchVariable(var.name.clone()));
+                    }
+                }
+            }
+        });
+        ui.add_space(4.0);
+
+        ui.group(|ui| {
+            ui.horizontal(|ui| {
+                ui.label("Variable:");
+                let response = ui.add(egui::TextEdit::singleline(&mut self.variable_input)
+                    .hint_text("name (e.g. status_flag)")
+                    .desired_width(150.0));
+                
+                if (response.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter))) || 
+                   ui.button(egui::RichText::new("➕ Add").strong()).clicked() {
+                     if let Some(handle) = &self.session_handle {
+                          let _ = handle.send(aether_core::DebugCommand::WatchVariable(self.variable_input.clone()));
+                          self.variable_input.clear();
+                     }
+                }
+            });
+        });
+
+        ui.add_space(8.0);
+
+        egui::ScrollArea::vertical().id_source("watch_scroll").show(ui, |ui| {
+            let mut to_remove = None;
+            for (idx, var) in self.watched_variables.iter().enumerate() {
+                ui.horizontal(|ui| {
+                    ui.push_id(idx, |ui| {
+                        self.render_type_info_tree(ui, var);
+                    });
+                    
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        if ui.button(egui::RichText::new("🗑").color(egui::Color32::GRAY)).on_hover_text("Remove from watch").clicked() {
+                            to_remove = Some(idx);
+                        }
+                    });
+                });
+                ui.add_space(2.0);
+                ui.separator();
+            }
+            if let Some(idx) = to_remove {
+                self.watched_variables.remove(idx);
+            }
+        });
+    }
+
+    fn render_type_info_tree(&self, ui: &mut egui::Ui, info: &aether_core::symbols::TypeInfo) {
+        let icon = match info.kind.as_str() {
+            "Struct" => "📦",
+            "Union" => "🌓",
+            "Enum" => "📋",
+            "Primitive" => "💎",
+            "Array" => "🍱",
+            "Pointer" => "🔗",
+            _ => "❓",
+        };
+
+        if let Some(members) = &info.members {
+            egui::collapsing_header::CollapsingHeader::new(
+                egui::RichText::new(format!("{} {} ({})", icon, info.name, info.kind))
+                    .strong()
+                    .color(egui::Color32::from_rgb(200, 200, 200))
+            ).show(ui, |ui| {
+                for member in members {
+                    self.render_type_info_tree(ui, member);
+                }
+            });
+        } else {
+            ui.horizontal(|ui| {
+                ui.add_space(12.0); // Indent for non-collapsing items
+                ui.label(egui::RichText::new(icon).small());
+                ui.label(egui::RichText::new(&info.name).color(egui::Color32::from_rgb(0, 255, 255)));
+                ui.label(egui::RichText::new("=").color(egui::Color32::GRAY));
+                
+                let val_color = if info.value_formatted_string == "Error Reading" {
+                    egui::Color32::RED
+                } else {
+                    egui::Color32::from_rgb(0, 255, 150)
+                };
+                
+                ui.label(egui::RichText::new(&info.value_formatted_string)
+                    .monospace()
+                    .color(val_color));
+            });
+        }
+    }
+
     fn draw_rtt_view(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
             if ui.button("🔌 Attach RTT").clicked() {
@@ -1043,6 +1294,14 @@ impl AetherApp {
             }
             if self.rtt_attached {
                 ui.label("✅ Attached");
+            }
+
+            ui.add_space(8.0);
+            if let Some(chan_num) = self.rtt_selected_channel {
+                let mode = self.rtt_display_modes.entry(chan_num).or_insert(RttDisplayMode::Text);
+                ui.label("View:");
+                ui.selectable_value(mode, RttDisplayMode::Text, "Text");
+                ui.selectable_value(mode, RttDisplayMode::Hex, "Hex");
             }
         });
 
@@ -1064,18 +1323,40 @@ impl AetherApp {
         ui.separator();
 
         if let Some(chan_num) = self.rtt_selected_channel {
-            let buffer = self.rtt_buffers.entry(chan_num).or_insert_with(String::new);
+            let mode = *self.rtt_display_modes.get(&chan_num).unwrap_or(&RttDisplayMode::Text);
             
             egui::ScrollArea::vertical()
                 .id_source("rtt_scroll")
                 .stick_to_bottom(true)
                 .show(ui, |ui| {
-                    ui.add(egui::TextEdit::multiline(buffer)
-                        .font(egui::TextStyle::Monospace)
-                        .code_editor()
-                        .lock_focus(false)
-                        .desired_width(f32::INFINITY)
-                        .desired_rows(20));
+                    match mode {
+                        RttDisplayMode::Text => {
+                            let buffer = self.rtt_buffers.entry(chan_num).or_insert_with(String::new);
+                            ui.add(egui::TextEdit::multiline(buffer)
+                                .font(egui::TextStyle::Monospace)
+                                .code_editor()
+                                .lock_focus(false)
+                                .desired_width(f32::INFINITY)
+                                .desired_rows(20));
+                        }
+                        RttDisplayMode::Hex => {
+                            let raw = self.rtt_raw_buffers.entry(chan_num).or_insert_with(Vec::new);
+                            let mut hex_text = String::new();
+                            for chunk in raw.chunks(16) {
+                                for byte in chunk {
+                                    hex_text.push_str(&format!("{:02X} ", byte));
+                                }
+                                hex_text.push('\n');
+                            }
+                            ui.add(egui::TextEdit::multiline(&mut hex_text)
+                                .font(egui::TextStyle::Monospace)
+                                .code_editor()
+                                .lock_focus(false)
+                                .desired_width(f32::INFINITY)
+                                .desired_rows(20));
+                        }
+                        _ => { ui.label("Binary mode not implemented yet"); }
+                    }
                 });
 
             ui.horizontal(|ui| {
@@ -1302,7 +1583,7 @@ impl eframe::App for AetherApp {
                         }
                     });
                     
-                    egui::ScrollArea::vertical().id_source("probes").max_height(150.0).show(ui, |ui| {
+                    egui::ScrollArea::vertical().id_source("probes").max_height(100.0).show(ui, |ui| {
                         for (i, probe) in self.probes.iter().enumerate() {
                             let is_selected = self.selected_probe == Some(i);
                             if ui.selectable_label(is_selected, format!("▷ {}", probe.name())).clicked() {
@@ -1310,6 +1591,20 @@ impl eframe::App for AetherApp {
                             }
                         }
                     });
+
+                    ui.separator();
+                    ui.label(egui::RichText::new("🌐 Remote").strong());
+                    ui.horizontal(|ui| {
+                        ui.label("Host:");
+                        ui.text_edit_singleline(&mut self.remote_host);
+                    });
+                    ui.horizontal(|ui| {
+                        ui.label("Port:");
+                        ui.text_edit_singleline(&mut self.remote_port);
+                    });
+                    if ui.button("🚀 Connect Remote").clicked() {
+                        self.connect_remote();
+                    }
                 });
             });
 
@@ -1403,6 +1698,7 @@ impl eframe::App for AetherApp {
                 ui.selectable_value(&mut self.active_tab, DebugTab::RTT, "💬 RTT");
                 ui.selectable_value(&mut self.active_tab, DebugTab::Stack, "📚 Stack");
                 ui.selectable_value(&mut self.active_tab, DebugTab::Timeline, "🕒 Timeline");
+                ui.selectable_value(&mut self.active_tab, DebugTab::Variables, "🔍 Watch");
             });
             ui.separator();
             
@@ -1413,6 +1709,7 @@ impl eframe::App for AetherApp {
                     DebugTab::Tasks => self.draw_tasks_view(ui),
                     DebugTab::Stack => self.draw_stack_view(ui),
                     DebugTab::Timeline => self.draw_timeline_view(ui),
+                    DebugTab::Variables => self.draw_variables_view(ui),
                     _ => {}
                 }
             });
@@ -1443,6 +1740,7 @@ impl eframe::App for AetherApp {
                 ui.selectable_value(&mut self.active_tab, DebugTab::Source, "📄 Source");
                 ui.selectable_value(&mut self.active_tab, DebugTab::Plot, "📈 Plot");
                 ui.selectable_value(&mut self.active_tab, DebugTab::Timeline, "🕒 Timeline");
+                ui.selectable_value(&mut self.active_tab, DebugTab::Variables, "🔍 Watch");
                 // Using hidden state to switch between these for now as central tabs
             });
             
@@ -1456,6 +1754,7 @@ impl eframe::App for AetherApp {
                 }
                 DebugTab::Plot => self.draw_plot_view(ui),
                 DebugTab::Timeline => self.draw_timeline_view(ui),
+                DebugTab::Variables => self.draw_variables_view(ui),
                 _ => {
                     // Falls back to Source if we selected a SideTab but want central view
                     self.draw_source_view(ui);
