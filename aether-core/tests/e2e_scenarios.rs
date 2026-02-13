@@ -1075,3 +1075,67 @@ async fn test_fuzz_corrupt_symbols() {
         assert!(msg.contains("Invalid compilation unit"));
     }
 }
+
+#[tokio::test]
+async fn test_scenario_dwarf_variable_resolution() {
+    let (handle, cmd_rx, event_tx) = SessionHandle::new_test();
+    let handle = Arc::new(handle);
+    
+    // 1. User wants to watch a complex variable "config"
+    handle.send(DebugCommand::WatchVariable("config".to_string())).expect("Failed to send WatchVariable");
+    
+    // 2. Verify Command received by core
+    let cmd = cmd_rx.try_recv().expect("Core did not receive WatchVariable command");
+    if let DebugCommand::WatchVariable(name) = cmd {
+        assert_eq!(name, "config");
+    } else {
+        panic!("Expected WatchVariable command, got {:?}", cmd);
+    }
+    
+    // 3. Verify propagation starts
+    let mut receiver = handle.subscribe();
+    
+    // 4. Simulate SymbolManager resolving the variable into a nested structure
+    let mock_info = aether_core::symbols::TypeInfo {
+        name: "config".to_string(),
+        value_formatted_string: "struct Config".to_string(),
+        kind: "Struct".to_string(),
+        address: Some(0x20000000),
+        members: Some(vec![
+            aether_core::symbols::TypeInfo {
+                name: "enabled".to_string(),
+                value_formatted_string: "true".to_string(),
+                kind: "Primitive".to_string(),
+                address: Some(0x20000000),
+                members: None,
+            },
+            aether_core::symbols::TypeInfo {
+                name: "threshold".to_string(),
+                value_formatted_string: "42".to_string(),
+                kind: "Primitive".to_string(),
+                address: Some(0x20000004),
+                members: None,
+            },
+        ]),
+    };
+    
+    event_tx.send(DebugEvent::VariableResolved(mock_info.clone())).expect("Failed to broadcast VariableResolved event");
+    
+    // 5. Verify propagation to UI
+    let event: DebugEvent = timeout(Duration::from_millis(100), receiver.recv())
+        .await
+        .expect("Timeout waiting for VariableResolved event")
+        .expect("Failed to receive event");
+        
+    match event {
+        DebugEvent::VariableResolved(info) => {
+            assert_eq!(info.name, "config");
+            assert_eq!(info.kind, "Struct");
+            let members = info.members.as_ref().expect("Members should be resolved");
+            assert_eq!(members.len(), 2);
+            assert_eq!(members[0].name, "enabled");
+            assert_eq!(members[1].name, "threshold");
+        },
+        _ => panic!("Expected VariableResolved event, got {:?}", event),
+    }
+}

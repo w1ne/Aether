@@ -50,6 +50,7 @@ pub enum DebugCommand {
     PollStatus,
     AddPlot { name: String, var_type: VarType },
     RemovePlot(String),
+    WatchVariable(String),
     GetTasks,
     GetStack,
     EnableTrace(crate::trace::TraceConfig),
@@ -100,6 +101,7 @@ pub enum DebugEvent {
     FlashProgress(f32),
     FlashStatus(String),
     FlashDone,
+    VariableResolved(crate::symbols::TypeInfo),
 }
 
 /// A handle to the debug session running in a background thread.
@@ -406,7 +408,17 @@ impl SessionHandle {
                                           let _ = evt_tx.send(DebugEvent::Registers(regs));
                                      }
                                 }
-                                DebugCommand::PollStatus => {
+                                 DebugCommand::WatchVariable(name) => {
+                                     if let Some(addr) = symbol_manager.lookup_symbol(&name) {
+                                         if let Some(info) = symbol_manager.resolve_variable(&mut core, &name, addr) {
+                                             let _ = evt_tx.send(DebugEvent::VariableResolved(info));
+                                         }
+                                     } else {
+                                         // Fallback or error?
+                                         let _ = evt_tx.send(DebugEvent::Error(format!("Variable '{}' not found in symbols", name)));
+                                     }
+                                 }
+                                 DebugCommand::PollStatus => {
                                      // Handled in polling loop
                                 }
                                 _ => {}

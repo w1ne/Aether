@@ -97,6 +97,10 @@ struct AetherApp {
 
     // Stack State
     stack_frames: Vec<aether_core::StackFrame>,
+
+    // Watch State
+    watched_variables: Vec<aether_core::symbols::TypeInfo>,
+    variable_input: String,
     
     // Syntax Highlighting
     syntax_set: SyntaxSet,
@@ -120,6 +124,7 @@ enum DebugTab {
     Tasks,
     Stack,
     Timeline,
+    Variables,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -177,6 +182,8 @@ impl AetherApp {
             tasks: Vec::new(),
             timeline_events: Vec::new(),
             stack_frames: Vec::new(),
+            watched_variables: Vec::new(),
+            variable_input: String::new(),
             syntax_set: SyntaxSet::load_defaults_newlines(),
             theme_set: ThemeSet::load_defaults(),
         }
@@ -542,6 +549,14 @@ impl AetherApp {
                     }
                     aether_core::DebugEvent::BreakpointLocations(locs) => {
                         self.breakpoint_locations = locs;
+                    }
+                    aether_core::DebugEvent::VariableResolved(info) => {
+                        // If variable already in watch list, update it, otherwise add it
+                        if let Some(pos) = self.watched_variables.iter().position(|v| v.name == info.name) {
+                            self.watched_variables[pos] = info;
+                        } else {
+                            self.watched_variables.push(info);
+                        }
                     }
                     aether_core::DebugEvent::Error(e) => {
                          self.failed_requests.push(e.clone());
@@ -1034,6 +1049,60 @@ impl AetherApp {
         }
     }
 
+    fn draw_variables_view(&mut self, ui: &mut egui::Ui) {
+        ui.heading("Watch Variables");
+
+        ui.horizontal(|ui| {
+            ui.label("Name:");
+            let response = ui.text_edit_singleline(&mut self.variable_input);
+            if (response.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter))) || ui.button("➕ Add").clicked() {
+                 if let Some(handle) = &self.session_handle {
+                      let _ = handle.send(aether_core::DebugCommand::WatchVariable(self.variable_input.clone()));
+                      self.variable_input.clear();
+                 }
+            }
+        });
+
+        ui.separator();
+
+        egui::ScrollArea::vertical().id_source("watch_scroll").show(ui, |ui| {
+            let mut to_remove = None;
+            for (idx, var) in self.watched_variables.iter().enumerate() {
+                ui.horizontal(|ui| {
+                    self.render_type_info_tree(ui, var);
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        if ui.button("🗑").clicked() {
+                            to_remove = Some(idx);
+                        }
+                    });
+                });
+                ui.separator();
+            }
+            if let Some(idx) = to_remove {
+                self.watched_variables.remove(idx);
+            }
+        });
+    }
+
+    fn render_type_info_tree(&self, ui: &mut egui::Ui, info: &aether_core::symbols::TypeInfo) {
+        if let Some(members) = &info.members {
+            egui::collapsing_header::CollapsingHeader::new(
+                egui::RichText::new(format!("{} ({})", info.name, info.kind)).strong()
+            ).show(ui, |ui| {
+                for member in members {
+                    self.render_type_info_tree(ui, member);
+                }
+            });
+        } else {
+            ui.horizontal(|ui| {
+                ui.label(egui::RichText::new(&info.name).color(egui::Color32::from_rgb(0, 255, 255)));
+                ui.label("=");
+                ui.monospace(&info.value_formatted_string);
+                ui.label(egui::RichText::new(format!("[{}]", info.kind)).small().color(egui::Color32::GRAY));
+            });
+        }
+    }
+
     fn draw_rtt_view(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
             if ui.button("🔌 Attach RTT").clicked() {
@@ -1403,6 +1472,7 @@ impl eframe::App for AetherApp {
                 ui.selectable_value(&mut self.active_tab, DebugTab::RTT, "💬 RTT");
                 ui.selectable_value(&mut self.active_tab, DebugTab::Stack, "📚 Stack");
                 ui.selectable_value(&mut self.active_tab, DebugTab::Timeline, "🕒 Timeline");
+                ui.selectable_value(&mut self.active_tab, DebugTab::Variables, "🔍 Watch");
             });
             ui.separator();
             
@@ -1413,6 +1483,7 @@ impl eframe::App for AetherApp {
                     DebugTab::Tasks => self.draw_tasks_view(ui),
                     DebugTab::Stack => self.draw_stack_view(ui),
                     DebugTab::Timeline => self.draw_timeline_view(ui),
+                    DebugTab::Variables => self.draw_variables_view(ui),
                     _ => {}
                 }
             });
@@ -1443,6 +1514,7 @@ impl eframe::App for AetherApp {
                 ui.selectable_value(&mut self.active_tab, DebugTab::Source, "📄 Source");
                 ui.selectable_value(&mut self.active_tab, DebugTab::Plot, "📈 Plot");
                 ui.selectable_value(&mut self.active_tab, DebugTab::Timeline, "🕒 Timeline");
+                ui.selectable_value(&mut self.active_tab, DebugTab::Variables, "🔍 Watch");
                 // Using hidden state to switch between these for now as central tabs
             });
             
@@ -1456,6 +1528,7 @@ impl eframe::App for AetherApp {
                 }
                 DebugTab::Plot => self.draw_plot_view(ui),
                 DebugTab::Timeline => self.draw_timeline_view(ui),
+                DebugTab::Variables => self.draw_variables_view(ui),
                 _ => {
                     // Falls back to Source if we selected a SideTab but want central view
                     self.draw_source_view(ui);
