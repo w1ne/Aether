@@ -2,6 +2,14 @@
 
 ### Added
 
+#### Phase 4: Advanced Analysis & Remote Debugging
+- **Remote Debug Relay**: gRPC server now supports configurable binding (`0.0.0.0` for network access).
+- **Remote Connection UI**: Host/Port input fields and Connect button in sidebar for remote agent access.
+- **Expanded gRPC Protocol**: All internal events (Tasks, TaskSwitch, Plot, RTT) now relayed over gRPC.
+- **High-Speed Plotting**: Switched to `VecDeque` storage with 100,000-point limit for stable 10kHz data streams.
+- **Binary RTT Support**: Text/Hex display mode toggles per RTT channel with raw byte buffering (64KB).
+- **Performance Verified**: All 77 workspace tests passing including `test_perf_rtt_10khz_simulation`.
+
 #### Milestone 6: SVD Peripheral Integration
 - `SvdManager` for parsing SVD files and extracting peripheral/register info.
 - Live peripheral register reading from target memory.
