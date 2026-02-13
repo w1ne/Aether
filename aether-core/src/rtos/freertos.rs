@@ -85,6 +85,7 @@ impl FreeRtos {
             stack_usage: if top_of_stack > stack_start { top_of_stack - stack_start } else { 0 },
             stack_size: high_water_mark as u32, // repurposed to show the "Peak" for now
             handle: tcb_addr as u32,
+            task_type: crate::TaskType::Thread,
         })
     }
 

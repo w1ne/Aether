@@ -257,9 +257,29 @@ impl SymbolManager {
 
         match entry.tag() {
             gimli::DW_TAG_base_type => {
+                let size = entry.attr_value(gimli::DW_AT_byte_size).ok().flatten().and_then(|v| {
+                    match v {
+                        AttributeValue::Udata(s) => Some(s),
+                        _ => None,
+                    }
+                }).unwrap_or(4);
+
+                let mut data = vec![0u8; size as usize];
+                let value_str = if core.read(base_address, &mut data).is_ok() {
+                    match size {
+                        1 => format!("{}", data[0]),
+                        2 => format!("{}", u16::from_le_bytes([data[0], data[1]])),
+                        4 => format!("{}", u32::from_le_bytes([data[0], data[1], data[2], data[3]])),
+                        8 => format!("{}", u64::from_le_bytes([data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]])),
+                        _ => format!("0x{:X}", base_address),
+                    }
+                } else {
+                    "Error Reading".to_string()
+                };
+
                 Some(TypeInfo {
                     name: type_name,
-                    value_formatted_string: format!("0x{:X}", base_address),
+                    value_formatted_string: value_str,
                     kind: "Primitive".to_string(),
                     members: None,
                     address: Some(base_address),

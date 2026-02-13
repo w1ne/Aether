@@ -44,7 +44,14 @@ pub struct TaskInfo {
     pub state: TaskState,
     pub stack_usage: u32,
     pub stack_size: u32,
-    pub handle: u32, // address of TCB
+    pub handle: u32, // address of TCB or Task handle
+    pub task_type: TaskType,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
+pub enum TaskType {
+    Thread,
+    Async,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]

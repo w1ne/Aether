@@ -121,7 +121,7 @@ impl SessionHandle {
     /// Internal helper to create a SessionHandle for testing
     pub fn new_test() -> (Self, Receiver<DebugCommand>, tokio::sync::broadcast::Sender<DebugEvent>) {
         let (cmd_tx, cmd_rx) = crossbeam_channel::unbounded();
-        let (evt_tx, _) = tokio::sync::broadcast::channel(100);
+        let (evt_tx, _) = tokio::sync::broadcast::channel(1024);
         
         (
             Self {
