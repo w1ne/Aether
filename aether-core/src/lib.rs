@@ -13,8 +13,12 @@ pub mod rtos;
 pub mod session;
 pub mod svd;
 pub mod symbols;
+pub mod semihosting;
+pub mod itm;
+
 pub mod stack;
 pub mod trace;
+
 
 // Re-export commonly used types
 pub use debug::DebugManager;

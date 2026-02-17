@@ -57,6 +57,8 @@ pub enum DebugCommand {
     EnableTrace(crate::trace::TraceConfig),
     Exit,
     StartFlashing(std::path::PathBuf),
+    EnableSemihosting,
+    EnableItm { baud_rate: u32 },
 }
 
 struct PlotConfig {
@@ -103,6 +105,8 @@ pub enum DebugEvent {
     FlashStatus(String),
     FlashDone,
     VariableResolved(crate::symbols::TypeInfo),
+    SemihostingOutput(String),
+    ItmPacket(Vec<u8>),
 }
 
 /// A handle to the debug session running in a background thread.
@@ -152,6 +156,8 @@ impl SessionHandle {
             let mut rtt_manager = crate::rtt::RttManager::new();
             let mut symbol_manager = crate::symbols::SymbolManager::new();
             let mut trace_manager = crate::trace::TraceManager::new();
+            let mut semihosting_manager = crate::semihosting::SemihostingManager::new();
+            let mut itm_manager = crate::itm::ItmManager::new();
             let mut rtos_manager: Option<Box<dyn crate::rtos::RtosAware>> = None;
             let mut _last_poll = Instant::now();
             let mut core_status = None;
@@ -203,6 +209,24 @@ impl SessionHandle {
                              match flash_manager.flash_elf(&mut session, &path, progress) {
                                  Ok(_) => { let _ = evt_tx.send(DebugEvent::FlashDone); }
                                  Err(e) => { let _ = evt_tx.send(DebugEvent::Error(format!("Flash failed: {}", e))); }
+                             }
+                             continue;
+                         }
+                         DebugCommand::EnableSemihosting => {
+                             // Just a flag or similar? The manager doesn't store state yet, but we will use it.
+                             // Actually the manager doesn't need enabling, we just start checking.
+                             // But maybe we want to store that we Should check.
+                             // For now, let's assume it's always "enabled" if instantiated, 
+                             // OR we can add an `enabled` flag to manager later.
+                             // Let's Just Log for now.
+                             log::info!("Semihosting enabled");
+                             continue;
+                         }
+                         DebugCommand::EnableItm { baud_rate } => {
+                             if let Err(e) = itm_manager.configure(&mut session, baud_rate) {
+                                  let _ = evt_tx.send(DebugEvent::Error(format!("Failed to enable ITM: {}", e)));
+                             } else {
+                                  log::info!("ITM enabled at {} baud", baud_rate);
                              }
                              continue;
                          }
@@ -445,82 +469,102 @@ impl SessionHandle {
                 } else {
                     // 3. Polling (Status, RTT, Plots)
                     {
-                        let mut core = match session.core(0) {
-                             Ok(c) => c,
-                             Err(_) => continue,
-                        };
-                        
-                        // Poll Status
-                        if let Ok(status) = core.status() {
-                             let is_halted = status.is_halted();
-                             let was_halted = core_status.as_ref().map(|s: &CoreStatus| s.is_halted()) == Some(true);
-                             
-                             if is_halted && !was_halted {
-                                  // Just halted
-                                  if let Ok(pc_val) = core.read_core_reg(core.program_counter()) {
-                                      let pc: u64 = match pc_val {
-                                          probe_rs::RegisterValue::U32(v) => v as u64,
-                                          probe_rs::RegisterValue::U64(v) => v,
-                                          probe_rs::RegisterValue::U128(v) => v as u64,
-                                      };
-                                      let _ = evt_tx.send(DebugEvent::Halted { pc });
+
+                        // Scope for core usage
+                        {
+                            let mut core = match session.core(0) {
+                                Ok(c) => c,
+                                Err(_) => continue,
+                            };
+
+                            // Poll Status
+                             if let Ok(status) = core.status() {
+                                  let is_halted = status.is_halted();
+                                  let was_halted = core_status.as_ref().map(|s: &CoreStatus| s.is_halted()) == Some(true);
+                                  
+                                  if is_halted && !was_halted {
+                                       // Just halted
+                                       if let Ok(pc_val) = core.read_core_reg(core.program_counter()) {
+                                           let pc: u64 = match pc_val {
+                                               probe_rs::RegisterValue::U32(v) => v as u64,
+                                               probe_rs::RegisterValue::U64(v) => v,
+                                               probe_rs::RegisterValue::U128(v) => v as u64,
+                                           };
+                                           let _ = evt_tx.send(DebugEvent::Halted { pc });
+                                       }
+                                  }
+                                  if core_status != Some(status) {
+                                       core_status = Some(status);
+                                       let _ = evt_tx.send(DebugEvent::Status(status));
                                   }
                              }
-                             if core_status != Some(status) {
-                                  core_status = Some(status);
-                                  let _ = evt_tx.send(DebugEvent::Status(status));
-                             }
-                        }
 
-                        // Poll RTT
-                        if rtt_manager.is_attached() {
-                            let up_channels: Vec<usize> = rtt_manager.get_up_channels().iter().map(|c| c.number).collect();
-                            for ch_num in up_channels {
-                                if let Ok(data) = rtt_manager.read_channel(&mut core, ch_num) {
-                                    if !data.is_empty() {
-                                        let _ = evt_tx.send(DebugEvent::RttData(ch_num, data));
+                            // Poll RTT
+                            if rtt_manager.is_attached() {
+                                let up_channels: Vec<usize> = rtt_manager.get_up_channels().iter().map(|c| c.number).collect();
+                                for ch_num in up_channels {
+                                    if let Ok(data) = rtt_manager.read_channel(&mut core, ch_num) {
+                                        if !data.is_empty() {
+                                            let _ = evt_tx.send(DebugEvent::RttData(ch_num, data));
+                                        }
                                     }
                                 }
                             }
-                        }
-                        
-                        // Poll Plots (10Hz)
-                        if last_plot_poll.elapsed() >= Duration::from_millis(100) {
-                             for plot in &plots {
-                                   let val = match plot.var_type {
-                                       crate::VarType::U32 => core.read_word_32(plot.address).map(|v| v as f64).ok(),
-                                       crate::VarType::F32 => {
-                                           core.read_word_32(plot.address).ok().map(|v| f32::from_bits(v) as f64)
+                            
+                            // Poll Plots (10Hz)
+                            if last_plot_poll.elapsed() >= Duration::from_millis(100) {
+                                 for plot in &plots {
+                                       let val = match plot.var_type {
+                                           crate::VarType::U32 => core.read_word_32(plot.address).map(|v| v as f64).ok(),
+                                           crate::VarType::F32 => {
+                                               core.read_word_32(plot.address).ok().map(|v| f32::from_bits(v) as f64)
+                                           }
+                                           _ => None
+                                       };
+                                       
+                                       if let Some(v) = val {
+                                           let _ = evt_tx.send(DebugEvent::PlotData {
+                                               name: plot.name.clone(),
+                                               timestamp: session_start.elapsed().as_secs_f64(),
+                                               value: v
+                                           });
                                        }
-                                       _ => None
-                                   };
-                                   
-                                   if let Some(v) = val {
-                                       let _ = evt_tx.send(DebugEvent::PlotData {
-                                           name: plot.name.clone(),
-                                           timestamp: session_start.elapsed().as_secs_f64(),
-                                           value: v
-                                       });
-                                   }
-                             }
-                             last_plot_poll = Instant::now();
-                        }
+                                 }
+                                 last_plot_poll = Instant::now();
+                            }
 
-                        // Poll RTOS Task Switch (20Hz) - Foundation for Timeline View
-                        if last_status_poll.elapsed() >= Duration::from_millis(50) {
-                             if let Some(current_tcb_ptr) = symbol_manager.lookup_symbol("pxCurrentTCB") {
-                                  if let Ok(current_tcb) = core.read_word_32(current_tcb_ptr) {
-                                       if Some(current_tcb) != last_task_handle {
-                                            let _ = evt_tx.send(DebugEvent::TaskSwitch {
-                                                from: last_task_handle,
-                                                to: current_tcb,
-                                                timestamp: session_start.elapsed().as_secs_f64(),
-                                            });
-                                            last_task_handle = Some(current_tcb);
-                                       }
-                                  }
-                             }
-                             last_status_poll = Instant::now();
+                            // Poll RTOS Task Switch (20Hz)
+                            if last_status_poll.elapsed() >= Duration::from_millis(50) {
+                                 if let Some(current_tcb_ptr) = symbol_manager.lookup_symbol("pxCurrentTCB") {
+                                      if let Ok(current_tcb) = core.read_word_32(current_tcb_ptr) {
+                                           if Some(current_tcb) != last_task_handle {
+                                                let _ = evt_tx.send(DebugEvent::TaskSwitch {
+                                                    from: last_task_handle,
+                                                    to: current_tcb,
+                                                    timestamp: session_start.elapsed().as_secs_f64(),
+                                                });
+                                                last_task_handle = Some(current_tcb);
+                                           }
+                                      }
+                                 }
+                                 last_status_poll = Instant::now();
+                            }
+                            
+                            // Check for semihosting
+                            if let Ok(status) = core.status() {
+                                 if status.is_halted() {
+                                      if let Ok(Some(msg)) = semihosting_manager.check_for_semihosting(&mut core) {
+                                           let _ = evt_tx.send(DebugEvent::SemihostingOutput(msg));
+                                      }
+                                 }
+                            }
+                        } // End of core scope
+
+                        // Poll ITM (needs mutable session)
+                        if let Ok(data) = itm_manager.read_swo(&mut session) {
+                            if !data.is_empty() {
+                                let _ = evt_tx.send(DebugEvent::ItmPacket(data));
+                            }
                         }
                     }
                 }
