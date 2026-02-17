@@ -105,7 +105,7 @@ impl SymbolManager {
         let debug_abbrev_data = debug_abbrev_section.uncompressed_data().ok()?;
         let debug_abbrev = gimli::DebugAbbrev::new(&debug_abbrev_data, endian);
 
-        let debug_str_section = obj.section_by_name(".debug_str").map(|s| s.uncompressed_data().ok()).flatten().unwrap_or(Cow::Borrowed(&[]));
+        let debug_str_section = obj.section_by_name(".debug_str").and_then(|s| s.uncompressed_data().ok()).unwrap_or(Cow::Borrowed(&[]));
         let debug_str = gimli::DebugStr::new(&debug_str_section, endian);
 
         let mut iter = debug_info.units();
@@ -196,7 +196,7 @@ impl SymbolManager {
         let debug_abbrev_data = debug_abbrev_section.uncompressed_data().ok()?;
         let debug_abbrev = gimli::DebugAbbrev::new(&debug_abbrev_data, endian);
 
-        let debug_str_section = obj.section_by_name(".debug_str").map(|s| s.uncompressed_data().ok()).flatten().unwrap_or(Cow::Borrowed(&[]));
+        let debug_str_section = obj.section_by_name(".debug_str").and_then(|s| s.uncompressed_data().ok()).unwrap_or(Cow::Borrowed(&[]));
         let debug_str = gimli::DebugStr::new(&debug_str_section, endian);
 
         let mut units = debug_info.units();
@@ -232,6 +232,7 @@ impl SymbolManager {
         None
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn resolve_type_from_offset(
         &self,
         core: &mut dyn probe_rs::MemoryInterface,

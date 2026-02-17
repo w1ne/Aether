@@ -1,3 +1,6 @@
+#![allow(missing_docs)]
+#![allow(clippy::uninlined_format_args)]
+#![allow(clippy::significant_drop_tightening)]
 use aether_agent_api::proto::aether_debug_client::AetherDebugClient;
 use aether_agent_api::proto::Empty;
 

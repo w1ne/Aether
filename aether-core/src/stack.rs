@@ -25,7 +25,7 @@ impl From<&ProbeStackFrame> for StackFrame {
             id: 0, 
             function_name: frame.function_name.clone(),
             source_file: frame.source_location.as_ref().map(|l| l.path.to_string_lossy().to_string()),
-            line: frame.source_location.as_ref().and_then(|l| l.line).map(|l| l as u64),
+            line: frame.source_location.as_ref().and_then(|l| l.line),
             pc: frame.pc.to_string().parse::<u64>().unwrap_or(0) as u32,
             sp: 0, 
         }

@@ -6,6 +6,12 @@ use anyhow::Result;
 
 pub struct Embassy;
 
+impl Default for Embassy {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Embassy {
     pub fn new() -> Self {
         Self

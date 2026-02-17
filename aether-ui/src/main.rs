@@ -117,6 +117,9 @@ struct AetherApp {
     watched_variables: Vec<aether_core::symbols::TypeInfo>,
     variable_input: String,
     
+    
+    
+    
     // Syntax Highlighting
     syntax_set: SyntaxSet,
     theme_set: ThemeSet,
@@ -133,13 +136,14 @@ pub struct TimelineEvent {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 enum DebugTab {
     Peripherals,
-    RTT,
+    Rtt,
     Source,
     Plot,
     Tasks,
     Stack,
     Timeline,
     Variables,
+    Agent,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -555,7 +559,7 @@ impl AetherApp {
                         }
                     }
                     aether_core::DebugEvent::PlotData { name, timestamp, value } => {
-                        let deque = self.plots.entry(name.clone()).or_insert_with(std::collections::VecDeque::new);
+                        let deque = self.plots.entry(name.clone()).or_default();
                         deque.push_back([timestamp, value]);
                         if deque.len() > 100_000 {
                             deque.pop_front();
@@ -643,6 +647,56 @@ impl AetherApp {
             }
     }
 
+    fn draw_agent_view(&mut self, ui: &mut egui::Ui) {
+        ui.heading("🤖 Agent Interface");
+        ui.add_space(8.0);
+        
+        // 1. Status Section
+        ui.group(|ui| {
+            ui.horizontal(|ui| {
+                ui.label(egui::RichText::new("Status:").strong());
+                if self.session_handle.is_some() {
+                     ui.label(egui::RichText::new("Active (Listening on 0.0.0.0:50051)").color(egui::Color32::GREEN));
+                } else {
+                     ui.label(egui::RichText::new("Inactive (Connect Probe First)").color(egui::Color32::RED));
+                }
+            });
+            ui.add_space(4.0);
+            ui.label("The Agent API allows AI agents to control the debugger via gRPC.");
+        });
+
+        ui.add_space(8.0);
+        ui.separator();
+
+        // 2. System Logs (Collapsible)
+        ui.collapsing("📝 System Logs & Quick Connect", |ui| {
+             ui.heading("System Logs");
+             egui::ScrollArea::vertical().max_height(100.0).show(ui, |ui| {
+                 ui.monospace(&self.status_message);
+                 for req in &self.failed_requests {
+                      ui.label(egui::RichText::new(format!("Error: {}", req)).color(egui::Color32::RED));
+                 }
+             });
+             
+             ui.add_space(8.0);
+             ui.heading("Quick Connect (Python)");
+             let code = r#"import grpc
+import aether_pb2
+import aether_pb2_grpc
+
+channel = grpc.insecure_channel('localhost:50051')
+stub = aether_pb2_grpc.AetherDebugStub(channel)
+
+# Halt and Inspect (Synchronous)
+stub.Halt(aether_pb2.Empty())
+print(stub.ReadRegister(aether_pb2.ReadRegisterRequest(register_number=15)))
+stub.Resume(aether_pb2.Empty())
+"#;
+             let mut code_buf = code.to_string();
+             ui.add(egui::TextEdit::multiline(&mut code_buf).font(egui::TextStyle::Monospace).desired_width(f32::INFINITY));
+        });
+    }
+
     fn draw_plot_view(&mut self, ui: &mut egui::Ui) {
         ui.heading("Live Variable Plotting");
 
@@ -660,8 +714,8 @@ impl AetherApp {
                       ui.selectable_value(&mut self.new_plot_type, VarType::F64, "F64");
                  });
                  
-             if ui.button("Add Plot").clicked() {
-                  if !self.new_plot_name.is_empty() {
+             if ui.button("Add Plot").clicked()
+                  && !self.new_plot_name.is_empty() {
                        if let Some(handle) = &self.session_handle {
                             let _ = handle.send(aether_core::DebugCommand::AddPlot {
                                  name: self.new_plot_name.clone(),
@@ -669,7 +723,6 @@ impl AetherApp {
                             });
                        }
                   }
-             }
         });
 
         ui.separator();
@@ -950,48 +1003,49 @@ impl AetherApp {
 
 
     fn draw_memory_view(&mut self, ui: &mut egui::Ui) {
-        ui.heading("Memory View");
-        
-        ui.horizontal(|ui| {
-             ui.label("Addr:");
-             if ui.text_edit_singleline(&mut self.memory_address_input).lost_focus() {
-                 let addr_str = self.memory_address_input.trim_start_matches("0x");
-                 if let Ok(addr) = u64::from_str_radix(addr_str, 16) {
-                     self.memory_base_address = addr;
-                     if let Some(handle) = &self.session_handle {
-                         let _ = handle.send(aether_core::DebugCommand::ReadMemory(addr, 256));
+        egui::ScrollArea::both().id_source("mem_view_scroll").show(ui, |ui| {
+            ui.heading("Memory View");
+            
+            ui.horizontal(|ui| {
+                 ui.label("Addr:");
+                 if ui.text_edit_singleline(&mut self.memory_address_input).lost_focus() {
+                     let addr_str = self.memory_address_input.trim_start_matches("0x");
+                     if let Ok(addr) = u64::from_str_radix(addr_str, 16) {
+                         self.memory_base_address = addr;
+                         if let Some(handle) = &self.session_handle {
+                             let _ = handle.send(aether_core::DebugCommand::ReadMemory(addr, 256));
+                         }
                      }
                  }
-             }
-             
-             if ui.button("Read").clicked() {
-                 let addr_str = self.memory_address_input.trim_start_matches("0x");
-                 if let Ok(addr) = u64::from_str_radix(addr_str, 16) {
-                     self.memory_base_address = addr;
-                     if let Some(handle) = &self.session_handle {
-                         let _ = handle.send(aether_core::DebugCommand::ReadMemory(addr, 256));
-                     }
-                 }
-             }
-        });
-        
-        egui::ScrollArea::vertical().id_source("mem_hex").show(ui, |ui| {
-             ui.monospace("Address    00 01 02 03 04 05 06 07  08 09 0A 0B 0C 0D 0E 0F  ASCII");
-             ui.separator();
-             
-             let bytes_per_line = 16;
-             for (i, chunk) in self.memory_data.chunks(bytes_per_line).enumerate() {
-                 let addr = self.memory_base_address + (i * bytes_per_line) as u64;
                  
-                 let (addr_str, hex_part, ascii_part) = ui_logic::format_memory_line(addr, chunk);
-                 ui.monospace(format!("{}   {} {}", addr_str, hex_part, ascii_part));
-             }
+                 if ui.button("Read").clicked() {
+                     let addr_str = self.memory_address_input.trim_start_matches("0x");
+                     if let Ok(addr) = u64::from_str_radix(addr_str, 16) {
+                         self.memory_base_address = addr;
+                         if let Some(handle) = &self.session_handle {
+                             let _ = handle.send(aether_core::DebugCommand::ReadMemory(addr, 256));
+                         }
+                     }
+                 }
+            });
+            
+            ui.separator();
+            ui.monospace("Address    00 01 02 03 04 05 06 07  08 09 0A 0B 0C 0D 0E 0F  ASCII");
+            ui.separator();
+            
+            let bytes_per_line = 16;
+            for (i, chunk) in self.memory_data.chunks(bytes_per_line).enumerate() {
+                let addr = self.memory_base_address + (i * bytes_per_line) as u64;
+                
+                let (addr_str, hex_part, ascii_part) = ui_logic::format_memory_line(addr, chunk);
+                ui.monospace(format!("{}   {} {}", addr_str, hex_part, ascii_part));
+            }
         });
     }
     fn draw_disassembly_view(&mut self, ui: &mut egui::Ui) {
-        ui.heading("Disassembly");
-        
-        egui::ScrollArea::vertical().id_source("disasm").show(ui, |ui| {
+        egui::ScrollArea::both().id_source("disasm_view_scroll").show(ui, |ui| {
+            ui.heading("Disassembly");
+            
             egui::Grid::new("disasm_grid")
                 .striped(true)
                 .num_columns(5)
@@ -1331,7 +1385,7 @@ impl AetherApp {
                 .show(ui, |ui| {
                     match mode {
                         RttDisplayMode::Text => {
-                            let buffer = self.rtt_buffers.entry(chan_num).or_insert_with(String::new);
+                            let buffer = self.rtt_buffers.entry(chan_num).or_default();
                             ui.add(egui::TextEdit::multiline(buffer)
                                 .font(egui::TextStyle::Monospace)
                                 .code_editor()
@@ -1340,7 +1394,7 @@ impl AetherApp {
                                 .desired_rows(20));
                         }
                         RttDisplayMode::Hex => {
-                            let raw = self.rtt_raw_buffers.entry(chan_num).or_insert_with(Vec::new);
+                            let raw = self.rtt_raw_buffers.entry(chan_num).or_default();
                             let mut hex_text = String::new();
                             for chunk in raw.chunks(16) {
                                 for byte in chunk {
@@ -1693,23 +1747,25 @@ impl eframe::App for AetherApp {
         egui::SidePanel::right("right_panel").resizable(true).default_width(320.0).show(ctx, |ui| {
             ui.add_space(8.0);
             ui.horizontal(|ui| {
-                ui.selectable_value(&mut self.active_tab, DebugTab::Peripherals, "📦 Peripherals");
-                ui.selectable_value(&mut self.active_tab, DebugTab::Tasks, "🧵 Tasks");
-                ui.selectable_value(&mut self.active_tab, DebugTab::RTT, "💬 RTT");
-                ui.selectable_value(&mut self.active_tab, DebugTab::Stack, "📚 Stack");
-                ui.selectable_value(&mut self.active_tab, DebugTab::Timeline, "🕒 Timeline");
-                ui.selectable_value(&mut self.active_tab, DebugTab::Variables, "🔍 Watch");
+                ui.selectable_value(&mut self.active_tab, DebugTab::Peripherals, "Peripherals");
+                ui.selectable_value(&mut self.active_tab, DebugTab::Tasks, "Tasks");
+                ui.selectable_value(&mut self.active_tab, DebugTab::Rtt, "RTT");
+                ui.selectable_value(&mut self.active_tab, DebugTab::Stack, "Stack");
+                ui.selectable_value(&mut self.active_tab, DebugTab::Timeline, "Timeline");
+                ui.selectable_value(&mut self.active_tab, DebugTab::Variables, "Watch");
+                ui.selectable_value(&mut self.active_tab, DebugTab::Agent, "Agent"); // Robot emoji might fail
             });
             ui.separator();
             
             egui::ScrollArea::both().show(ui, |ui| {
                 match self.active_tab {
                     DebugTab::Peripherals => self.draw_peripherals_view(ui),
-                    DebugTab::RTT => self.draw_rtt_view(ui),
+                    DebugTab::Rtt => self.draw_rtt_view(ui),
                     DebugTab::Tasks => self.draw_tasks_view(ui),
                     DebugTab::Stack => self.draw_stack_view(ui),
                     DebugTab::Timeline => self.draw_timeline_view(ui),
                     DebugTab::Variables => self.draw_variables_view(ui),
+                    DebugTab::Agent => self.draw_agent_view(ui),
                     _ => {}
                 }
             });
@@ -1737,10 +1793,10 @@ impl eframe::App for AetherApp {
         // Central Panel: Source / Disasm / Memory / Plot
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.horizontal(|ui| {
-                ui.selectable_value(&mut self.active_tab, DebugTab::Source, "📄 Source");
-                ui.selectable_value(&mut self.active_tab, DebugTab::Plot, "📈 Plot");
-                ui.selectable_value(&mut self.active_tab, DebugTab::Timeline, "🕒 Timeline");
-                ui.selectable_value(&mut self.active_tab, DebugTab::Variables, "🔍 Watch");
+                ui.selectable_value(&mut self.active_tab, DebugTab::Source, "Source");
+                ui.selectable_value(&mut self.active_tab, DebugTab::Plot, "Plot");
+                ui.selectable_value(&mut self.active_tab, DebugTab::Timeline, "Timeline");
+                ui.selectable_value(&mut self.active_tab, DebugTab::Variables, "Watch");
                 // Using hidden state to switch between these for now as central tabs
             });
             

@@ -7,12 +7,34 @@ service AetherDebug {
     rpc Halt (Empty) returns (Empty);
     rpc Resume (Empty) returns (Empty);
     rpc Step (Empty) returns (Empty);
+    rpc StepOver (Empty) returns (Empty);
+    rpc StepInto (Empty) returns (Empty);
+    rpc StepOut (Empty) returns (Empty);
     rpc Reset (Empty) returns (Empty);
 
-    // State inspection
+    // Breakpoints
+    rpc SetBreakpoint (BreakpointRequest) returns (Empty);
+    rpc ClearBreakpoint (BreakpointRequest) returns (Empty);
+    rpc ListBreakpoints (Empty) returns (BreakpointList);
+
+    // State inspection & Mutation
     rpc GetStatus (Empty) returns (StatusResponse);
     rpc ReadMemory (ReadMemoryRequest) returns (ReadMemoryResponse);
+    rpc WriteMemory (WriteMemoryRequest) returns (Empty);
     rpc ReadRegister (ReadRegisterRequest) returns (ReadRegisterResponse);
+    rpc WriteRegister (WriteRegisterRequest) returns (Empty);
+    
+    // High-Level State
+    rpc GetStack (Empty) returns (StackResponse);
+    rpc GetTasks (Empty) returns (TasksEvent); // Reusing TasksEvent message
+    rpc WatchVariable (WatchVariableRequest) returns (Empty);
+
+    // Peripherals / SVD
+    rpc ReadPeripheral (PeripheralRequest) returns (PeripheralResponse);
+    rpc WritePeripheral (PeripheralWriteRequest) returns (Empty);
+
+    // RTT
+    rpc RttWrite (RttWriteRequest) returns (Empty);
 
     // Event stream
     rpc SubscribeEvents (Empty) returns (stream DebugEvent);
@@ -26,6 +48,14 @@ message StatusResponse {
     string core_status = 3;
 }
 
+message BreakpointRequest {
+    uint64 address = 1;
+}
+
+message BreakpointList {
+    repeated uint64 addresses = 1;
+}
+
 message ReadMemoryRequest {
     uint64 address = 1;
     uint32 length = 2;
@@ -35,12 +65,58 @@ message ReadMemoryResponse {
     bytes data = 1;
 }
 
+message WriteMemoryRequest {
+    uint64 address = 1;
+    bytes data = 2;
+}
+
 message ReadRegisterRequest {
     uint32 register_number = 1;
 }
 
 message ReadRegisterResponse {
     uint64 value = 1;
+}
+
+message WriteRegisterRequest {
+    uint32 register_number = 1;
+    uint64 value = 2;
+}
+
+message StackResponse {
+    repeated StackFrame frames = 1;
+}
+
+message StackFrame {
+    uint64 pc = 1;
+    string function_name = 2;
+    string file = 3;
+    uint32 line = 4;
+}
+
+message WatchVariableRequest {
+    string name = 1;
+}
+
+message PeripheralRequest {
+    string peripheral = 1;
+    string register = 2;
+}
+
+message PeripheralResponse {
+    uint64 value = 1;
+}
+
+message PeripheralWriteRequest {
+    string peripheral = 1;
+    string register = 2;
+    string field = 3;
+    uint64 value = 4;
+}
+
+message RttWriteRequest {
+    uint32 channel = 1;
+    bytes data = 2;
 }
 
 message DebugEvent {
@@ -53,6 +129,8 @@ message DebugEvent {
         TaskSwitchEvent task_switch = 6;
         PlotEvent plot = 7;
         RttEvent rtt = 8;
+        BreakpointEvent breakpoint = 9;
+        VariableEvent variable = 10;
     }
 }
 
@@ -85,6 +163,23 @@ message PlotEvent {
 message RttEvent {
     uint32 channel = 1;
     bytes data = 2;
+}
+
+message BreakpointEvent {
+    uint64 address = 1;
+}
+
+message VariableEvent {
+    string name = 1;
+    string type = 2;
+    string value = 3;
+    repeated VariableChild children = 4;
+}
+
+message VariableChild {
+    string name = 1;
+    string value = 2;
+    string type = 3;
 }
 
 message HaltedEvent {

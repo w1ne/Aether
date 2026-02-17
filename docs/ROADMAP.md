@@ -81,6 +81,25 @@
 
 ---
 
+## Phase 2.5: The Agent Interface (Months 6-7)
+
+**Goal**: Transform Aether into a "Headless" platform for AI Agents.
+
+### Features
+- **Client-Server Architecture**: Decouple UI from Core (gRPC).
+- **Agent API**: Full programmatic control (Halt, Step, Read Mem) via Protobuf.
+- **Event Stream**: Real-time structured events (no polling).
+- **Headless Mode**: Run `aether-core` without GUI for CI/Agents.
+- **Agent Chat**: UI tab to communicate with connected agents.
+
+### Deliverables
+- `aether-core` daemon mode
+- `aether-agent-api` crate on crates.io
+- Python/TypeScript client SDKs for agents
+- "Ghost Mode" demo (Agent debugging while human watches)
+
+---
+
 ## Phase 3: Rust & RTOS Excellence (Months 7-12)
 
 **Goal**: Best debugger for Rust embedded and RTOS development.

@@ -21,6 +21,7 @@ pub enum DebugCommand {
     StepOver,
     StepInto,
     StepOut,
+    Reset,
     ReadRegister(u16),
     WriteRegister(u16, u64),
     ReadMemory(u64, usize),
@@ -144,7 +145,7 @@ impl SessionHandle {
         let thread_handle = thread::spawn(move || {
             let evt_tx = evt_tx_thread; // Shadow for inner scope
             let debug_manager = DebugManager::new();
-            let memory_manager = crate::MemoryManager::new();
+            let _memory_manager = crate::MemoryManager::new();
             let disasm_manager = crate::disasm::DisassemblyManager::new();
             let mut breakpoint_manager = crate::debug::BreakpointManager::new();
             let mut svd_manager = crate::svd::SvdManager::new();
@@ -189,16 +190,16 @@ impl SessionHandle {
                              let tx_clone = evt_tx.clone();
                              
                              let progress = FlashProgress::new(move |event| {
-                                 let update = match event {
-                                     ProgressEvent::Started(_) => DebugEvent::FlashStatus("Started".to_string()),
-                                     ProgressEvent::Progress { size, .. } => DebugEvent::FlashProgress(size as f32), // Placeholder for proper ratio
-                                     ProgressEvent::Finished(_) => DebugEvent::FlashDone,
-                                     ProgressEvent::Failed(_) => DebugEvent::Error("Flash failed".to_string()),
-                                     _ => return,
-                                 };
-                                 let _ = tx_clone.send(update);
-                             });
-                             
+                                  let update = match event {
+                                      ProgressEvent::Started(_) => DebugEvent::FlashStatus("Started".to_string()),
+                                      ProgressEvent::Progress { size, .. } => DebugEvent::FlashProgress(size as f32),
+                                      ProgressEvent::Finished(_) => DebugEvent::FlashStatus("Finished".to_string()),
+                                      ProgressEvent::Failed(_) => DebugEvent::Error("Flash failed".to_string()),
+                                      _ => return,
+                                  };
+                                  let _ = tx_clone.send(update);
+                              });
+
                              match flash_manager.flash_elf(&mut session, &path, progress) {
                                  Ok(_) => { let _ = evt_tx.send(DebugEvent::FlashDone); }
                                  Err(e) => { let _ = evt_tx.send(DebugEvent::Error(format!("Flash failed: {}", e))); }
@@ -257,6 +258,22 @@ impl SessionHandle {
                                  DebugCommand::StepOut => {
                                       let _ = debug_manager.step(&mut core); 
                                  }
+                                 DebugCommand::Reset => {
+                                     match core.reset_and_halt(Duration::from_millis(100)) {
+                                         Ok(_) => { 
+                                             // After reset, we are halted at reset vector
+                                             if let Ok(pc_val) = core.read_core_reg(core.program_counter()) {
+                                                  let pc: u64 = match pc_val {
+                                                      probe_rs::RegisterValue::U32(v) => v as u64,
+                                                      probe_rs::RegisterValue::U64(v) => v,
+                                                      probe_rs::RegisterValue::U128(v) => v as u64,
+                                                  };
+                                                  let _ = evt_tx.send(DebugEvent::Halted { pc });
+                                             }
+                                         }
+                                         Err(e) => { let _ = evt_tx.send(DebugEvent::Error(format!("Reset failed: {}", e))); }
+                                     }
+                                 }
                                  DebugCommand::ReadMemory(addr, size) => {
                                      let mut data = vec![0u8; size];
                                      match core.read(addr, &mut data) {
@@ -280,7 +297,7 @@ impl SessionHandle {
                                      }
                                  }
                                  DebugCommand::ReadRegister(id) => {
-                                     if let Ok(val) = core.read_core_reg(id as u16) {
+                                     if let Ok(val) = core.read_core_reg(id) {
                                           let val_u64: u64 = match val {
                                               probe_rs::RegisterValue::U32(v) => v as u64,
                                               probe_rs::RegisterValue::U64(v) => v,
@@ -290,7 +307,7 @@ impl SessionHandle {
                                      }
                                  }
                                  DebugCommand::WriteRegister(id, val) => {
-                                     let _ = core.write_core_reg(id as u16, val);
+                                     let _ = core.write_core_reg(id, val);
                                  }
                                  DebugCommand::SetBreakpoint(addr) => {
                                      if let Err(e) = breakpoint_manager.set_breakpoint(&mut core, addr) {
@@ -373,7 +390,7 @@ impl SessionHandle {
                                     }
                                 }
                                 DebugCommand::ToggleBreakpointAtSource(file, line) => {
-                                    if let Some(addr) = symbol_manager.get_address(&std::path::Path::new(&file), line) {
+                                    if let Some(addr) = symbol_manager.get_address(std::path::Path::new(&file), line) {
                                         let _ = breakpoint_manager.toggle_breakpoint(&mut core, addr);
                                         let _ = evt_tx.send(DebugEvent::Breakpoints(breakpoint_manager.list()));
                                         
@@ -507,7 +524,7 @@ impl SessionHandle {
                         }
                     }
                 }
-
+                
                 thread::sleep(Duration::from_millis(10));
             }
         });

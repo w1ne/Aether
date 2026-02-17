@@ -35,8 +35,7 @@ The UI will auto-detect connected debug probes.
 
 ## Development
 
-See [docs/](docs/) for:
-- [Git Flow](docs/GIT_FLOW.md) - Branching strategy
+- [Contributing](docs/CONTRIBUTING.md) - Development guide (Trunk-Based)
 - [Testing Strategy](docs/TEST_STRATEGY.md) - Test requirements
 - [Use Cases](docs/USE_CASES.md) - Feature documentation
 

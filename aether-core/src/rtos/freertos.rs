@@ -6,6 +6,12 @@ use anyhow::{Result};
 
 pub struct FreeRtos;
 
+impl Default for FreeRtos {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl FreeRtos {
     pub fn new() -> Self {
         Self
@@ -57,7 +63,7 @@ impl FreeRtos {
         // pxStack (offset 48)
         // pcTaskName (offset 52, size configMAX_TASK_NAME_LEN)
 
-        let top_of_stack: u32 = core.read_word_32(tcb_addr + 0)?;
+        let top_of_stack: u32 = core.read_word_32(tcb_addr)?;
         let priority: u32 = core.read_word_32(tcb_addr + 44)?;
         let stack_start: u32 = core.read_word_32(tcb_addr + 48)?;
         
@@ -75,14 +81,15 @@ impl FreeRtos {
         // However, (top_of_stack - stack_start) gives us a window.
         
         // High water mark scan
-        let stack_size = 0; // Unknown without more TCB parsing or config
+        let _stack_size = 0; // Unknown without more TCB parsing or config
         let high_water_mark = self.scan_high_water_mark(core, stack_start as u64, top_of_stack as u64).unwrap_or(0);
 
+        let stack_usage = top_of_stack.saturating_sub(stack_start);
         Ok(TaskInfo {
             name,
             priority,
             state,
-            stack_usage: if top_of_stack > stack_start { top_of_stack - stack_start } else { 0 },
+            stack_usage,
             stack_size: high_water_mark as u32, // repurposed to show the "Peak" for now
             handle: tcb_addr as u32,
             task_type: crate::TaskType::Thread,
@@ -98,7 +105,7 @@ impl FreeRtos {
 
         while current_addr < top_of_stack {
             let to_read = std::cmp::min(CHUNK_SIZE, (top_of_stack - current_addr) as usize);
-            if let Err(_) = core.read_8(current_addr, &mut buffer[0..to_read]) {
+            if core.read_8(current_addr, &mut buffer[0..to_read]).is_err() {
                 break;
             }
 

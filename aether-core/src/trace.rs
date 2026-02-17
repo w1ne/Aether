@@ -14,6 +14,12 @@ pub struct TraceManager {
     config: Option<TraceConfig>,
 }
 
+impl Default for TraceManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TraceManager {
     pub fn new() -> Self {
         Self {
