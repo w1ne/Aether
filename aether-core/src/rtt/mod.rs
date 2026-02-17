@@ -14,6 +14,12 @@ pub struct RttManager {
     rtt: Option<Rtt>,
 }
 
+impl Default for RttManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl RttManager {
     pub fn new() -> Self {
         Self {
@@ -74,7 +80,7 @@ impl RttManager {
     /// Write data to a down channel.
     pub fn write_channel(&mut self, core: &mut Core, channel_number: usize, data: &[u8]) -> Result<usize> {
         let rtt = self.rtt.as_mut().context("RTT not attached")?;
-        let mut channel = rtt.down_channel(channel_number)
+        let channel = rtt.down_channel(channel_number)
             .context(format!("Down channel {} not found", channel_number))?;
 
         let bytes_written = channel.write(core, data)
