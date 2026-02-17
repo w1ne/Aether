@@ -36,11 +36,25 @@ service AetherDebug {
     // RTT
     rpc RttWrite (RttWriteRequest) returns (Empty);
 
+    // Expansion
+    rpc LoadSvd (FileRequest) returns (Empty);
+    rpc LoadSymbols (FileRequest) returns (Empty);
+    rpc Flash (FileRequest) returns (stream FlashProgress);
+    rpc Disassemble (DisasmRequest) returns (DisasmResponse);
+
+    // Semihosting & ITM
+    rpc EnableSemihosting (Empty) returns (Empty);
+    rpc EnableItm (ItmConfig) returns (Empty);
+
     // Event stream
     rpc SubscribeEvents (Empty) returns (stream DebugEvent);
 }
 
 message Empty {}
+
+message ItmConfig {
+    uint32 baud_rate = 1;
+}
 
 message StatusResponse {
     bool halted = 1;
@@ -119,6 +133,26 @@ message RttWriteRequest {
     bytes data = 2;
 }
 
+message FileRequest {
+    string path = 1;
+}
+
+message FlashProgress {
+    string status = 1;
+    float progress = 2;
+    bool done = 3;
+    string error = 4;
+}
+
+message DisasmRequest {
+    uint64 address = 1;
+    uint32 count = 2;
+}
+
+message DisasmResponse {
+    repeated string instructions = 1;
+}
+
 message DebugEvent {
     oneof event {
         HaltedEvent halted = 1;
@@ -131,7 +165,17 @@ message DebugEvent {
         RttEvent rtt = 8;
         BreakpointEvent breakpoint = 9;
         VariableEvent variable = 10;
+        SemihostingEvent semihosting = 11;
+        ItmEvent itm = 12;
     }
+}
+
+message SemihostingEvent {
+    string output = 1;
+}
+
+message ItmEvent {
+    bytes data = 1;
 }
 
 message TasksEvent {
