@@ -1143,7 +1143,7 @@ stub.Resume(aether_pb2.Empty())
                         ui.colored_label(text_color, &insn.mnemonic);
                         ui.colored_label(text_color, &insn.op_str);
                         
-                        if ui.button("⏩").on_hover_text("Run to here").clicked() {
+                        if ui.button(">>").on_hover_text("Run to here").clicked() {
                             if let Some(handle) = &self.session_handle {
                                 let _ = handle.send(aether_core::DebugCommand::SetBreakpoint(insn.address));
                                 let _ = handle.send(aether_core::DebugCommand::Resume);
@@ -1645,13 +1645,13 @@ stub.Resume(aether_pb2.Empty())
     pub(crate) fn draw_control_view(&mut self, ui: &mut egui::Ui) {
         // Connection Section
         ui.add_space(8.0);
-        ui.collapsing("🔌 Connection", |ui| {
+        ui.collapsing("⚡ Connection", |ui| {
             ui.vertical(|ui| {
                 ui.horizontal(|ui| {
-                    if ui.button("🔄 Refresh").clicked() {
+                    if ui.button("⟲ Refresh").clicked() {
                         self.refresh_probes();
                     }
-                    if ui.button("🔌 Connect").clicked() {
+                    if ui.button("⚡ Connect").clicked() {
                         self.connect_probe();
                     }
                 });
@@ -1685,18 +1685,18 @@ stub.Resume(aether_pb2.Empty())
         
         // Core Control Section
         ui.group(|ui| {
-            ui.heading("🕹 Core Control");
+            ui.heading("🎮 Core Control");
             ui.horizontal_wrapped(|ui| {
                 let btn_size = egui::vec2(70.0, 30.0);
                 
                 ui.add_enabled_ui(self.session_handle.is_some(), |ui| {
-                        if ui.add(egui::Button::new("⏸ Halt").min_size(btn_size)).clicked() {
+                        if ui.add(egui::Button::new("|| Halt").min_size(btn_size)).clicked() {
                             let _ = self.session_handle.as_ref().unwrap().send(aether_core::DebugCommand::Halt);
                         }
-                        if ui.add(egui::Button::new("▶ Resume").min_size(btn_size)).clicked() {
+                        if ui.add(egui::Button::new("> Resume").min_size(btn_size)).clicked() {
                             let _ = self.session_handle.as_ref().unwrap().send(aether_core::DebugCommand::Resume);
                         }
-                        if ui.add(egui::Button::new("⏭ Step").min_size(btn_size)).clicked() {
+                        if ui.add(egui::Button::new(">> Step").min_size(btn_size)).clicked() {
                             let _ = self.session_handle.as_ref().unwrap().send(aether_core::DebugCommand::Step);
                         }
                         if ui.add(egui::Button::new("↷ Over").min_size(btn_size)).clicked() {
@@ -1715,7 +1715,7 @@ stub.Resume(aether_pb2.Empty())
         ui.add_space(8.0);
         
         // Registers Section
-        ui.collapsing("🔢 Registers", |ui| {
+        ui.collapsing("⌗ Registers", |ui| {
             egui::ScrollArea::vertical().id_source("regs").show(ui, |ui| {
                 egui::Grid::new("reg_grid").striped(true).spacing(egui::vec2(20.0, 4.0)).show(ui, |ui| {
                     for i in 0..16 {
@@ -1734,7 +1734,7 @@ stub.Resume(aether_pb2.Empty())
         ui.add_space(8.0);
 
         // Breakpoints Section
-        ui.collapsing("🛑 Breakpoints", |ui| {
+        ui.collapsing("⛔ Breakpoints", |ui| {
             self.draw_breakpoints_view(ui);
         });
         
@@ -1743,7 +1743,7 @@ stub.Resume(aether_pb2.Empty())
         // Flashing Section
         ui.collapsing("🚀 Flash Programming", |ui| {
             ui.horizontal(|ui| {
-                if ui.button("📂 File").clicked() {
+                if ui.button("📁 File").clicked() {
                     if let Some(path) = rfd::FileDialog::new()
                         .add_filter("Binaries", &["bin", "elf", "hex"])
                         .pick_file()
@@ -1811,21 +1811,21 @@ impl eframe::App for AetherApp {
                 
                 // Window Menu for tab recovery
                 if let Some(mut dock_state) = self.dock_state.take() {
-                    ui.menu_button("🗔 Window", |ui| {
+                    ui.menu_button("⛶ Window", |ui| {
                         let tabs = [
                             (DebugTab::Control, "⚡ Control"),
                             (DebugTab::Peripherals, "☰ Peripherals"),
-                            (DebugTab::Variables, "🔍 Watch"),
-                            (DebugTab::Stack, "📚 Stack"),
+                            (DebugTab::Variables, "🔎 Watch"),
+                            (DebugTab::Stack, "⛃ Stack"),
                             (DebugTab::Tasks, "⚙ Tasks"),
                             (DebugTab::Timeline, "⏱ Timeline"),
-                            (DebugTab::Source, "📝 Source"),
-                            (DebugTab::Memory, "💾 Memory"),
-                            (DebugTab::Disassembly, "📜 Disassembly"),
+                            (DebugTab::Source, "✍ Source"),
+                            (DebugTab::Memory, "🖴 Memory"),
+                            (DebugTab::Disassembly, "☷ Disassembly"),
                             (DebugTab::Logs, "📑 Logs"),
-                            (DebugTab::Rtt, "💬 RTT"),
+                            (DebugTab::Rtt, "⫘ RTT"),
                             (DebugTab::Agent, "🤖 Agent"),
-                            (DebugTab::Plot, "📊 Plot"),
+                            (DebugTab::Plot, "📈 Plot"),
                         ];
 
                         for (tab, label) in tabs {

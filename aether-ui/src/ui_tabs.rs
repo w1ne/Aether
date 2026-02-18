@@ -35,16 +35,16 @@ impl<'a> TabViewer for AetherTabViewer<'a> {
         match tab {
             DebugTab::Control => "⚡ Control".into(),
             DebugTab::Peripherals => "☰ Peripherals".into(),
-            DebugTab::Rtt => "💬 RTT".into(),
-            DebugTab::Source => "📝 Source".into(),
-            DebugTab::Plot => "📊 Plot".into(),
+            DebugTab::Rtt => "⫘ RTT".into(),
+            DebugTab::Source => "✍ Source".into(),
+            DebugTab::Plot => "📈 Plot".into(),
             DebugTab::Tasks => "⚙ Tasks".into(),
-            DebugTab::Stack => "📚 Stack".into(),
+            DebugTab::Stack => "⛃ Stack".into(),
             DebugTab::Timeline => "⏱ Timeline".into(),
-            DebugTab::Variables => "🔍 Watch".into(),
+            DebugTab::Variables => "🔎 Watch".into(),
             DebugTab::Agent => "🤖 Agent".into(),
-            DebugTab::Memory => "💾 Memory".into(),
-            DebugTab::Disassembly => "📜 Disassembly".into(),
+            DebugTab::Memory => "🖴 Memory".into(),
+            DebugTab::Disassembly => "☷ Disassembly".into(),
             DebugTab::Logs => "📑 Logs".into(),
         }
     }
