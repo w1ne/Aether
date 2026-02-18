@@ -290,7 +290,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             RtosCommands::Stack => {
                 let frames = client.get_stack(Empty {}).await?.into_inner().frames;
                 for (i, f) in frames.iter().enumerate() {
-                    println!("#{}: 0x{:08X} in {} ({}:{})", i, f.pc, f.function_name, f.file, f.line);
+                    let func = f.function_name.as_deref().unwrap_or("??");
+                    let file = f.file.as_deref().unwrap_or("??");
+                    let line = f.line.map(|l| l.to_string()).unwrap_or_else(|| "??".to_string());
+                    println!("#{}: 0x{:08X} in {} ({}:{})", i, f.pc, func, file, line);
                 }
             }
             RtosCommands::Watch { name } => {

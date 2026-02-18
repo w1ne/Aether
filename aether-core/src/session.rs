@@ -21,7 +21,6 @@ pub enum DebugCommand {
     StepOver,
     StepInto,
     StepOut,
-    Reset,
     ReadRegister(u16),
     WriteRegister(u16, u64),
     ReadMemory(u64, usize),
@@ -57,8 +56,6 @@ pub enum DebugCommand {
     EnableTrace(crate::trace::TraceConfig),
     Exit,
     StartFlashing(std::path::PathBuf),
-<<<<<<< Updated upstream
-=======
     EnableSemihosting,
     EnableItm { baud_rate: u32 },
     ListProbes,
@@ -68,7 +65,7 @@ pub enum DebugCommand {
         protocol: Option<crate::probe::WireProtocol>,
         under_reset: bool,
     },
->>>>>>> Stashed changes
+    Reset,
 }
 
 struct PlotConfig {
@@ -115,13 +112,10 @@ pub enum DebugEvent {
     FlashStatus(String),
     FlashDone,
     VariableResolved(crate::symbols::TypeInfo),
-<<<<<<< Updated upstream
-=======
     SemihostingOutput(String),
     ItmPacket(Vec<u8>),
     Probes(Vec<crate::probe::ProbeInfo>),
     Attached(crate::probe::TargetInfo),
->>>>>>> Stashed changes
 }
 
 /// A handle to the debug session running in a background thread.
@@ -165,18 +159,17 @@ impl SessionHandle {
             let mut session = session;
             let evt_tx = evt_tx_thread; // Shadow for inner scope
             let debug_manager = DebugManager::new();
-            let _memory_manager = crate::MemoryManager::new();
+            let memory_manager = crate::MemoryManager::new();
             let disasm_manager = crate::disasm::DisassemblyManager::new();
             let mut breakpoint_manager = crate::debug::BreakpointManager::new();
             let mut svd_manager = crate::svd::SvdManager::new();
             let mut rtt_manager = crate::rtt::RttManager::new();
             let mut symbol_manager = crate::symbols::SymbolManager::new();
             let mut trace_manager = crate::trace::TraceManager::new();
-            let mut semihosting_manager = crate::semihosting::SemihostingManager::new();
-            let mut itm_manager = crate::itm::ItmManager::new();
             let mut rtos_manager: Option<Box<dyn crate::rtos::RtosAware>> = None;
             let mut _last_poll = Instant::now();
             let mut core_status = None;
+            let mut itm_manager = crate::itm::ItmManager::new();
             
             let mut plots: Vec<PlotConfig> = Vec::new();
             let mut last_plot_poll = Instant::now();
@@ -214,28 +207,6 @@ impl SessionHandle {
                          }
                          DebugCommand::Exit => return,
                          DebugCommand::StartFlashing(path) => {
-<<<<<<< Updated upstream
-                             let flash_manager = crate::flash::FlashManager::new();
-                             let tx_clone = evt_tx.clone();
-                             
-                             let progress = FlashProgress::new(move |event| {
-                                  let update = match event {
-                                      ProgressEvent::Started(_) => DebugEvent::FlashStatus("Started".to_string()),
-                                      ProgressEvent::Progress { size, .. } => DebugEvent::FlashProgress(size as f32),
-                                      ProgressEvent::Finished(_) => DebugEvent::FlashStatus("Finished".to_string()),
-                                      ProgressEvent::Failed(_) => DebugEvent::Error("Flash failed".to_string()),
-                                      _ => return,
-                                  };
-                                  let _ = tx_clone.send(update);
-                              });
-
-                             match flash_manager.flash_elf(&mut session, &path, progress) {
-                                 Ok(_) => { let _ = evt_tx.send(DebugEvent::FlashDone); }
-                                 Err(e) => { let _ = evt_tx.send(DebugEvent::Error(format!("Flash failed: {}", e))); }
-                             }
-                             continue;
-                         }
-=======
                              if let Some(ref mut s) = session {
                                  let flash_manager = crate::flash::FlashManager::new();
                                  let tx_clone = evt_tx.clone();
@@ -280,12 +251,6 @@ impl SessionHandle {
                              continue;
                          }
                          DebugCommand::EnableSemihosting => {
-                             // Just a flag or similar? The manager doesn't store state yet, but we will use it.
-                             // Actually the manager doesn't need enabling, we just start checking.
-                             // But maybe we want to store that we Should check.
-                             // For now, let's assume it's always "enabled" if instantiated, 
-                             // OR we can add an `enabled` flag to manager later.
-                             // Let's Just Log for now.
                              log::info!("Semihosting enabled");
                              continue;
                          }
@@ -323,7 +288,6 @@ impl SessionHandle {
                              }
                              continue;
                          }
->>>>>>> Stashed changes
                          // Core commands
                          core_cmd => {
                              let s = match session.as_mut() {
@@ -370,21 +334,6 @@ impl SessionHandle {
                                           let _ = evt_tx.send(DebugEvent::Error("No symbols".to_string()));
                                      }
                                  }
-<<<<<<< Updated upstream
-                                 DebugCommand::StepInto => {
-                                     if let Some(debug_info) = symbol_manager.debug_info() {
-                                         match SteppingMode::IntoStatement.step(&mut core, debug_info) {
-                                              Ok((_status, pc)) => { let _ = evt_tx.send(DebugEvent::Halted { pc }); }
-                                              Err(e) => { let _ = evt_tx.send(DebugEvent::Error(format!("StepInto failed: {:?}", e))); }
-                                         }
-                                     } else {
-                                          let _ = evt_tx.send(DebugEvent::Error("No symbols".to_string()));
-                                     }
-                                 }
-                                 DebugCommand::StepOut => {
-                                      let _ = debug_manager.step(&mut core); 
-                                 }
-=======
                                   DebugCommand::StepInto => {
                                       if let Some(debug_info) = symbol_manager.debug_info() {
                                           match SteppingMode::IntoStatement.step(&mut core, debug_info) {
@@ -421,7 +370,6 @@ impl SessionHandle {
                                          Err(e) => { let _ = evt_tx.send(DebugEvent::Error(format!("Reset failed: {}", e))); }
                                      }
                                  }
->>>>>>> Stashed changes
                                  DebugCommand::ReadMemory(addr, size) => {
                                      let mut data = vec![0u8; size];
                                      match core.read(addr, &mut data) {
@@ -447,7 +395,7 @@ impl SessionHandle {
                                      }
                                  }
                                  DebugCommand::ReadRegister(id) => {
-                                     if let Ok(val) = core.read_core_reg(id) {
+                                     if let Ok(val) = core.read_core_reg(id as u16) {
                                           let val_u64: u64 = match val {
                                               probe_rs::RegisterValue::U32(v) => v as u64,
                                               probe_rs::RegisterValue::U64(v) => v,
@@ -457,7 +405,7 @@ impl SessionHandle {
                                      }
                                  }
                                  DebugCommand::WriteRegister(id, val) => {
-                                     let _ = core.write_core_reg(id, val);
+                                     let _ = core.write_core_reg(id as u16, val);
                                  }
                                  DebugCommand::SetBreakpoint(addr) => {
                                      if let Err(e) = breakpoint_manager.set_breakpoint(&mut core, addr) {
@@ -540,7 +488,7 @@ impl SessionHandle {
                                     }
                                 }
                                 DebugCommand::ToggleBreakpointAtSource(file, line) => {
-                                    if let Some(addr) = symbol_manager.get_address(std::path::Path::new(&file), line) {
+                                    if let Some(addr) = symbol_manager.get_address(&std::path::Path::new(&file), line) {
                                         let _ = breakpoint_manager.toggle_breakpoint(&mut core, addr);
                                         let _ = evt_tx.send(DebugEvent::Breakpoints(breakpoint_manager.list()));
                                         
@@ -594,35 +542,8 @@ impl SessionHandle {
                     }
                 } else {
                     // 3. Polling (Status, RTT, Plots)
-                    {
-<<<<<<< Updated upstream
-                        let mut core = match session.core(0) {
-                             Ok(c) => c,
-                             Err(_) => continue,
-                        };
-                        
-                        // Poll Status
-                        if let Ok(status) = core.status() {
-                             let is_halted = status.is_halted();
-                             let was_halted = core_status.as_ref().map(|s: &CoreStatus| s.is_halted()) == Some(true);
-                             
-                             if is_halted && !was_halted {
-                                  // Just halted
-                                  if let Ok(pc_val) = core.read_core_reg(core.program_counter()) {
-                                      let pc: u64 = match pc_val {
-                                          probe_rs::RegisterValue::U32(v) => v as u64,
-                                          probe_rs::RegisterValue::U64(v) => v,
-                                          probe_rs::RegisterValue::U128(v) => v as u64,
-                                      };
-                                      let _ = evt_tx.send(DebugEvent::Halted { pc });
-=======
-
-                        // Scope for core usage
+                    if let Some(ref mut s) = session {
                         {
-                            let s = match session.as_mut() {
-                                Some(s) => s,
-                                None => continue,
-                            };
                             let mut core = match s.core(0) {
                                 Ok(c) => c,
                                 Err(_) => continue,
@@ -647,7 +568,6 @@ impl SessionHandle {
                                   if core_status != Some(status) {
                                        core_status = Some(status);
                                        let _ = evt_tx.send(DebugEvent::Status(status));
->>>>>>> Stashed changes
                                   }
                              }
 
@@ -685,35 +605,33 @@ impl SessionHandle {
                                  last_plot_poll = Instant::now();
                             }
 
-<<<<<<< Updated upstream
-                        // Poll RTOS Task Switch (20Hz) - Foundation for Timeline View
-                        if last_status_poll.elapsed() >= Duration::from_millis(50) {
-                             if let Some(current_tcb_ptr) = symbol_manager.lookup_symbol("pxCurrentTCB") {
-                                  if let Ok(current_tcb) = core.read_word_32(current_tcb_ptr) {
-                                       if Some(current_tcb) != last_task_handle {
-                                            let _ = evt_tx.send(DebugEvent::TaskSwitch {
-                                                from: last_task_handle,
-                                                to: current_tcb,
-                                                timestamp: session_start.elapsed().as_secs_f64(),
-                                            });
-                                            last_task_handle = Some(current_tcb);
-                                       }
-                                  }
-                             }
-                             last_status_poll = Instant::now();
-=======
-                        // Poll ITM (needs mutable session)
-                        if let Some(ref mut s) = session {
-                            if let Ok(data) = itm_manager.read_swo(s) {
-                                if !data.is_empty() {
-                                    let _ = evt_tx.send(DebugEvent::ItmPacket(data));
-                                }
+                            // Poll RTOS Task Switch (20Hz) - Foundation for Timeline View
+                            if last_status_poll.elapsed() >= Duration::from_millis(50) {
+                                 if let Some(current_tcb_ptr) = symbol_manager.lookup_symbol("pxCurrentTCB") {
+                                      if let Ok(current_tcb) = core.read_word_32(current_tcb_ptr) {
+                                           if Some(current_tcb) != last_task_handle {
+                                                let _ = evt_tx.send(DebugEvent::TaskSwitch {
+                                                    from: last_task_handle,
+                                                    to: current_tcb,
+                                                    timestamp: session_start.elapsed().as_secs_f64(),
+                                                });
+                                                last_task_handle = Some(current_tcb);
+                                           }
+                                      }
+                                 }
+                                 last_status_poll = Instant::now();
                             }
->>>>>>> Stashed changes
+                        }
+
+                        // Poll ITM (needs mutable session)
+                        if let Ok(data) = itm_manager.read_swo(s) {
+                            if !data.is_empty() {
+                                let _ = evt_tx.send(DebugEvent::ItmPacket(data));
+                            }
                         }
                     }
                 }
-                
+
                 thread::sleep(Duration::from_millis(10));
             }
         });

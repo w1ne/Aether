@@ -1,12 +1,3 @@
-#![allow(missing_docs)]
-#![allow(clippy::cast_possible_truncation)]
-#![allow(clippy::too_many_lines)]
-#![allow(clippy::derive_partial_eq_without_eq)]
-#![allow(clippy::doc_markdown)]
-#![allow(clippy::default_trait_access)]
-#![allow(clippy::missing_const_for_fn)]
-#![allow(clippy::option_if_let_else)]
-
 use tonic::{transport::Server, Request, Response, Status};
 use tokio::sync::broadcast;
 use tokio_stream::wrappers::BroadcastStream;
@@ -20,9 +11,6 @@ pub mod proto {
 }
 
 use proto::aether_debug_server::{AetherDebug, AetherDebugServer};
-<<<<<<< Updated upstream
-use proto::{Empty, StatusResponse, ReadMemoryRequest, ReadMemoryResponse, ReadRegisterRequest, ReadRegisterResponse, DebugEvent};
-=======
 use proto::{
     Empty, StatusResponse, ReadMemoryRequest, ReadMemoryResponse, WriteMemoryRequest,
     ReadRegisterRequest, ReadRegisterResponse, WriteRegisterRequest,
@@ -33,19 +21,15 @@ use proto::{
     ItmConfig, SemihostingEvent, ItmEvent,
     ProbeList, ProbeInfo as ProtoProbeInfo, AttachRequest
 };
->>>>>>> Stashed changes
 
 pub struct AetherDebugService {
     session: Arc<SessionHandle>,
 }
 
 impl AetherDebugService {
-    #[must_use] 
-    pub const fn new(session: Arc<SessionHandle>) -> Self {
+    pub fn new(session: Arc<SessionHandle>) -> Self {
         Self { session }
     }
-<<<<<<< Updated upstream
-=======
 
     async fn wait_for_match<F>(&self, rx: &mut broadcast::Receiver<CoreDebugEvent>, matcher: F) -> Result<CoreDebugEvent, Status>
     where
@@ -68,156 +52,126 @@ impl AetherDebugService {
             }
         }
     }
->>>>>>> Stashed changes
 }
 
 #[tonic::async_trait]
 impl AetherDebug for AetherDebugService {
     type SubscribeEventsStream = std::pin::Pin<Box<dyn tokio_stream::Stream<Item = Result<DebugEvent, Status>> + Send + Sync>>;
 
-    // --- Execution Control ---
-
     async fn halt(&self, _request: Request<Empty>) -> Result<Response<Empty>, Status> {
-        let mut rx = self.session.subscribe();
-        self.session.send(DebugCommand::Halt).map_err(|e| Status::internal(e.to_string()))?;
-        let _ = self.wait_for_match(&mut rx, |e| matches!(e, CoreDebugEvent::Halted { .. })).await?;
+        self.session.send(DebugCommand::Halt)
+            .map_err(|e| Status::internal(e.to_string()))?;
         Ok(Response::new(Empty {}))
     }
 
     async fn resume(&self, _request: Request<Empty>) -> Result<Response<Empty>, Status> {
-        self.session.send(DebugCommand::Resume).map_err(|e| Status::internal(e.to_string()))?;
+        self.session.send(DebugCommand::Resume)
+            .map_err(|e| Status::internal(e.to_string()))?;
         Ok(Response::new(Empty {}))
     }
 
     async fn step(&self, _request: Request<Empty>) -> Result<Response<Empty>, Status> {
-        let mut rx = self.session.subscribe();
-        self.session.send(DebugCommand::Step).map_err(|e| Status::internal(e.to_string()))?;
-        let _ = self.wait_for_match(&mut rx, |e| matches!(e, CoreDebugEvent::Halted { .. })).await?;
+        self.session.send(DebugCommand::Step)
+            .map_err(|e| Status::internal(e.to_string()))?;
         Ok(Response::new(Empty {}))
     }
 
     async fn step_over(&self, _request: Request<Empty>) -> Result<Response<Empty>, Status> {
-        let mut rx = self.session.subscribe();
-        self.session.send(DebugCommand::StepOver).map_err(|e| Status::internal(e.to_string()))?;
-        let _ = self.wait_for_match(&mut rx, |e| matches!(e, CoreDebugEvent::Halted { .. })).await?;
+        self.session.send(DebugCommand::StepOver)
+            .map_err(|e| Status::internal(e.to_string()))?;
         Ok(Response::new(Empty {}))
     }
 
     async fn step_into(&self, _request: Request<Empty>) -> Result<Response<Empty>, Status> {
-        let mut rx = self.session.subscribe();
-        self.session.send(DebugCommand::StepInto).map_err(|e| Status::internal(e.to_string()))?;
-        let _ = self.wait_for_match(&mut rx, |e| matches!(e, CoreDebugEvent::Halted { .. })).await?;
+        self.session.send(DebugCommand::StepInto)
+            .map_err(|e| Status::internal(e.to_string()))?;
         Ok(Response::new(Empty {}))
     }
 
     async fn step_out(&self, _request: Request<Empty>) -> Result<Response<Empty>, Status> {
-        let mut rx = self.session.subscribe();
-        self.session.send(DebugCommand::StepOut).map_err(|e| Status::internal(e.to_string()))?;
-        let _ = self.wait_for_match(&mut rx, |e| matches!(e, CoreDebugEvent::Halted { .. })).await?;
+        self.session.send(DebugCommand::StepOut)
+            .map_err(|e| Status::internal(e.to_string()))?;
         Ok(Response::new(Empty {}))
     }
 
     async fn reset(&self, _request: Request<Empty>) -> Result<Response<Empty>, Status> {
-        let mut rx = self.session.subscribe();
-        self.session.send(DebugCommand::Reset).map_err(|e| Status::internal(e.to_string()))?;
-        let _ = self.wait_for_match(&mut rx, |e| matches!(e, CoreDebugEvent::Halted { .. })).await?;
-        Ok(Response::new(Empty {}))
-    }
-
-    // --- Breakpoints ---
-
-    async fn set_breakpoint(&self, request: Request<BreakpointRequest>) -> Result<Response<Empty>, Status> {
-        let req = request.into_inner();
-        self.session.send(DebugCommand::SetBreakpoint(req.address))
+        self.session.send(DebugCommand::Reset)
             .map_err(|e| Status::internal(e.to_string()))?;
         Ok(Response::new(Empty {}))
     }
-
-    async fn clear_breakpoint(&self, request: Request<BreakpointRequest>) -> Result<Response<Empty>, Status> {
-        let req = request.into_inner();
-        self.session.send(DebugCommand::ClearBreakpoint(req.address))
-            .map_err(|e| Status::internal(e.to_string()))?;
-        Ok(Response::new(Empty {}))
-    }
-
-    async fn list_breakpoints(&self, _request: Request<Empty>) -> Result<Response<BreakpointList>, Status> {
-        let mut rx = self.session.subscribe();
-        self.session.send(DebugCommand::ListBreakpoints).map_err(|e| Status::internal(e.to_string()))?;
-        
-        let event = self.wait_for_match(&mut rx, |e| matches!(e, CoreDebugEvent::Breakpoints(_))).await?;
-        
-        if let CoreDebugEvent::Breakpoints(addrs) = event {
-             Ok(Response::new(BreakpointList { addresses: addrs }))
-        } else {
-             Err(Status::internal("Unexpected event"))
-        }
-    }
-
-    // --- State Inspection ---
 
     async fn get_status(&self, _request: Request<Empty>) -> Result<Response<StatusResponse>, Status> {
-        self.session.send(DebugCommand::PollStatus).map_err(|e| Status::internal(e.to_string()))?;
-        // Return mostly dummy or last known status.
+        self.session.send(DebugCommand::PollStatus)
+             .map_err(|e| Status::internal(e.to_string()))?;
+
+        // Return a dummy response for now, real status comes via events
         Ok(Response::new(StatusResponse {
-            halted: false, 
+            halted: false,
             pc: 0,
-            core_status: "Only via events".to_string(),
+            core_status: "Unknown".to_string(),
         }))
     }
 
-    async fn read_memory(&self, request: Request<ReadMemoryRequest>) -> Result<Response<ReadMemoryResponse>, Status> {
-        let req = request.into_inner();
-        let mut rx = self.session.subscribe();
-        
-        self.session.send(DebugCommand::ReadMemory(req.address, req.length as usize))
-            .map_err(|e| Status::internal(e.to_string()))?;
-            
-        let event = self.wait_for_match(&mut rx, move |e| {
-            if let CoreDebugEvent::MemoryData(addr, _) = e {
-                *addr == req.address
-            } else {
-                false
-            }
-        }).await?;
-        
-        if let CoreDebugEvent::MemoryData(_, data) = event {
-            Ok(Response::new(ReadMemoryResponse { data }))
-        } else {
-            Err(Status::internal("Unexpected event"))
-        }
-    }
-    
-    async fn write_memory(&self, request: Request<WriteMemoryRequest>) -> Result<Response<Empty>, Status> {
-        let req = request.into_inner();
-        self.session.send(DebugCommand::WriteMemory(req.address, req.data))
-            .map_err(|e| Status::internal(e.to_string()))?;
-        Ok(Response::new(Empty {}))
+    async fn read_memory(&self, _request: Request<ReadMemoryRequest>) -> Result<Response<ReadMemoryResponse>, Status> {
+        Err(Status::unimplemented("Synchronous memory read not supported yet"))
     }
 
-    async fn read_register(&self, request: Request<ReadRegisterRequest>) -> Result<Response<ReadRegisterResponse>, Status> {
-        let req = request.into_inner();
-        let mut rx = self.session.subscribe();
-        
-        self.session.send(DebugCommand::ReadRegister(req.register_number as u16))
-            .map_err(|e| Status::internal(e.to_string()))?;
-            
-        let event = self.wait_for_match(&mut rx, move |e| {
-            if let CoreDebugEvent::RegisterValue(reg, _) = e {
-                *reg == req.register_number as u16
-            } else {
-                false
-            }
-        }).await?;
-        
-        if let CoreDebugEvent::RegisterValue(_, val) = event {
-            Ok(Response::new(ReadRegisterResponse { value: val }))
-        } else {
-             Err(Status::internal("Unexpected event"))
-        }
+    async fn read_register(&self, _request: Request<ReadRegisterRequest>) -> Result<Response<ReadRegisterResponse>, Status> {
+        Err(Status::unimplemented("Synchronous register read not supported yet"))
     }
 
-<<<<<<< Updated upstream
-=======
+    async fn write_memory(&self, _request: Request<WriteMemoryRequest>) -> Result<Response<Empty>, Status> {
+        Err(Status::unimplemented("WriteMemory not implemented"))
+    }
+
+    async fn write_register(&self, _request: Request<WriteRegisterRequest>) -> Result<Response<Empty>, Status> {
+        Err(Status::unimplemented("WriteRegister not implemented"))
+    }
+
+    async fn load_svd(&self, _request: Request<FileRequest>) -> Result<Response<Empty>, Status> {
+        Err(Status::unimplemented("LoadSvd not implemented"))
+    }
+
+    async fn get_peripherals(&self, _request: Request<Empty>) -> Result<Response<PeripheralResponse>, Status> {
+        Err(Status::unimplemented("GetPeripherals not implemented"))
+    }
+
+    async fn read_peripheral(&self, _request: Request<PeripheralRequest>) -> Result<Response<proto::RegisterList>, Status> {
+        Err(Status::unimplemented("ReadPeripheral not implemented"))
+    }
+
+    async fn write_peripheral(&self, _request: Request<PeripheralWriteRequest>) -> Result<Response<Empty>, Status> {
+        Err(Status::unimplemented("WritePeripheral not implemented"))
+    }
+
+    async fn set_breakpoint(&self, _request: Request<BreakpointRequest>) -> Result<Response<Empty>, Status> {
+        Err(Status::unimplemented("SetBreakpoint not implemented"))
+    }
+
+    async fn clear_breakpoint(&self, _request: Request<BreakpointRequest>) -> Result<Response<Empty>, Status> {
+        Err(Status::unimplemented("ClearBreakpoint not implemented"))
+    }
+
+    async fn list_breakpoints(&self, _request: Request<Empty>) -> Result<Response<BreakpointList>, Status> {
+        Err(Status::unimplemented("ListBreakpoints not implemented"))
+    }
+
+    async fn watch_variable(&self, _request: Request<WatchVariableRequest>) -> Result<Response<Empty>, Status> {
+        Err(Status::unimplemented("WatchVariable not implemented"))
+    }
+
+    async fn rtt_write(&self, _request: Request<RttWriteRequest>) -> Result<Response<Empty>, Status> {
+        Err(Status::unimplemented("RttWrite not implemented"))
+    }
+
+    async fn get_tasks(&self, _request: Request<Empty>) -> Result<Response<TasksEvent>, Status> {
+        Err(Status::unimplemented("GetTasks not implemented"))
+    }
+
+    async fn get_stack(&self, _request: Request<Empty>) -> Result<Response<StackResponse>, Status> {
+        Err(Status::unimplemented("GetStack not implemented"))
+    }
+
     async fn load_symbols(&self, request: Request<FileRequest>) -> Result<Response<Empty>, Status> {
         let req = request.into_inner();
         self.session.send(DebugCommand::LoadSymbols(std::path::PathBuf::from(req.path)))
@@ -345,15 +299,14 @@ impl AetherDebug for AetherDebugService {
     
     // --- Events ---
     
->>>>>>> Stashed changes
     async fn subscribe_events(&self, _request: Request<Empty>) -> Result<Response<Self::SubscribeEventsStream>, Status> {
         let rx = self.session.subscribe();
         let stream = BroadcastStream::new(rx);
 
         let output = stream.filter_map(|res| {
             match res {
-                Ok(core_event) => map_core_event_to_proto(core_event).map(Ok),
-                Err(_) => None, 
+                Ok(core_event) => map_core_event_to_proto(core_event).map(|e| Ok(e)),
+                Err(_) => None, // Lagged or missed events
             }
         });
 
@@ -361,7 +314,6 @@ impl AetherDebug for AetherDebugService {
     }
 }
 
-#[must_use] 
 pub fn map_core_event_to_proto(event: CoreDebugEvent) -> Option<DebugEvent> {
     match event {
         CoreDebugEvent::Halted { pc } => Some(DebugEvent {
@@ -375,7 +327,7 @@ pub fn map_core_event_to_proto(event: CoreDebugEvent) -> Option<DebugEvent> {
         }),
         CoreDebugEvent::RegisterValue(address, value) => Some(DebugEvent {
             event: Some(proto::debug_event::Event::Register(proto::RegisterEvent { 
-                register: u32::from(address), 
+                register: address as u32, 
                 value 
             }))
         }),
@@ -412,8 +364,6 @@ pub fn map_core_event_to_proto(event: CoreDebugEvent) -> Option<DebugEvent> {
                 data,
             }))
         }),
-<<<<<<< Updated upstream
-=======
         CoreDebugEvent::SemihostingOutput(output) => Some(DebugEvent {
             event: Some(proto::debug_event::Event::Semihosting(SemihostingEvent {
                 output
@@ -441,12 +391,10 @@ pub fn map_core_event_to_proto(event: CoreDebugEvent) -> Option<DebugEvent> {
                 architecture: info.architecture,
             }))
         }),
->>>>>>> Stashed changes
         _ => None
     }
 }
 
-#[must_use] 
 pub fn map_proto_event_to_core(event: DebugEvent) -> Option<CoreDebugEvent> {
     match event.event? {
         proto::debug_event::Event::Halted(h) => Some(CoreDebugEvent::Halted { pc: h.pc }),
@@ -459,6 +407,7 @@ pub fn map_proto_event_to_core(event: DebugEvent) -> Option<CoreDebugEvent> {
             state: match ti.state.as_str() {
                 "Running" => aether_core::TaskState::Running,
                 "Blocked" => aether_core::TaskState::Blocked,
+                "Ready" => aether_core::TaskState::Ready,
                 _ => aether_core::TaskState::Ready,
             },
             stack_usage: ti.stack_usage,
@@ -477,8 +426,6 @@ pub fn map_proto_event_to_core(event: DebugEvent) -> Option<CoreDebugEvent> {
             value: p.value,
         }),
         proto::debug_event::Event::Rtt(r) => Some(CoreDebugEvent::RttData(r.channel as usize, r.data)),
-<<<<<<< Updated upstream
-=======
         proto::debug_event::Event::Breakpoint(_) | proto::debug_event::Event::Variable(_) => None,
         proto::debug_event::Event::Semihosting(s) => Some(CoreDebugEvent::SemihostingOutput(s.output)),
         proto::debug_event::Event::Itm(i) => Some(CoreDebugEvent::ItmPacket(i.data)),
@@ -494,15 +441,14 @@ pub fn map_proto_event_to_core(event: DebugEvent) -> Option<CoreDebugEvent> {
             ram_size: i.ram_size,
             architecture: i.architecture,
         })),
->>>>>>> Stashed changes
     }
 }
 
 pub async fn run_server(session: Arc<SessionHandle>, host: &str, port: u16) -> Result<(), Box<dyn std::error::Error>> {
-    let addr = format!("{host}:{port}").parse()?;
+    let addr = format!("{}:{}", host, port).parse()?;
     let service = AetherDebugService::new(session);
 
-    println!("Agent API Server listening on {addr}");
+    println!("Agent API Server listening on {}", addr);
 
     Server::builder()
         .add_service(AetherDebugServer::new(service))
@@ -510,4 +456,40 @@ pub async fn run_server(session: Arc<SessionHandle>, host: &str, port: u16) -> R
         .await?;
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use aether_core::DebugEvent as CoreDebugEvent;
+
+    #[test]
+    fn test_event_mapping_halted() {
+        let core_event = CoreDebugEvent::Halted { pc: 0x1234 };
+        let proto_event = map_core_event_to_proto(core_event).unwrap();
+        if let Some(proto::debug_event::Event::Halted(h)) = proto_event.event {
+            assert_eq!(h.pc, 0x1234);
+        } else {
+            panic!("Wrong event type");
+        }
+    }
+
+    #[test]
+    fn test_event_mapping_resumed() {
+        let core_event = CoreDebugEvent::Resumed;
+        let proto_event = map_core_event_to_proto(core_event).unwrap();
+        assert!(matches!(proto_event.event, Some(proto::debug_event::Event::Resumed(_))));
+    }
+
+    #[test]
+    fn test_event_mapping_memory() {
+        let core_event = CoreDebugEvent::MemoryData(0x2000, vec![1, 2, 3]);
+        let proto_event = map_core_event_to_proto(core_event).unwrap();
+        if let Some(proto::debug_event::Event::Memory(m)) = proto_event.event {
+            assert_eq!(m.address, 0x2000);
+            assert_eq!(m.data, vec![1, 2, 3]);
+        } else {
+            panic!("Wrong event type");
+        }
+    }
 }
