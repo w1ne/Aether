@@ -24,7 +24,12 @@ impl MemoryManager {
     }
 
     /// Read a block of memory.
-    pub fn read_block(&self, core: &mut dyn MemoryInterface, address: u64, size: usize) -> Result<Vec<u8>> {
+    pub fn read_block(
+        &self,
+        core: &mut dyn MemoryInterface,
+        address: u64,
+        size: usize,
+    ) -> Result<Vec<u8>> {
         let mut data = vec![0u8; size];
         core.read_8(address, &mut data).context("Failed to read memory block")?;
         Ok(data)
@@ -41,7 +46,12 @@ impl MemoryManager {
     }
 
     /// Write a block of memory.
-    pub fn write_block(&self, core: &mut dyn MemoryInterface, address: u64, data: &[u8]) -> Result<()> {
+    pub fn write_block(
+        &self,
+        core: &mut dyn MemoryInterface,
+        address: u64,
+        data: &[u8],
+    ) -> Result<()> {
         core.write_8(address, data).context("Failed to write memory block")
     }
 }
@@ -147,16 +157,22 @@ mod tests {
             }
             Ok(())
         }
-        fn flush(&mut self) -> Result<(), probe_rs::Error> { Ok(()) }
-        fn supports_native_64bit_access(&mut self) -> bool { false }
-        fn supports_8bit_transfers(&self) -> Result<bool, probe_rs::Error> { Ok(true) }
+        fn flush(&mut self) -> Result<(), probe_rs::Error> {
+            Ok(())
+        }
+        fn supports_native_64bit_access(&mut self) -> bool {
+            false
+        }
+        fn supports_8bit_transfers(&self) -> Result<bool, probe_rs::Error> {
+            Ok(true)
+        }
     }
 
     #[test]
     fn test_memory_manager_read_write_32() {
         let mut mock = MockMemory::new();
         let mgr = MemoryManager::new();
-        
+
         mgr.write_32(&mut mock, 0x1000, 0xDEADBEEF).unwrap();
         assert_eq!(mgr.read_32(&mut mock, 0x1000).unwrap(), 0xDEADBEEF);
     }
@@ -166,9 +182,8 @@ mod tests {
         let mut mock = MockMemory::new();
         let mgr = MemoryManager::new();
         let data = vec![1, 2, 3, 4, 5, 6, 7, 8];
-        
+
         mgr.write_block(&mut mock, 0x2000, &data).unwrap();
         assert_eq!(mgr.read_block(&mut mock, 0x2000, 8).unwrap(), data);
     }
 }
-

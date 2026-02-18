@@ -36,14 +36,12 @@ impl DisassemblyManager {
                     .build()
                     .map_err(|e| anyhow!("Failed to create Capstone: {}", e))?
             }
-            "Riscv32" => {
-                Capstone::new()
-                    .riscv()
-                    .mode(arch::riscv::ArchMode::RiscV32)
-                    .build()
-                    .map_err(|e| anyhow!("Failed to create Capstone: {}", e))?
-            }
-             _ => {
+            "Riscv32" => Capstone::new()
+                .riscv()
+                .mode(arch::riscv::ArchMode::RiscV32)
+                .build()
+                .map_err(|e| anyhow!("Failed to create Capstone: {}", e))?,
+            _ => {
                 // Default to ARM Thumb for now if unknown or fallback
                 Capstone::new()
                     .arm()
@@ -53,9 +51,8 @@ impl DisassemblyManager {
             }
         };
 
-        let instructions = cs
-            .disasm_all(code, address)
-            .map_err(|e| anyhow!("Failed to disassemble: {}", e))?;
+        let instructions =
+            cs.disasm_all(code, address).map_err(|e| anyhow!("Failed to disassemble: {}", e))?;
 
         Ok(instructions
             .iter()
@@ -82,12 +79,12 @@ mod tests {
     #[test]
     fn test_disassemble_arm_thumb() {
         let manager = DisassemblyManager::new();
-        // nop in thumb is 0x46C0 (represented as [0xC0, 0x46] in little-endian byte stream for capstone usually? 
+        // nop in thumb is 0x46C0 (represented as [0xC0, 0x46] in little-endian byte stream for capstone usually?
         // actually thumb is often handled as 16-bit. Let's try known bytes.)
         // 0x00 0xbf is NOP in Thumb.
-        let code = vec![0x00, 0xbf, 0x00, 0xbf]; 
+        let code = vec![0x00, 0xbf, 0x00, 0xbf];
         let insns = manager.disassemble("Armv7m", &code, 0x1000).unwrap();
-        
+
         assert_eq!(insns.len(), 2);
         assert_eq!(insns[0].address, 0x1000);
         assert_eq!(insns[0].mnemonic, "nop");
@@ -97,9 +94,9 @@ mod tests {
     fn test_disassemble_riscv() {
         let manager = DisassemblyManager::new();
         // 0x00000013 is nop in RISC-V (i-type, addi x0, x0, 0)
-        let code = vec![0x13, 0x00, 0x00, 0x00]; 
+        let code = vec![0x13, 0x00, 0x00, 0x00];
         let insns = manager.disassemble("Riscv32", &code, 0x2000).unwrap();
-        
+
         assert_eq!(insns.len(), 1);
         assert_eq!(insns[0].address, 0x2000);
         assert_eq!(insns[0].mnemonic, "nop");

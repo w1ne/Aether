@@ -5,15 +5,12 @@ use std::path::Path;
 /// Returns (address_str, hex_str, ascii_str)
 pub fn format_memory_line(address: u64, chunk: &[u8]) -> (String, String, String) {
     let addr_str = format!("{:08X}", address);
-    
-    let hex_part: String = chunk.iter()
-        .map(|b| format!("{:02X} ", b))
-        .collect();
-        
-    let ascii_part: String = chunk.iter()
-        .map(|b| if *b >= 32 && *b <= 126 { *b as char } else { '.' })
-        .collect();
-    
+
+    let hex_part: String = chunk.iter().map(|b| format!("{:02X} ", b)).collect();
+
+    let ascii_part: String =
+        chunk.iter().map(|b| if *b >= 32 && *b <= 126 { *b as char } else { '.' }).collect();
+
     (addr_str, format!("{:48}", hex_part), ascii_part)
 }
 

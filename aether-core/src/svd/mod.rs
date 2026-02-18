@@ -1,11 +1,11 @@
 //! SVD parsing and register decoding module.
 
 use anyhow::{Context, Result};
-use svd_parser as svd;
-use svd_rs as rs;
+use probe_rs::MemoryInterface;
 use std::fs;
 use std::path::Path;
-use probe_rs::MemoryInterface;
+use svd_parser as svd;
+use svd_rs as rs;
 
 /// Manager for SVD operations.
 #[derive(Default)]
@@ -28,39 +28,43 @@ impl SvdManager {
 
     /// Get list of peripheral names.
     pub fn list_peripherals(&self) -> Vec<String> {
-        self.device.as_ref()
+        self.device
+            .as_ref()
             .map(|d| d.peripherals.iter().map(|p| p.name.clone()).collect())
             .unwrap_or_default()
     }
 
     /// Find a peripheral by name.
     pub fn get_peripheral(&self, name: &str) -> Option<&rs::Peripheral> {
-        self.device.as_ref()?
-            .peripherals.iter()
-            .find(|p| p.name == name)
+        self.device.as_ref()?.peripherals.iter().find(|p| p.name == name)
     }
 
     /// Get detailed peripheral info.
     pub fn get_peripherals_info(&self) -> Vec<PeripheralInfo> {
-        self.device.as_ref()
+        self.device
+            .as_ref()
             .map(|d| {
-                d.peripherals.iter().map(|p| PeripheralInfo {
-                    name: p.name.clone(),
-                    base_address: p.base_address,
-                    description: p.description.clone(),
-                }).collect()
+                d.peripherals
+                    .iter()
+                    .map(|p| PeripheralInfo {
+                        name: p.name.clone(),
+                        base_address: p.base_address,
+                        description: p.description.clone(),
+                    })
+                    .collect()
             })
             .unwrap_or_default()
     }
 
     /// Get detailed registers for a peripheral.
     pub fn get_registers_info(&self, peripheral_name: &str) -> Result<Vec<RegisterInfo>> {
-        let p = self.get_peripheral(peripheral_name)
+        let p = self
+            .get_peripheral(peripheral_name)
             .context(format!("Peripheral {} not found", peripheral_name))?;
 
         let registers = match &p.registers {
-             Some(regs) => regs,
-             None => return Ok(Vec::new()),
+            Some(regs) => regs,
+            None => return Ok(Vec::new()),
         };
 
         let mut infos = Vec::new();
@@ -99,7 +103,8 @@ impl SvdManager {
         peripheral_name: &str,
         core: &mut probe_rs::Core,
     ) -> Result<Vec<RegisterInfo>> {
-        let p = self.get_peripheral(peripheral_name)
+        let p = self
+            .get_peripheral(peripheral_name)
             .context(format!("Peripheral {} not found", peripheral_name))?;
 
         let mut regs = self.get_registers_info(peripheral_name)?;
@@ -132,14 +137,20 @@ impl SvdManager {
         field_name: &str,
         new_field_value: u64,
     ) -> Result<()> {
-        let p = self.get_peripheral(peripheral_name)
+        let p = self
+            .get_peripheral(peripheral_name)
             .context(format!("Peripheral {} not found", peripheral_name))?;
 
         let regs = self.get_registers_info(peripheral_name)?;
-        let reg = regs.iter().find(|r| r.name == register_name)
-            .context(format!("Register {} not found in peripheral {}", register_name, peripheral_name))?;
+        let reg = regs.iter().find(|r| r.name == register_name).context(format!(
+            "Register {} not found in peripheral {}",
+            register_name, peripheral_name
+        ))?;
 
-        let field = reg.fields.iter().find(|f| f.name == field_name)
+        let field = reg
+            .fields
+            .iter()
+            .find(|f| f.name == field_name)
             .context(format!("Field {} not found in register {}", field_name, register_name))?;
 
         let addr = p.base_address + reg.address_offset as u64;
@@ -151,7 +162,8 @@ impl SvdManager {
             32 => core.read_word_32(addr).map(|v| v as u64),
             64 => core.read_word_64(addr),
             _ => core.read_word_32(addr).map(|v| v as u64),
-        }.context("Failed to read register for write-modify-read")?;
+        }
+        .context("Failed to read register for write-modify-read")?;
 
         // 2. Modify field
         let mask = ((1u64 << field.bit_width) - 1) << field.bit_offset;
@@ -165,7 +177,8 @@ impl SvdManager {
             32 => core.write_word_32(addr, next_val as u32),
             64 => core.write_word_64(addr, next_val),
             _ => core.write_word_32(addr, next_val as u32),
-        }.context("Failed to write register back")?;
+        }
+        .context("Failed to write register back")?;
 
         Ok(())
     }
@@ -211,25 +224,17 @@ mod tests {
 
     #[test]
     fn test_field_decoding() {
-        let field = FieldInfo {
-            name: "TEST".to_string(),
-            description: None,
-            bit_offset: 4,
-            bit_width: 4,
-        };
+        let field =
+            FieldInfo { name: "TEST".to_string(), description: None, bit_offset: 4, bit_width: 4 };
 
         // Reg value: 0x0000_00A0 -> Field [4..7] should be A (10)
         assert_eq!(field.decode(0x0000_00A0), 0xA);
-        
+
         // Reg value: 0xFFFF_FFAF -> Field [4..7] should be A (10)
         assert_eq!(field.decode(0xFFFF_FFAF), 0xA);
 
-        let multi_bit = FieldInfo {
-            name: "MULTI".to_string(),
-            description: None,
-            bit_offset: 0,
-            bit_width: 8,
-        };
+        let multi_bit =
+            FieldInfo { name: "MULTI".to_string(), description: None, bit_offset: 0, bit_width: 8 };
         assert_eq!(multi_bit.decode(0x1234_5678), 0x78);
     }
 }

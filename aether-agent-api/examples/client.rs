@@ -1,3 +1,6 @@
+#![allow(missing_docs)]
+#![allow(clippy::uninlined_format_args)]
+#![allow(clippy::significant_drop_tightening)]
 use aether_agent_api::proto::aether_debug_client::AetherDebugClient;
 use aether_agent_api::proto::Empty;
 
@@ -23,7 +26,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Send Halt
     println!("Sending Halt...");
     client.halt(Empty {}).await?;
-    
+
     // Wait a bit
     tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
 

@@ -1,22 +1,34 @@
 use super::RtosAware;
-use crate::{TaskInfo, TaskState};
-use probe_rs::MemoryInterface;
 use crate::symbols::SymbolManager;
-use anyhow::{Result};
+use crate::{TaskInfo, TaskState};
+use anyhow::Result;
+use probe_rs::MemoryInterface;
 
 pub struct FreeRtos;
+
+impl Default for FreeRtos {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl FreeRtos {
     pub fn new() -> Self {
         Self
     }
 
-    fn read_list(&self, core: &mut dyn MemoryInterface, list_addr: u64, state: TaskState, tasks: &mut Vec<TaskInfo>) -> Result<()> {
+    fn read_list(
+        &self,
+        core: &mut dyn MemoryInterface,
+        list_addr: u64,
+        state: TaskState,
+        tasks: &mut Vec<TaskInfo>,
+    ) -> Result<()> {
         // FreeRTOS List_t structure (simplified):
         // uxNumberOfItems (u32)
         // pxIndex (pointer)
         // xListEnd (MiniListItem_t)
-        
+
         let num_items: u32 = core.read_word_32(list_addr)?;
         if num_items == 0 {
             return Ok(());
@@ -35,7 +47,7 @@ impl FreeRtos {
             // ListItem_t: xItemValue (u32), pxNext (pointer), pxPrevious (pointer), pvOwner (pointer), pvContainer (pointer)
             // pvOwner is at offset 12
             let tcb_addr: u32 = core.read_word_32(current_item_addr as u64 + 12)?;
-            
+
             if tcb_addr != 0 {
                 if let Ok(task) = self.read_tcb(core, tcb_addr as u64, state) {
                     tasks.push(task);
@@ -49,7 +61,12 @@ impl FreeRtos {
         Ok(())
     }
 
-    fn read_tcb(&self, core: &mut dyn MemoryInterface, tcb_addr: u64, state: TaskState) -> Result<TaskInfo> {
+    fn read_tcb(
+        &self,
+        core: &mut dyn MemoryInterface,
+        tcb_addr: u64,
+        state: TaskState,
+    ) -> Result<TaskInfo> {
         // TCB_t structure (simplified, may vary by FreeRTOS version/config):
         // pxTopOfStack (offset 0)
         // ...
@@ -57,15 +74,13 @@ impl FreeRtos {
         // pxStack (offset 48)
         // pcTaskName (offset 52, size configMAX_TASK_NAME_LEN)
 
-        let top_of_stack: u32 = core.read_word_32(tcb_addr + 0)?;
+        let top_of_stack: u32 = core.read_word_32(tcb_addr)?;
         let priority: u32 = core.read_word_32(tcb_addr + 44)?;
         let stack_start: u32 = core.read_word_32(tcb_addr + 48)?;
-        
+
         let mut name_bytes = [0u8; 16];
         core.read_8(tcb_addr + 52, &mut name_bytes)?;
-        let name = String::from_utf8_lossy(&name_bytes)
-            .trim_matches(char::from(0))
-            .to_string();
+        let name = String::from_utf8_lossy(&name_bytes).trim_matches(char::from(0)).to_string();
 
         // Calculate stack usage (simple version: current at time of switch)
         // stack_start is the bottom (lowest address if stack grows down, but pxStack is usually the beginning of the allocated block)
@@ -73,23 +88,30 @@ impl FreeRtos {
         // So stack_size = (end_of_stack_allocated - pxStack)
         // But we don't always know end_of_stack easily without config.
         // However, (top_of_stack - stack_start) gives us a window.
-        
-        // High water mark scan
-        let stack_size = 0; // Unknown without more TCB parsing or config
-        let high_water_mark = self.scan_high_water_mark(core, stack_start as u64, top_of_stack as u64).unwrap_or(0);
 
+        // High water mark scan
+        let _stack_size = 0; // Unknown without more TCB parsing or config
+        let high_water_mark =
+            self.scan_high_water_mark(core, stack_start as u64, top_of_stack as u64).unwrap_or(0);
+
+        let stack_usage = top_of_stack.saturating_sub(stack_start);
         Ok(TaskInfo {
             name,
             priority,
             state,
-            stack_usage: if top_of_stack > stack_start { top_of_stack - stack_start } else { 0 },
+            stack_usage,
             stack_size: high_water_mark as u32, // repurposed to show the "Peak" for now
             handle: tcb_addr as u32,
             task_type: crate::TaskType::Thread,
         })
     }
 
-    fn scan_high_water_mark(&self, core: &mut dyn MemoryInterface, stack_start: u64, top_of_stack: u64) -> Result<u64> {
+    fn scan_high_water_mark(
+        &self,
+        core: &mut dyn MemoryInterface,
+        stack_start: u64,
+        top_of_stack: u64,
+    ) -> Result<u64> {
         // Scan from stack_start upwards matching 0xa5 pattern
         const CHUNK_SIZE: usize = 256;
         let mut buffer = [0u8; CHUNK_SIZE];
@@ -98,7 +120,7 @@ impl FreeRtos {
 
         while current_addr < top_of_stack {
             let to_read = std::cmp::min(CHUNK_SIZE, (top_of_stack - current_addr) as usize);
-            if let Err(_) = core.read_8(current_addr, &mut buffer[0..to_read]) {
+            if core.read_8(current_addr, &mut buffer[0..to_read]).is_err() {
                 break;
             }
 
@@ -121,7 +143,11 @@ impl RtosAware for FreeRtos {
         "FreeRTOS"
     }
 
-    fn get_tasks(&self, core: &mut dyn MemoryInterface, symbols: &SymbolManager) -> Result<Vec<TaskInfo>> {
+    fn get_tasks(
+        &self,
+        core: &mut dyn MemoryInterface,
+        symbols: &SymbolManager,
+    ) -> Result<Vec<TaskInfo>> {
         let mut tasks = Vec::new();
 
         // 1. pxReadyTasksLists
@@ -270,16 +296,22 @@ mod tests {
             }
             Ok(())
         }
-        fn flush(&mut self) -> Result<(), probe_rs::Error> { Ok(()) }
-        fn supports_native_64bit_access(&mut self) -> bool { false }
-        fn supports_8bit_transfers(&self) -> Result<bool, probe_rs::Error> { Ok(true) }
+        fn flush(&mut self) -> Result<(), probe_rs::Error> {
+            Ok(())
+        }
+        fn supports_native_64bit_access(&mut self) -> bool {
+            false
+        }
+        fn supports_8bit_transfers(&self) -> Result<bool, probe_rs::Error> {
+            Ok(true)
+        }
     }
 
     #[test]
     fn test_freertos_scanning() {
         let mut mock = MockMemory::new();
         let _syms = SymbolManager::new(); // Empty for now, we'll manually use addrs
-        
+
         // Mock a ReadyTask List (at 0x2000)
         // uxNumberOfItems = 1
         mock.set_word_32(0x2000, 1);
@@ -289,14 +321,14 @@ mod tests {
         mock.set_word_32(0x2008, 0xFFFFFFFF);
         mock.set_word_32(0x200C, 0x3000);
         mock.set_word_32(0x2010, 0x3000);
-        
+
         // Mock a ListItem (at 0x3000)
         // xItemValue = 1, pxNext = 0x2008, pxPrevious = 0x2008, pvOwner = 0x4000 (TCB), pvContainer = 0x2000
         mock.set_word_32(0x3000, 1);
         mock.set_word_32(0x3004, 0x2008);
         mock.set_word_32(0x3008, 0x2008);
         mock.set_word_32(0x300C, 0x4000); // pvOwner points to TCB
-        
+
         // Mock a TCB (at 0x4000)
         // pxTopOfStack = 0x3010 (offset 0)
         mock.set_word_32(0x4000, 0x3010);
@@ -317,13 +349,13 @@ mod tests {
         let freertos = FreeRtos::new();
         let mut tasks = Vec::new();
         freertos.read_list(&mut mock, 0x2000, TaskState::Ready, &mut tasks).unwrap();
-        
+
         assert_eq!(tasks.len(), 1);
         assert_eq!(tasks[0].name, "TestTask");
         assert_eq!(tasks[0].priority, 5);
         assert_eq!(tasks[0].state, TaskState::Ready);
         assert_eq!(tasks[0].handle, 0x4000);
         assert_eq!(tasks[0].stack_usage, 0x10); // 0x3010 - 0x3000
-        assert_eq!(tasks[0].stack_size, 4);      // High water mark: 4 unused bytes
+        assert_eq!(tasks[0].stack_size, 4); // High water mark: 4 unused bytes
     }
 }

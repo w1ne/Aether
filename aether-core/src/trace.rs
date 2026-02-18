@@ -1,6 +1,6 @@
-use probe_rs::Session;
 use anyhow::Result;
-use serde::{Serialize, Deserialize};
+use probe_rs::Session;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct TraceConfig {
@@ -14,35 +14,38 @@ pub struct TraceManager {
     config: Option<TraceConfig>,
 }
 
+impl Default for TraceManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TraceManager {
     pub fn new() -> Self {
-        Self {
-            enabled: false,
-            config: None,
-        }
+        Self { enabled: false, config: None }
     }
 
     pub fn enable(&mut self, _session: &mut Session, config: TraceConfig) -> Result<()> {
         // Configure SWV (Serial Wire Viewer)
         // This requires probe-rs specific API.
         // session.setup_swv(...) exists in recent probe-rs versions.
-        
+
         // Use a generic approach if setup_swv is not stable or available in 0.31
         // But 0.31 definitely has it.
-        
+
         // Note: We need to import Architecture to construct SwayConfig correctly if needed.
         // For now, this is a placeholder to be filled with actual SWV setup.
-        
+
         self.config = Some(config);
         self.enabled = true;
         Ok(())
     }
-    
+
     pub fn read_data(&mut self, _session: &mut Session) -> Result<Vec<u8>> {
         if !self.enabled {
             return Ok(Vec::new());
         }
-        
+
         // session.read_swv() returns Result<Vec<u8>>
         // We'll wrap it here.
         // let data = session.read_swv()?;

@@ -1,0 +1,342 @@
+Starting Aether Daemon...
+Agent API Server listening on 0.0.0.0:50051
+--- Starting CLI Tests ---
+[TEST] Status
+Status: StatusResponse { halted: false, pc: 0, core_status: "Only via events" }
+[TEST] Reset
+Error: Status { code: Unknown, message: "transport error", source: Some(tonic::transport::Error(Transport, hyper::Error(Io, Custom { kind: BrokenPipe, error: "stream closed because of a broken pipe" }))) }
+Starting Aether Daemon...
+Agent API Server listening on 0.0.0.0:50051
+--- Starting CLI Tests ---
+[TEST] Status
+Status: StatusResponse { halted: false, pc: 0, core_status: "Only via events" }
+[TEST] Reset
+error: unrecognized subcommand 'reset'
+
+  tip: a similar subcommand exists: 'target'
+
+Usage: aether-cli [OPTIONS] <COMMAND>
+
+For more information, try '--help'.
+Starting Aether Daemon...
+Agent API Server listening on 0.0.0.0:50051
+--- Starting CLI Tests ---
+[TEST] Status
+Status: StatusResponse { halted: false, pc: 0, core_status: "Only via events" }
+[TEST] Reset
+Starting Aether Daemon...
+Agent API Server listening on 0.0.0.0:50051
+--- Starting CLI Tests ---
+[TEST] Status
+Status: StatusResponse { halted: false, pc: 0, core_status: "Only via events" }
+[TEST] Reset
+Error: Status { code: Unknown, message: "transport error", source: Some(tonic::transport::Error(Transport, hyper::Error(Io, Custom { kind: BrokenPipe, error: "stream closed because of a broken pipe" }))) }
+Starting Aether Daemon...
+Agent API Server listening on 0.0.0.0:50051
+--- Starting CLI Tests ---
+[TEST] Status
+Status: StatusResponse { halted: false, pc: 0, core_status: "Only via events" }
+[TEST] Reset
+Reset.
+[TEST] Halt
+Halted.
+[TEST] Status (Expect Halted)
+Status: StatusResponse { halted: false, pc: 0, core_status: "Only via events" }
+[TEST] Read Registers
+R0: 0xFACEFEED
+R1: 0xFACEFEED
+R2: 0xFACEFEED
+R3: 0xFACEFEED
+R4: 0xFACEFEED
+R5: 0xFACEFEED
+R6: 0xFACEFEED
+R7: 0xFACEFEED
+R8: 0xFACEFEED
+R9: 0xFACEFEED
+R10: 0xFACEFEED
+R11: 0xFACEFEED
+R12: 0xFACEFEED
+R13: 0xFACEFEED
+R14: 0xFACEFEED
+R15: 0xFACEFEED
+[TEST] Step
+Stepped.
+R15: 0xFACEFEED
+[TEST] Resume
+Resumed.
+Status: StatusResponse { halted: false, pc: 0, core_status: "Only via events" }
+[TEST] Step Over
+Stepped Over.
+[TEST] Write Register
+Written R0: 0x00001234
+[TEST] Tasks
+Name                 State      Stack      Type
+Idle                 Running    100/200  Thread
+[TEST] Load SVD
+SVD Loaded.
+[TEST] Load Symbols
+Symbols Loaded.
+[TEST] Flash (Simulated)
+[Erasing...] 0.0%
+[Flashing] 50.0%
+Flash Complete!
+[TEST] Disassemble
+0x08000000:  mov  r0, r1
+0x08000004:  mov  r1, r2
+0x08000008:  mov  r2, r3
+0x0800000C:  mov  r3, r4
+[TEST] Enable Semihosting
+Semihosting enabled.
+[TEST] Watch
+Watching variable: counter
+[TEST] Peripheral Read
+Terminated
+Starting Aether Daemon...
+Agent API Server listening on 0.0.0.0:50051
+--- Starting CLI Tests ---
+[TEST] Status
+Status: StatusResponse { halted: false, pc: 0, core_status: "Only via events" }
+[TEST] Reset
+Reset.
+[TEST] Halt
+Halted.
+[TEST] Status (Expect Halted)
+Status: StatusResponse { halted: false, pc: 0, core_status: "Only via events" }
+[TEST] Read Registers
+R0: 0xFACEFEED
+R1: 0xFACEFEED
+R2: 0xFACEFEED
+R3: 0xFACEFEED
+R4: 0xFACEFEED
+R5: 0xFACEFEED
+R6: 0xFACEFEED
+R7: 0xFACEFEED
+R8: 0xFACEFEED
+R9: 0xFACEFEED
+R10: 0xFACEFEED
+R11: 0xFACEFEED
+R12: 0xFACEFEED
+R13: 0xFACEFEED
+R14: 0xFACEFEED
+R15: 0xFACEFEED
+[TEST] Step
+Stepped.
+R15: 0xFACEFEED
+[TEST] Resume
+Resumed.
+Status: StatusResponse { halted: false, pc: 0, core_status: "Only via events" }
+[TEST] Step Over
+Stepped Over.
+[TEST] Write Register
+Written R0: 0x00001234
+[TEST] Tasks
+Name                 State      Stack      Type
+Idle                 Running    100/200  Thread
+[TEST] Load SVD
+SVD Loaded.
+[TEST] Load Symbols
+Symbols Loaded.
+[TEST] Flash (Simulated)
+[Erasing...] 0.0%
+[Flashing] 50.0%
+Flash Complete!
+[TEST] Disassemble
+0x08000000:  mov  r0, r1
+0x08000004:  mov  r1, r2
+0x08000008:  mov  r2, r3
+0x0800000C:  mov  r3, r4
+[TEST] Enable Semihosting
+Semihosting enabled.
+[TEST] Watch
+Watching variable: counter
+[TEST] Peripheral Read
+Error: Status { code: Unknown, message: "transport error", source: Some(tonic::transport::Error(Transport, hyper::Error(Io, Custom { kind: BrokenPipe, error: "stream closed because of a broken pipe" }))) }
+Starting Aether Daemon...
+Agent API Server listening on 0.0.0.0:50051
+--- Starting CLI Tests ---
+[TEST] Status
+Status: StatusResponse { halted: false, pc: 0, core_status: "Only via events" }
+[TEST] Reset
+Reset.
+[TEST] Halt
+Halted.
+[TEST] Status (Expect Halted)
+Status: StatusResponse { halted: false, pc: 0, core_status: "Only via events" }
+[TEST] Read Registers
+R0: 0xFACEFEED
+R1: 0xFACEFEED
+R2: 0xFACEFEED
+R3: 0xFACEFEED
+R4: 0xFACEFEED
+R5: 0xFACEFEED
+R6: 0xFACEFEED
+R7: 0xFACEFEED
+R8: 0xFACEFEED
+R9: 0xFACEFEED
+R10: 0xFACEFEED
+R11: 0xFACEFEED
+R12: 0xFACEFEED
+R13: 0xFACEFEED
+R14: 0xFACEFEED
+R15: 0xFACEFEED
+[TEST] Step
+Stepped.
+R15: 0xFACEFEED
+[TEST] Resume
+Resumed.
+Status: StatusResponse { halted: false, pc: 0, core_status: "Only via events" }
+[TEST] Step Over
+Stepped Over.
+[TEST] Write Register
+Written R0: 0x00001234
+[TEST] Tasks
+Name                 State      Stack      Type
+Idle                 Running    100/200  Thread
+[TEST] Load SVD
+SVD Loaded.
+[TEST] Load Symbols
+Symbols Loaded.
+[TEST] Flash (Simulated)
+[Erasing...] 0.0%
+[Flashing] 50.0%
+Flash Complete!
+[TEST] Disassemble
+0x08000000:  mov  r0, r1
+0x08000004:  mov  r1, r2
+0x08000008:  mov  r2, r3
+0x0800000C:  mov  r3, r4
+[TEST] Enable Semihosting
+Semihosting enabled.
+[TEST] Watch
+Watching variable: counter
+[TEST] Peripheral Read
+Value: 0x00000001
+[TEST] RTT Write
+Sent to RTT ch0
+--- Tests Completed Successfully ---
+Starting Aether Daemon...
+[2026-02-18T00:21:56Z ERROR nusb::error] interface is busy (errno 16)
+Error: Failed to open probe
+
+Caused by:
+    0: The debug probe could not be created.
+    1: A USB error occurred.
+    2: interface is busy (errno 16)
+--- Starting CLI Tests ---
+[TEST] Status
+Status: StatusResponse { halted: false, pc: 0, core_status: "Only via events" }
+[TEST] Reset
+Reset.
+[TEST] Halt
+Halted.
+[TEST] Status (Expect Halted)
+Status: StatusResponse { halted: false, pc: 0, core_status: "Only via events" }
+[TEST] Read Registers
+R0: 0x00000000
+R1: 0x00000000
+R2: 0x00000000
+R3: 0x00000000
+R4: 0x00000000
+R5: 0x00000000
+R6: 0x00000000
+R7: 0x00000000
+R8: 0x00000000
+R9: 0x00000000
+R10: 0x00000000
+R11: 0x00000000
+R12: 0x00000000
+R13: 0x200019C0
+R14: 0xFFFFFFFF
+R15: 0x0800204C
+[TEST] Step
+Stepped.
+R15: 0x0800204E
+[TEST] Resume
+Resumed.
+Status: StatusResponse { halted: false, pc: 0, core_status: "Only via events" }
+[TEST] Step Over
+Error: Status { code: Unknown, message: "transport error", source: Some(tonic::transport::Error(Transport, hyper::Error(Io, Custom { kind: BrokenPipe, error: "stream closed because of a broken pipe" }))) }
+Starting Aether Daemon...
+[2026-02-18T00:22:50Z ERROR nusb::error] interface is busy (errno 16)
+Error: Failed to open probe
+
+Caused by:
+    0: The debug probe could not be created.
+    1: A USB error occurred.
+    2: interface is busy (errno 16)
+--- Starting CLI Tests ---
+[TEST] Status
+Status: StatusResponse { halted: false, pc: 0, core_status: "Only via events" }
+[TEST] Reset
+Reset.
+[TEST] Halt
+Halted.
+[TEST] Status (Expect Halted)
+Status: StatusResponse { halted: false, pc: 0, core_status: "Only via events" }
+[TEST] Read Registers
+R0: 0x00000000
+R1: 0x00000000
+R2: 0x00000000
+R3: 0x00000000
+R4: 0x00000000
+R5: 0x00000000
+R6: 0x00000000
+R7: 0x00000000
+R8: 0x00000000
+R9: 0x00000000
+R10: 0x00000000
+R11: 0x00000000
+R12: 0x00000000
+R13: 0x200019C0
+R14: 0xFFFFFFFF
+R15: 0x0800204C
+[TEST] Step
+Stepped.
+R15: 0x0800204E
+[TEST] Resume
+Resumed.
+Status: StatusResponse { halted: false, pc: 0, core_status: "Only via events" }
+[TEST] Step Over
+Error: Status { code: Unknown, message: "transport error", source: Some(tonic::transport::Error(Transport, hyper::Error(Io, Custom { kind: BrokenPipe, error: "stream closed because of a broken pipe" }))) }
+Starting Aether Daemon...
+[2026-02-18T00:25:47Z ERROR nusb::error] interface is busy (errno 16)
+Error: Failed to open probe
+
+Caused by:
+    0: The debug probe could not be created.
+    1: A USB error occurred.
+    2: interface is busy (errno 16)
+--- Starting CLI Tests ---
+[TEST] Status
+Status: StatusResponse { halted: false, pc: 0, core_status: "Only via events" }
+[TEST] Reset
+Reset.
+[TEST] Halt
+Halted.
+[TEST] Status (Expect Halted)
+Status: StatusResponse { halted: false, pc: 0, core_status: "Only via events" }
+[TEST] Read Registers
+R0: 0x00000000
+R1: 0x00000000
+R2: 0x00000000
+R3: 0x00000000
+R4: 0x00000000
+R5: 0x00000000
+R6: 0x00000000
+R7: 0x00000000
+R8: 0x00000000
+R9: 0x00000000
+R10: 0x00000000
+R11: 0x00000000
+R12: 0x00000000
+R13: 0x200019C0
+R14: 0xFFFFFFFF
+R15: 0x0800204C
+[TEST] Step
+Stepped.
+R15: 0x0800204E
+[TEST] Resume
+Resumed.
+Status: StatusResponse { halted: false, pc: 0, core_status: "Only via events" }
+[TEST] Step Over
+Error: Status { code: Unknown, message: "transport error", source: Some(tonic::transport::Error(Transport, hyper::Error(Io, Custom { kind: BrokenPipe, error: "stream closed because of a broken pipe" }))) }

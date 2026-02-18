@@ -7,15 +7,167 @@ service AetherDebug {
     rpc Halt (Empty) returns (Empty);
     rpc Resume (Empty) returns (Empty);
     rpc Step (Empty) returns (Empty);
+    rpc StepOver (Empty) returns (Empty);
+    rpc StepInto (Empty) returns (Empty);
+    rpc StepOut (Empty) returns (Empty);
     rpc Reset (Empty) returns (Empty);
 
     // State inspection
     rpc GetStatus (Empty) returns (StatusResponse);
     rpc ReadMemory (ReadMemoryRequest) returns (ReadMemoryResponse);
+    rpc WriteMemory (WriteMemoryRequest) returns (Empty);
     rpc ReadRegister (ReadRegisterRequest) returns (ReadRegisterResponse);
+    rpc WriteRegister (WriteRegisterRequest) returns (Empty);
+
+    // Discovery & Connection
+    rpc ListProbes (Empty) returns (ProbeList);
+    rpc Attach (AttachRequest) returns (Empty);
+
+    // Symbols & Debug info
+    rpc LoadSymbols (FileRequest) returns (Empty);
+    rpc GetStack (Empty) returns (StackResponse);
+
+    // Peripherals (SVD)
+    rpc LoadSvd (FileRequest) returns (Empty);
+    rpc GetPeripherals (Empty) returns (PeripheralResponse);
+    rpc ReadPeripheral (PeripheralRequest) returns (RegisterList);
+    rpc WritePeripheral (PeripheralWriteRequest) returns (Empty);
+
+    // Breakpoints & Watchpoints
+    rpc SetBreakpoint (BreakpointRequest) returns (Empty);
+    rpc ClearBreakpoint (BreakpointRequest) returns (Empty);
+    rpc ListBreakpoints (Empty) returns (BreakpointList);
+    rpc WatchVariable (WatchVariableRequest) returns (Empty);
+
+    // Specialized features
+    rpc GetTasks (Empty) returns (TasksEvent);
+    rpc RttWrite (RttWriteRequest) returns (Empty);
+    rpc EnableItm (ItmConfig) returns (Empty);
+    rpc EnableSemihosting (Empty) returns (Empty);
+    rpc Disassemble (DisasmRequest) returns (DisasmResponse);
+
+    // Flashing
+    rpc Flash (FileRequest) returns (stream FlashProgress);
 
     // Event stream
     rpc SubscribeEvents (Empty) returns (stream DebugEvent);
+}
+
+message DisasmRequest {
+    uint64 address = 1;
+    uint32 count = 2;
+}
+
+message DisasmResponse {
+    repeated string instructions = 1;
+}
+
+message WriteMemoryRequest {
+    uint64 address = 1;
+    bytes data = 2;
+}
+
+message WriteRegisterRequest {
+    uint32 register_number = 1;
+    uint64 value = 2;
+}
+
+message FileRequest {
+    string path = 1;
+}
+
+message StackResponse {
+    repeated StackFrame frames = 1;
+}
+
+message StackFrame {
+    uint64 pc = 1;
+    optional string function_name = 2;
+    optional string file = 3;
+    optional uint32 line = 4;
+}
+
+message PeripheralRequest {
+    string peripheral = 1;
+    string register = 2;
+}
+
+message PeripheralResponse {
+    repeated string names = 1;
+}
+
+message RegisterList {
+    repeated RegisterInfo registers = 1;
+    uint64 value = 2; // For single register reads
+}
+
+message RegisterInfo {
+    string name = 1;
+    uint64 value = 2;
+    uint32 size = 3;
+}
+
+message PeripheralWriteRequest {
+    string peripheral = 1;
+    string register = 2;
+    string field = 3;
+    uint64 value = 4;
+}
+
+message BreakpointRequest {
+    uint64 address = 1;
+}
+
+message BreakpointList {
+    repeated uint64 addresses = 1;
+}
+
+message WatchVariableRequest {
+    string name = 1;
+}
+
+message RttWriteRequest {
+    uint32 channel = 1;
+    bytes data = 2;
+}
+
+message ItmConfig {
+    uint32 baud_rate = 1;
+}
+
+message BreakpointEvent {
+    uint64 address = 1;
+    bool enabled = 2;
+}
+
+message VariableEvent {
+    string name = 1;
+    string value = 2;
+    string type = 3;
+}
+
+message FlashProgress {
+    string status = 1;
+    float progress = 2;
+    bool done = 3;
+    string error = 4;
+}
+
+message ProbeList {
+    repeated ProbeInfo probes = 1;
+}
+
+message ProbeInfo {
+    uint32 index = 1;
+    string name = 2;
+    string serial = 3;
+}
+
+message AttachRequest {
+    uint32 probe_index = 1;
+    string chip = 2; // e.g. "STM32L476RGTx" or "auto"
+    optional string protocol = 3; // "swd" or "jtag"
+    bool under_reset = 4;
 }
 
 message Empty {}
@@ -53,9 +205,30 @@ message DebugEvent {
         TaskSwitchEvent task_switch = 6;
         PlotEvent plot = 7;
         RttEvent rtt = 8;
+        BreakpointEvent breakpoint = 9;
+        VariableEvent variable = 10;
+        SemihostingEvent semihosting = 11;
+        ItmEvent itm = 12;
+        ProbeList probes = 13;
+        TargetInfo attached = 14;
+        StatusResponse status = 15;
     }
 }
 
+message TargetInfo {
+    string name = 1;
+    uint64 flash_size = 2;
+    uint64 ram_size = 3;
+    string architecture = 4;
+}
+
+message SemihostingEvent {
+    string output = 1;
+}
+
+message ItmEvent {
+    bytes data = 1;
+}
 message TasksEvent {
     repeated TaskInfo tasks = 1;
 }

@@ -6,13 +6,16 @@
 pub mod debug;
 pub mod disasm;
 pub mod flash;
+pub mod itm;
 pub mod memory;
 pub mod probe;
-pub mod rtt;
 pub mod rtos;
+pub mod rtt;
+pub mod semihosting;
 pub mod session;
 pub mod svd;
 pub mod symbols;
+
 pub mod stack;
 pub mod trace;
 
@@ -64,8 +67,8 @@ pub enum TaskState {
     Pending,
     Unknown,
 }
-pub use probe::{ProbeInfo, ProbeManager, ProbeType, TargetInfo};
-pub use svd::SvdManager;
-pub use symbols::{SymbolManager, SourceInfo};
+pub use probe::{ProbeInfo, ProbeManager, ProbeType, TargetInfo, WireProtocol};
 pub use session::{DebugCommand, DebugEvent, SessionHandle};
 pub use stack::StackFrame;
+pub use svd::SvdManager;
+pub use symbols::{SourceInfo, SymbolManager};

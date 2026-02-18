@@ -22,6 +22,12 @@ AetherDebugger employs a multi-layered testing strategy to balance development s
 - **Scope**: Performance tracking for critical paths (e.g., DAP message processing).
 - **Command**: `cargo bench`
 
+## 5. Hardware-in-the-Loop (HIL) Tests (System Verification)
+- **Location**: `scripts/test_cli_e2e.sh`, `TEST_PLAN.md`
+- **Scope**: Verification of full stack (Firmware -> Probe -> Core -> Daemon -> Client) on real hardware (STM32L476).
+- **Command**: `scripts/test_cli_e2e.sh` (wraps CLI commands)
+
+
 ## Pre-commit Hooks
 Before every commit, the following are checked:
 - Rust formatting (`rustfmt`)

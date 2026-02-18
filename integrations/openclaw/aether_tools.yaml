@@ -1,0 +1,29 @@
+# Aether Debugger Tools for OpenClaw
+
+- name: aether_halt
+  description: Stop CPU execution on the target device
+  command: aether-cli core halt
+
+- name: aether_resume
+  description: Resume CPU execution on the target device
+  command: aether-cli core resume
+
+- name: aether_status
+  description: Get the current connection and CPU state
+  command: aether-cli status
+
+- name: aether_read_mem
+  description: Read a range of memory from the target
+  command: aether-cli memory read {{address}} {{length}}
+  arguments:
+    - name: address
+      description: Start address in hex (e.g. 0x20000000)
+    - name: length
+      description: Number of bytes to read
+
+- name: aether_flash
+  description: Flash a firmware file to the target
+  command: aether-cli target flash {{path}}
+  arguments:
+    - name: path
+      description: Path to the .elf or .bin file

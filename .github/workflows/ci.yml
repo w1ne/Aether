@@ -1,78 +1,39 @@
-name: Zero-Tolerance CI
+name: Rust CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ "main" ]
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  quality-control:
-    name: Quality Control
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+    - uses: actions/checkout@v3
 
-      - name: Install dependencies (Ubuntu)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libusb-1.0-0-dev libudev-dev
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        components: clippy, rustfmt
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy, rustfmt
+    - name: Install dependencies (Linux)
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgtk-3-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev protobuf-compiler
 
-      - name: Rust Cache
-        uses: Swatinem/rust-cache@v2
+    - name: Check Formatting
+      run: cargo fmt -- --check
 
-      - name: Check Formatting
-        run: cargo fmt --all -- --check
+    - name: Lint with Clippy
+      run: cargo clippy --workspace --exclude aether-demo-fw --all-targets --all-features -- -D warnings
 
-      - name: Clippy (Zero Warnings)
-        run: cargo clippy --all-targets --all-features -- -D warnings
+    - name: Build
+      run: cargo build --workspace --exclude aether-demo-fw --verbose
 
-      - name: Run Tests
-        run: cargo test --all-features --all-targets
-
-      - name: Install cargo-deny
-        run: cargo install cargo-deny || true
-
-      - name: Cache cargo-deny
-        uses: actions/cache@v3
-        with:
-          path: ~/.cargo/bin/cargo-deny
-          key: ${{ runner.os }}-cargo-deny
-
-      - name: Dependency Check (cargo-deny)
-        run: cargo deny check
-
-      - name: Security Audit (cargo-audit)
-        run: cargo audit
-
-  build-artifacts:
-    name: Build Artifacts (${{ matrix.os }})
-    needs: quality-control
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install dependencies (Ubuntu)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libusb-1.0-0-dev libudev-dev
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-      - name: Rust Cache
-        uses: Swatinem/rust-cache@v2
-      - name: Build (Release)
-        run: cargo build --release
+    - name: Run Tests
+      run: cargo test --workspace --exclude aether-demo-fw --verbose

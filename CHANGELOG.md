@@ -1,6 +1,30 @@
 ## [Unreleased]
 
 ### Added
+- **Semihosting & ITM/SWV**: Full gRPC and CLI support for ARM Semihosting and ITM/SWV protocol streams.
+- **Headless Mode**: `aether-daemon` for background execution and `aether-cli` for terminal-based control.
+- **Improved HIL Testing**: New regression tests for real-hardware verification and automated flash programming checks.
+- **UI Enhancements**:
+  - Overhauled view icons with high-unicode symbols (`⫘`, `✍`, `📈`, `⛃`, `🔎`, `🖴`, `☷`).
+  - Improved font fallback for Linux environments.
+  - Tab recovery mechanism for closed views.
+
+### Fixed
+- Non-exhaustive match in agent-api for session handle types.
+- Flash programming progress reporting and reliability on varied board resets.
+- Dependency synchronization across `aether-core` and `aether-agent-api`.
+
+### Removed
+- Experimental Agent Chat interface from UI to focus on core gRPC stream interactions.
+
+
+#### Phase 4: Advanced Analysis & Remote Debugging
+- **Remote Debug Relay**: gRPC server now supports configurable binding (`0.0.0.0` for network access).
+- **Remote Connection UI**: Host/Port input fields and Connect button in sidebar for remote agent access.
+- **Expanded gRPC Protocol**: All internal events (Tasks, TaskSwitch, Plot, RTT) now relayed over gRPC.
+- **High-Speed Plotting**: Switched to `VecDeque` storage with 100,000-point limit for stable 10kHz data streams.
+- **Binary RTT Support**: Text/Hex display mode toggles per RTT channel with raw byte buffering (64KB).
+- **Performance Verified**: All 77 workspace tests passing including `test_perf_rtt_10khz_simulation`.
 
 #### Milestone 6: SVD Peripheral Integration
 - `SvdManager` for parsing SVD files and extracting peripheral/register info.

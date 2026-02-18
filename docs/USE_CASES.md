@@ -30,7 +30,7 @@ Iterative development requires fast turnaround cycles. Traditional flashing tool
 
 ### The Scenario
 Bob just optimized his motor control algorithm.
-- **Action**: Bob drags `motor_ctrl.elf` into Aether. 
+- **Action**: Bob drags `motor_ctrl.elf` into Aether.
 - **Experience**: The UI shows a "Premium" progress bar. Aether automatically selects the correct algorithm from the CMSIS-Pack.
 - **Verification**: After flashing, Aether performs a checksum verify to ensure data integrity.
 
@@ -50,7 +50,7 @@ Silent memory corruption can cause "impossible" bugs. Being able to see raw RAM 
 
 ### The Scenario
 Charlie is investigating a stack overflow.
-- **Action**: Charlie scrolls the Memory View to `0x20000000`. 
+- **Action**: Charlie scrolls the Memory View to `0x20000000`.
 - **Experience**: Aether uses "Lazy Loading" to fetch only the visible range.
 - **Watch**: Charlie marks a region as "Watch". If the core is running and the OS supports it, Aether can highlight changed bytes on the next poll.
 
@@ -82,7 +82,7 @@ Finding where a bug occurs is often harder than fixing it. Breakpoints allow "wa
 
 ### The Scenario
 Frank needs to know when his watchdog timer is triggered.
-- **Action**: Frank clicks line 150 in `main.c`. 
+- **Action**: Frank clicks line 150 in `main.c`.
 - **Logic**: Aether checks the limit of the MCU's Breakpoint Unit (e.g., 6 units).
 - **Warning**: If Frank sets a 7th breakpoint, Aether shows a "Hardware Limit Reached" notification.
 
@@ -185,11 +185,12 @@ Leo is tuning a motor PID.
 
 ## 12. Remote Automation via gRPC Agent API
 ### Background
-CI/CD pipelines need validation.
+CI/CD pipelines and AI agents need programmatic access to hardware validation.
 
 ### The Scenario
-A script verifies boot.
+An AI agent or script verifies boot and performs automated diagnostics.
 - **Concurrency**: Aether handles a UI user and a gRPC script simultaneously, broadcasting events to both.
+- **OpenClaw Integration**: An OpenClaw instance monitors the `RttEvent` stream. If it detects a "Panic" or "HardFault" string, it automatically triggers a `Halt`, captures the call stack via `GetStack`, and suggests a fix to the developer.
 
 ### Edge Cases & Resiliency
 - **Control Conflict**: If the Script halts and the User resumes, Aether prioritizes the manual User intervention and notifies the gRPC clients.

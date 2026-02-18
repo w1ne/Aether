@@ -35,9 +35,16 @@ The UI will auto-detect connected debug probes.
 
 ## Development
 
+<<<<<<< Updated upstream
 See [docs/](docs/) for:
 - [Git Flow](docs/GIT_FLOW.md) - Branching strategy
 - [Testing Strategy](docs/TEST_STRATEGY.md) - Test requirements
+=======
+- [Contributing](docs/CONTRIBUTING.md) - Development guide (Trunk-Based)
+- [Testing Strategy](docs/TEST_STRATEGY.md) - Test requirements and HIL plan
+- [Hardware Setup](docs/HARDWARE_SETUP.md) - Physical test rig instructions
+- [CLI Reference](docs/CLI.md) - Full command documentation
+>>>>>>> Stashed changes
 - [Use Cases](docs/USE_CASES.md) - Feature documentation
 
 ### Pre-commit hooks
