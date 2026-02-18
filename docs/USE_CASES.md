@@ -185,11 +185,12 @@ Leo is tuning a motor PID.
 
 ## 12. Remote Automation via gRPC Agent API
 ### Background
-CI/CD pipelines need validation.
+CI/CD pipelines and AI agents need programmatic access to hardware validation.
 
 ### The Scenario
-A script verifies boot.
+An AI agent or script verifies boot and performs automated diagnostics.
 - **Concurrency**: Aether handles a UI user and a gRPC script simultaneously, broadcasting events to both.
+- **OpenClaw Integration**: An OpenClaw instance monitors the `RttEvent` stream. If it detects a "Panic" or "HardFault" string, it automatically triggers a `Halt`, captures the call stack via `GetStack`, and suggests a fix to the developer.
 
 ### Edge Cases & Resiliency
 - **Control Conflict**: If the Script halts and the User resumes, Aether prioritizes the manual User intervention and notifies the gRPC clients.

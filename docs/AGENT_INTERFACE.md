@@ -8,6 +8,11 @@ The Aether Agent Interface allows AI agents and external tools to programmatical
 - **Transport**: TCP (default port `50051`).
 - **Model**: Bidirectional streaming. Agents send commands (RPCs) and subscribe to a continuous stream of `DebugEvent`s.
 
+## Supported Agents
+Aether is designed to be the "Headless" backend for AI-driven debugging.
+- **OpenClaw**: Can connect directly to the gRPC endpoint to automate debugging tasks, hardware testing, and error recovery.
+- **Custom Agents**: Any tool capable of gRPC communication (Python, Node.js, Rust, Go) can interface with the core.
+
 ## Service Definition (`AetherDebug`)
 
 ### 1. Execution Control

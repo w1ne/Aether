@@ -114,3 +114,22 @@ aether-cli target read-peri RCC CR
 ```bash
 aether-cli trace rtt-write 0 "Hello World"
 ```
+
+## AI Agent Integration (OpenClaw)
+
+`aether-cli` is designed to be easily wrapped by AI agents like **OpenClaw**. 
+
+### Example Tool Definition
+You can map CLI commands to agent tools. For example, in an `aether_tools.yaml` for OpenClaw:
+
+```yaml
+- name: aether_halt
+  description: Stop CPU execution
+  command: aether-cli core halt
+
+- name: aether_status
+  description: Get debugger status
+  command: aether-cli status
+```
+
+See [integrations/openclaw/aether_tools.yaml](file:///home/andrii/Projects/AetherDebugger/integrations/openclaw/aether_tools.yaml) for a complete example.

@@ -527,15 +527,14 @@ impl SessionHandle {
                                      if let Some(addr) = symbol_manager.lookup_symbol(&name) {
                                          if let Some(info) = symbol_manager.resolve_variable(&mut core, &name, addr) {
                                              let _ = evt_tx.send(DebugEvent::VariableResolved(info));
-                                         }
-                                     } else {
-                                         // Fallback or error?
-                                         let _ = evt_tx.send(DebugEvent::Error(format!("Variable '{}' not found in symbols", name)));
-                                     }
-                                 }
-                                 DebugCommand::PollStatus => {
-                                     // Handled in polling loop
-                                }
+                                          }
+                                      } else {
+                                          let _ = evt_tx.send(DebugEvent::Error(format!("Variable '{}' not found in symbols", name)));
+                                      }
+                                  }
+                                  DebugCommand::PollStatus => {
+                                      core_status = None;
+                                  }
                                 _ => {}
                              }
                          }

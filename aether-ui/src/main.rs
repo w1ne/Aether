@@ -148,10 +148,11 @@ impl AetherApp {
     fn setup_fonts(ctx: &egui::Context) {
         let mut fonts = egui::FontDefinitions::default();
 
-        // 1. Try to load Noto Color Emoji or DejaVu Sans for better Unicode coverage on Linux
+        // 1. Load system fallback fonts for symbols/emojis
         let font_paths = [
             "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf",
             "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "/usr/share/fonts/truetype/noto/NotoSansSymbols-Regular.ttf",
             "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
         ];
 
@@ -163,7 +164,7 @@ impl AetherApp {
                     egui::FontData::from_owned(font_data),
                 );
 
-                // Add to standard families
+                // Add to standard families as fallbacks
                 if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Proportional) {
                     vec.push(font_name.clone());
                 }
@@ -171,7 +172,6 @@ impl AetherApp {
                     vec.push(font_name);
                 }
                 log::info!("Loaded fallback font: {}", path);
-                break; // Stop after first successful load
             }
         }
 
@@ -1807,6 +1807,45 @@ impl eframe::App for AetherApp {
                 ui.heading(egui::RichText::new("ÆTHER").strong().color(egui::Color32::from_rgb(0, 255, 255)));
                 ui.label(egui::RichText::new("v0.1.0").small().color(egui::Color32::GRAY));
                 
+                ui.add_space(12.0);
+                
+                // Window Menu for tab recovery
+                if let Some(mut dock_state) = self.dock_state.take() {
+                    ui.menu_button("🗔 Window", |ui| {
+                        let tabs = [
+                            (DebugTab::Control, "⚡ Control"),
+                            (DebugTab::Peripherals, "☰ Peripherals"),
+                            (DebugTab::Variables, "🔍 Watch"),
+                            (DebugTab::Stack, "📚 Stack"),
+                            (DebugTab::Tasks, "⚙ Tasks"),
+                            (DebugTab::Timeline, "⏱ Timeline"),
+                            (DebugTab::Source, "📝 Source"),
+                            (DebugTab::Memory, "💾 Memory"),
+                            (DebugTab::Disassembly, "📜 Disassembly"),
+                            (DebugTab::Logs, "📑 Logs"),
+                            (DebugTab::Rtt, "💬 RTT"),
+                            (DebugTab::Agent, "🤖 Agent"),
+                            (DebugTab::Plot, "📊 Plot"),
+                        ];
+
+                        for (tab, label) in tabs {
+                            let is_open = dock_state.find_tab(&tab).is_some();
+                            if ui.selectable_label(is_open, label).clicked() {
+                                if !is_open {
+                                    dock_state.main_surface_mut().push_to_first_leaf(tab);
+                                } else {
+                                    // Focus it? 
+                                    if let Some(node_tab) = dock_state.find_tab(&tab) {
+                                        dock_state.set_active_tab(node_tab);
+                                    }
+                                }
+                                ui.close_menu();
+                            }
+                        }
+                    });
+                    self.dock_state = Some(dock_state);
+                }
+
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                     let status_color = match self.connection_status {
                         ConnectionStatus::Disconnected => egui::Color32::GRAY,

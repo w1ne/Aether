@@ -211,6 +211,7 @@ message DebugEvent {
         ItmEvent itm = 12;
         ProbeList probes = 13;
         TargetInfo attached = 14;
+        StatusResponse status = 15;
     }
 }
 

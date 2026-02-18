@@ -14,8 +14,8 @@ use proto::aether_debug_server::{AetherDebug, AetherDebugServer};
 use proto::{
     Empty, StatusResponse, ReadMemoryRequest, ReadMemoryResponse, WriteMemoryRequest,
     ReadRegisterRequest, ReadRegisterResponse, WriteRegisterRequest,
-    BreakpointRequest, BreakpointList, StackResponse, StackFrame,
-    TasksEvent, TaskInfo, PeripheralRequest, PeripheralResponse, PeripheralWriteRequest,
+    BreakpointRequest, BreakpointList, StackResponse,
+    TasksEvent, PeripheralRequest, PeripheralResponse, PeripheralWriteRequest,
     WatchVariableRequest, RttWriteRequest, DebugEvent,
     FileRequest, FlashProgress, DisasmRequest, DisasmResponse,
     ItmConfig, SemihostingEvent, ItmEvent,
@@ -101,14 +101,41 @@ impl AetherDebug for AetherDebugService {
     }
 
     async fn get_status(&self, _request: Request<Empty>) -> Result<Response<StatusResponse>, Status> {
+        let mut rx = self.session.subscribe();
         self.session.send(DebugCommand::PollStatus)
              .map_err(|e| Status::internal(e.to_string()))?;
 
-        // Return a dummy response for now, real status comes via events
+        let mut halted = false;
+        let mut pc = 0;
+        let mut core_status = "Unknown".to_string();
+        let mut received_status = false;
+
+        // Wait for status/halted events
+        let _ = tokio::time::timeout(Duration::from_millis(500), async {
+            while let Ok(event) = rx.recv().await {
+                match event {
+                    CoreDebugEvent::Status(s) => {
+                        halted = s.is_halted();
+                        core_status = format!("{:?}", s);
+                        received_status = true;
+                        // If not halted, we are done (no PC). If halted, we might want to wait for PC if not received yet.
+                        if !halted { break; }
+                        if pc != 0 { break; }
+                    }
+                    CoreDebugEvent::Halted { pc: p } => {
+                        pc = p;
+                        halted = true;
+                        if received_status { break; }
+                    }
+                    _ => {}
+                }
+            }
+        }).await;
+
         Ok(Response::new(StatusResponse {
-            halted: false,
-            pc: 0,
-            core_status: "Unknown".to_string(),
+            halted,
+            pc,
+            core_status,
         }))
     }
 
@@ -391,6 +418,13 @@ pub fn map_core_event_to_proto(event: CoreDebugEvent) -> Option<DebugEvent> {
                 architecture: info.architecture,
             }))
         }),
+        CoreDebugEvent::Status(s) => Some(DebugEvent {
+            event: Some(proto::debug_event::Event::Status(proto::StatusResponse {
+                halted: s.is_halted(),
+                pc: 0,
+                core_status: format!("{:?}", s),
+            }))
+        }),
         _ => None
     }
 }
@@ -441,6 +475,7 @@ pub fn map_proto_event_to_core(event: DebugEvent) -> Option<CoreDebugEvent> {
             ram_size: i.ram_size,
             architecture: i.architecture,
         })),
+        proto::debug_event::Event::Status(_) => None,
     }
 }
 
