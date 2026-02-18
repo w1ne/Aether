@@ -67,6 +67,7 @@ impl FlashManager {
     ) -> Result<()> {
         let mut options = DownloadOptions::default();
         options.progress = progress;
+        options.keep_unwritten_bytes = true;
 
         probe_rs::flashing::download_file_with_options(
             session,

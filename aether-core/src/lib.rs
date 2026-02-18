@@ -64,7 +64,7 @@ pub enum TaskState {
     Pending,
     Unknown,
 }
-pub use probe::{ProbeInfo, ProbeManager, ProbeType, TargetInfo};
+pub use probe::{ProbeInfo, ProbeManager, ProbeType, TargetInfo, WireProtocol};
 pub use svd::SvdManager;
 pub use symbols::{SymbolManager, SourceInfo};
 pub use session::{DebugCommand, DebugEvent, SessionHandle};

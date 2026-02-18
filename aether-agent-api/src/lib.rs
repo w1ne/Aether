@@ -10,7 +10,20 @@ pub mod proto {
 }
 
 use proto::aether_debug_server::{AetherDebug, AetherDebugServer};
+<<<<<<< Updated upstream
 use proto::{Empty, StatusResponse, ReadMemoryRequest, ReadMemoryResponse, ReadRegisterRequest, ReadRegisterResponse, DebugEvent};
+=======
+use proto::{
+    Empty, StatusResponse, ReadMemoryRequest, ReadMemoryResponse, WriteMemoryRequest,
+    ReadRegisterRequest, ReadRegisterResponse, WriteRegisterRequest,
+    BreakpointRequest, BreakpointList, StackResponse, StackFrame,
+    TasksEvent, TaskInfo, PeripheralRequest, PeripheralResponse, PeripheralWriteRequest,
+    WatchVariableRequest, RttWriteRequest, DebugEvent,
+    FileRequest, FlashProgress, DisasmRequest, DisasmResponse,
+    ItmConfig, SemihostingEvent, ItmEvent,
+    ProbeList, ProbeInfo as ProtoProbeInfo, AttachRequest
+};
+>>>>>>> Stashed changes
 
 pub struct AetherDebugService {
     session: Arc<SessionHandle>,
@@ -20,6 +33,31 @@ impl AetherDebugService {
     pub fn new(session: Arc<SessionHandle>) -> Self {
         Self { session }
     }
+<<<<<<< Updated upstream
+=======
+
+    async fn wait_for_match<F>(&self, rx: &mut broadcast::Receiver<CoreDebugEvent>, matcher: F) -> Result<CoreDebugEvent, Status>
+    where
+        F: Fn(&CoreDebugEvent) -> bool + Send + 'static,
+    {
+        let timeout = Duration::from_secs(15); // Increased further to allow for multi-stage SWD/JTAG/Reset scan
+        
+        loop {
+            match tokio::time::timeout(timeout, rx.recv()).await {
+                Ok(Ok(event)) => {
+                    if matcher(&event) {
+                        return Ok(event);
+                    }
+                    if let CoreDebugEvent::Error(e) = event {
+                        return Err(Status::internal(format!("Core error: {e}")));
+                    }
+                }
+                Ok(Err(_)) => return Err(Status::internal("Event stream lagged or closed")),
+                Err(_) => return Err(Status::deadline_exceeded("Timeout waiting for debug event")),
+            }
+        }
+    }
+>>>>>>> Stashed changes
 }
 
 #[tonic::async_trait]
@@ -69,6 +107,136 @@ impl AetherDebug for AetherDebugService {
         Err(Status::unimplemented("Synchronous register read not supported yet"))
     }
 
+<<<<<<< Updated upstream
+=======
+    async fn load_symbols(&self, request: Request<FileRequest>) -> Result<Response<Empty>, Status> {
+        let req = request.into_inner();
+        self.session.send(DebugCommand::LoadSymbols(std::path::PathBuf::from(req.path)))
+            .map_err(|e| Status::internal(e.to_string()))?;
+        Ok(Response::new(Empty {}))
+    }
+
+    type FlashStream = std::pin::Pin<Box<dyn tokio_stream::Stream<Item = Result<FlashProgress, Status>> + Send + 'static>>;
+
+    async fn flash(&self, request: Request<FileRequest>) -> Result<Response<Self::FlashStream>, Status> {
+        let req = request.into_inner();
+        let path = std::path::PathBuf::from(req.path);
+        
+        let (tx, rx) = tokio::sync::mpsc::channel(10);
+        let mut session_rx = self.session.subscribe();
+
+        // Send flash command to core
+        if let Err(e) = self.session.send(DebugCommand::StartFlashing(path)) {
+            return Err(Status::internal(e.to_string()));
+        }
+
+        tokio::spawn(async move {
+            while let Ok(event) = session_rx.recv().await {
+                let progress = match event {
+                    aether_core::DebugEvent::FlashStatus(s) => FlashProgress { status: s, progress: 0.0, done: false, error: "".to_string() },
+                    aether_core::DebugEvent::FlashProgress(p) => FlashProgress { status: "Flashing".to_string(), progress: p, done: false, error: "".to_string() },
+                    aether_core::DebugEvent::FlashDone => {
+                        let _ = tx.send(Ok(FlashProgress { status: "Done".to_string(), progress: 1.0, done: true, error: "".to_string() })).await;
+                        break;
+                    },
+                    aether_core::DebugEvent::Error(e) => {
+                         let _ = tx.send(Ok(FlashProgress { status: "Error".to_string(), progress: 0.0, done: true, error: e })).await;
+                         break;
+                    },
+                    _ => continue,
+                };
+                if tx.send(Ok(progress)).await.is_err() {
+                    break;
+                }
+            }
+        });
+
+        Ok(Response::new(Box::pin(tokio_stream::wrappers::ReceiverStream::new(rx))))
+    }
+
+    async fn disassemble(&self, request: Request<DisasmRequest>) -> Result<Response<DisasmResponse>, Status> {
+        let req = request.into_inner();
+        // Disassembly is tricky because it returns via event usually. 
+        // We'll implemented a request-response pattern by waiting for the specific event.
+        // This acts as a bridge.
+        
+        let mut session_rx = self.session.subscribe();
+        self.session.send(DebugCommand::Disassemble(req.address, req.count as usize))
+            .map_err(|e| Status::internal(e.to_string()))?;
+
+        // Wait for response with timeout
+        let result = tokio::time::timeout(std::time::Duration::from_secs(2), async {
+            while let Ok(event) = session_rx.recv().await {
+                if let aether_core::DebugEvent::Disassembly(lines) = event {
+                    let instructions = lines.iter().map(|l| format!("0x{:08X}:  {}  {}", l.address, l.mnemonic, l.op_str)).collect();
+                    return Ok(DisasmResponse { instructions });
+                }
+            }
+            Err(Status::internal("Stream closed"))
+        }).await;
+
+        match result {
+             Ok(Ok(resp)) => Ok(Response::new(resp)),
+             Ok(Err(e)) => Err(e),
+             Err(_) => Err(Status::deadline_exceeded("Disassembly timed out")),
+        }
+    }
+
+    async fn enable_semihosting(&self, _request: Request<Empty>) -> Result<Response<Empty>, Status> {
+        self.session.send(DebugCommand::EnableSemihosting)
+            .map_err(|e| Status::internal(e.to_string()))?;
+        Ok(Response::new(Empty {}))
+    }
+
+    async fn enable_itm(&self, request: Request<ItmConfig>) -> Result<Response<Empty>, Status> {
+        let req = request.into_inner();
+        self.session.send(DebugCommand::EnableItm { baud_rate: req.baud_rate })
+            .map_err(|e| Status::internal(e.to_string()))?;
+        Ok(Response::new(Empty {}))
+    }
+
+    async fn list_probes(&self, _request: Request<Empty>) -> Result<Response<ProbeList>, Status> {
+        let mut rx = self.session.subscribe();
+        self.session.send(DebugCommand::ListProbes).map_err(|e| Status::internal(e.to_string()))?;
+        
+        let event = self.wait_for_match(&mut rx, |e| matches!(e, CoreDebugEvent::Probes(_))).await?;
+        
+        if let CoreDebugEvent::Probes(probes) = event {
+             let proto_probes = probes.into_iter().enumerate().map(|(i, p)| ProtoProbeInfo {
+                 index: i as u32,
+                 name: p.name(),
+                 serial: p.serial_number.unwrap_or_default(),
+             }).collect();
+             Ok(Response::new(ProbeList { probes: proto_probes }))
+        } else {
+             Err(Status::internal("Unexpected event"))
+        }
+    }
+
+    async fn attach(&self, request: Request<AttachRequest>) -> Result<Response<Empty>, Status> {
+        let req = request.into_inner();
+        let mut rx = self.session.subscribe();
+        
+        let protocol = match req.protocol.as_deref() {
+            Some("swd") => Some(aether_core::WireProtocol::Swd),
+            Some("jtag") => Some(aether_core::WireProtocol::Jtag),
+            _ => None,
+        };
+
+        self.session.send(DebugCommand::Attach {
+            probe_index: req.probe_index as usize,
+            chip: req.chip,
+            protocol,
+            under_reset: req.under_reset,
+        }).map_err(|e| Status::internal(e.to_string()))?;
+        
+        let _ = self.wait_for_match(&mut rx, |e| matches!(e, CoreDebugEvent::Attached(_))).await?;
+        Ok(Response::new(Empty {}))
+    }
+    
+    // --- Events ---
+    
+>>>>>>> Stashed changes
     async fn subscribe_events(&self, _request: Request<Empty>) -> Result<Response<Self::SubscribeEventsStream>, Status> {
         let rx = self.session.subscribe();
         let stream = BroadcastStream::new(rx);
@@ -134,6 +302,36 @@ pub fn map_core_event_to_proto(event: CoreDebugEvent) -> Option<DebugEvent> {
                 data,
             }))
         }),
+<<<<<<< Updated upstream
+=======
+        CoreDebugEvent::SemihostingOutput(output) => Some(DebugEvent {
+            event: Some(proto::debug_event::Event::Semihosting(SemihostingEvent {
+                output
+            }))
+        }),
+        CoreDebugEvent::ItmPacket(data) => Some(DebugEvent {
+            event: Some(proto::debug_event::Event::Itm(ItmEvent {
+                data
+            }))
+        }),
+        CoreDebugEvent::Probes(probes) => Some(DebugEvent {
+            event: Some(proto::debug_event::Event::Probes(proto::ProbeList {
+                probes: probes.into_iter().enumerate().map(|(i, p)| proto::ProbeInfo {
+                    index: i as u32,
+                    name: p.name(),
+                    serial: p.serial_number.unwrap_or_default(),
+                }).collect()
+            }))
+        }),
+        CoreDebugEvent::Attached(info) => Some(DebugEvent {
+            event: Some(proto::debug_event::Event::Attached(proto::TargetInfo {
+                name: info.name,
+                flash_size: info.flash_size,
+                ram_size: info.ram_size,
+                architecture: info.architecture,
+            }))
+        }),
+>>>>>>> Stashed changes
         _ => None
     }
 }
@@ -169,6 +367,24 @@ pub fn map_proto_event_to_core(event: DebugEvent) -> Option<CoreDebugEvent> {
             value: p.value,
         }),
         proto::debug_event::Event::Rtt(r) => Some(CoreDebugEvent::RttData(r.channel as usize, r.data)),
+<<<<<<< Updated upstream
+=======
+        proto::debug_event::Event::Breakpoint(_) | proto::debug_event::Event::Variable(_) => None,
+        proto::debug_event::Event::Semihosting(s) => Some(CoreDebugEvent::SemihostingOutput(s.output)),
+        proto::debug_event::Event::Itm(i) => Some(CoreDebugEvent::ItmPacket(i.data)),
+        proto::debug_event::Event::Probes(p) => Some(CoreDebugEvent::Probes(p.probes.into_iter().map(|pi| aether_core::ProbeInfo {
+            vendor_id: 0,
+            product_id: 0,
+            serial_number: if pi.serial.is_empty() { None } else { Some(pi.serial) },
+            probe_type: aether_core::ProbeType::Other,
+        }).collect())),
+        proto::debug_event::Event::Attached(i) => Some(CoreDebugEvent::Attached(aether_core::TargetInfo {
+            name: i.name,
+            flash_size: i.flash_size,
+            ram_size: i.ram_size,
+            architecture: i.architecture,
+        })),
+>>>>>>> Stashed changes
     }
 }
 

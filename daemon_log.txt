@@ -1,0 +1,6 @@
+Error: Both SWD and JTAG attachment failed
+
+Caused by:
+    0: Failed to attach to target (auto)
+    1: Unable to load specification for chip
+    2: The requested chip 'auto' was not found in the list of known targets.
