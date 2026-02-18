@@ -36,14 +36,12 @@ impl DisassemblyManager {
                     .build()
                     .map_err(|e| anyhow!("Failed to create Capstone: {}", e))?
             }
-            "Riscv32" => {
-                Capstone::new()
-                    .riscv()
-                    .mode(arch::riscv::ArchMode::RiscV32)
-                    .build()
-                    .map_err(|e| anyhow!("Failed to create Capstone: {}", e))?
-            }
-             _ => {
+            "Riscv32" => Capstone::new()
+                .riscv()
+                .mode(arch::riscv::ArchMode::RiscV32)
+                .build()
+                .map_err(|e| anyhow!("Failed to create Capstone: {}", e))?,
+            _ => {
                 // Default to ARM Thumb for now if unknown or fallback
                 Capstone::new()
                     .arm()
@@ -53,9 +51,8 @@ impl DisassemblyManager {
             }
         };
 
-        let instructions = cs
-            .disasm_all(code, address)
-            .map_err(|e| anyhow!("Failed to disassemble: {}", e))?;
+        let instructions =
+            cs.disasm_all(code, address).map_err(|e| anyhow!("Failed to disassemble: {}", e))?;
 
         Ok(instructions
             .iter()

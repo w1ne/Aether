@@ -1,6 +1,6 @@
-use probe_rs::Session;
 use anyhow::Result;
-use serde::{Serialize, Deserialize};
+use probe_rs::Session;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct TraceConfig {
@@ -22,10 +22,7 @@ impl Default for TraceManager {
 
 impl TraceManager {
     pub fn new() -> Self {
-        Self {
-            enabled: false,
-            config: None,
-        }
+        Self { enabled: false, config: None }
     }
 
     pub fn enable(&mut self, _session: &mut Session, config: TraceConfig) -> Result<()> {

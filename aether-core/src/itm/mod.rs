@@ -1,7 +1,6 @@
 use anyhow::Result;
-use probe_rs::Session;
 use probe_rs::architecture::arm::component::TraceSink;
-
+use probe_rs::Session;
 
 pub struct ItmManager {
     enabled: bool,
@@ -9,9 +8,7 @@ pub struct ItmManager {
 
 impl ItmManager {
     pub fn new() -> Self {
-        Self {
-            enabled: false,
-        }
+        Self { enabled: false }
     }
 
     /// Configure ITM/SWO
@@ -43,8 +40,14 @@ impl ItmManager {
         // If read_swv is gone, and read_swo is gone.
         // check `read_trace_data`.
         match session.read_trace_data() {
-             Ok(bytes) => Ok(bytes),
-             Err(e) => Err(anyhow::anyhow!("Failed to read trace data: {}", e)),
+            Ok(bytes) => Ok(bytes),
+            Err(e) => Err(anyhow::anyhow!("Failed to read trace data: {}", e)),
         }
+    }
+}
+
+impl Default for ItmManager {
+    fn default() -> Self {
+        Self::new()
     }
 }

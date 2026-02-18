@@ -6,19 +6,18 @@
 pub mod debug;
 pub mod disasm;
 pub mod flash;
+pub mod itm;
 pub mod memory;
 pub mod probe;
-pub mod rtt;
 pub mod rtos;
+pub mod rtt;
+pub mod semihosting;
 pub mod session;
 pub mod svd;
 pub mod symbols;
-pub mod semihosting;
-pub mod itm;
 
 pub mod stack;
 pub mod trace;
-
 
 // Re-export commonly used types
 pub use debug::DebugManager;
@@ -69,7 +68,7 @@ pub enum TaskState {
     Unknown,
 }
 pub use probe::{ProbeInfo, ProbeManager, ProbeType, TargetInfo, WireProtocol};
-pub use svd::SvdManager;
-pub use symbols::{SymbolManager, SourceInfo};
 pub use session::{DebugCommand, DebugEvent, SessionHandle};
 pub use stack::StackFrame;
+pub use svd::SvdManager;
+pub use symbols::{SourceInfo, SymbolManager};

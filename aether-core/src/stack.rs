@@ -1,13 +1,10 @@
+use crate::symbols::SymbolManager;
+use gimli::{BaseAddresses, DebugFrame, RunTimeEndian, UnwindContext, UnwindSection};
+use object::{Object, ObjectSection};
 use probe_rs::{Core, MemoryInterface};
 use probe_rs_debug::StackFrame as ProbeStackFrame;
-use serde::{Serialize, Deserialize};
-use gimli::{
-    BaseAddresses, UnwindSection, UnwindContext, RunTimeEndian,
-    DebugFrame
-};
-use object::{Object, ObjectSection};
+use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
-use crate::symbols::SymbolManager;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StackFrame {
@@ -24,7 +21,10 @@ impl From<&ProbeStackFrame> for StackFrame {
         StackFrame {
             id: 0,
             function_name: frame.function_name.clone(),
-            source_file: frame.source_location.as_ref().map(|l| l.path.to_string_lossy().to_string()),
+            source_file: frame
+                .source_location
+                .as_ref()
+                .map(|l| l.path.to_string_lossy().to_string()),
             line: frame.source_location.as_ref().and_then(|l| l.line),
             pc: frame.pc.to_string().parse::<u64>().unwrap_or(0) as u32,
             sp: 0,
@@ -32,7 +32,10 @@ impl From<&ProbeStackFrame> for StackFrame {
     }
 }
 
-pub fn unwind_stack(core: &mut Core, symbol_manager: &SymbolManager) -> Result<Vec<StackFrame>, String> {
+pub fn unwind_stack(
+    core: &mut Core,
+    symbol_manager: &SymbolManager,
+) -> Result<Vec<StackFrame>, String> {
     // 1. Initial State
     let mut frames = Vec::new();
 
@@ -45,9 +48,9 @@ pub fn unwind_stack(core: &mut Core, symbol_manager: &SymbolManager) -> Result<V
     // Current frame (Top of Stack)
     // Try to resolve function name for PC
     let func_name = if let Some(info) = symbol_manager.lookup(pc_val) {
-         info.function.unwrap_or_else(|| format!("0x{:08x}", pc_val))
+        info.function.unwrap_or_else(|| format!("0x{:08x}", pc_val))
     } else {
-         format!("0x{:08x}", pc_val)
+        format!("0x{:08x}", pc_val)
     };
 
     let source_loc = symbol_manager.lookup(pc_val);
@@ -73,8 +76,12 @@ pub fn unwind_stack(core: &mut Core, symbol_manager: &SymbolManager) -> Result<V
     let endian = if obj.is_little_endian() { RunTimeEndian::Little } else { RunTimeEndian::Big };
 
     // Try .debug_frame, then .eh_frame
-    let debug_frame_section = obj.section_by_name(".debug_frame").map(|s| s.uncompressed_data().unwrap_or(Cow::Borrowed(&[])));
-    let _eh_frame_section = obj.section_by_name(".eh_frame").map(|s| s.uncompressed_data().unwrap_or(Cow::Borrowed(&[])));
+    let debug_frame_section = obj
+        .section_by_name(".debug_frame")
+        .map(|s| s.uncompressed_data().unwrap_or(Cow::Borrowed(&[])));
+    let _eh_frame_section = obj
+        .section_by_name(".eh_frame")
+        .map(|s| s.uncompressed_data().unwrap_or(Cow::Borrowed(&[])));
 
     // Create UnwindContext
     let mut ctx = UnwindContext::new();
@@ -90,70 +97,82 @@ pub fn unwind_stack(core: &mut Core, symbol_manager: &SymbolManager) -> Result<V
         let mut unwound = false;
 
         if let Some(section_data) = &debug_frame_section {
-             let debug_frame = DebugFrame::new(section_data, endian);
-             let mut bases = BaseAddresses::default();
-             bases = bases.set_text(0); // Assuming 0 for now
-             if let Ok(fde) = debug_frame.fde_for_address(&bases, current_pc, |f, b, o| f.cie_from_offset(b, o)) {
-                      if let Ok(row) = fde.unwind_info_for_address(&debug_frame, &bases, &mut ctx, current_pc) {
-                           // Evaluate CFA (Canonical Frame Address) - usually SP of caller
-                           let cfa = match row.cfa() {
-                               gimli::CfaRule::RegisterAndOffset { register, offset } => {
-                                   let reg_val = if register.0 == 13 { current_sp } else { 0 }; // TODO: Handle other regs
-                                   (reg_val as i64 + offset) as u64
-                               }
-                               _ => current_sp // Fallback
-                           };
+            let debug_frame = DebugFrame::new(section_data, endian);
+            let mut bases = BaseAddresses::default();
+            bases = bases.set_text(0); // Assuming 0 for now
+            if let Ok(fde) =
+                debug_frame.fde_for_address(&bases, current_pc, |f, b, o| f.cie_from_offset(b, o))
+            {
+                if let Ok(row) =
+                    fde.unwind_info_for_address(&debug_frame, &bases, &mut ctx, current_pc)
+                {
+                    // Evaluate CFA (Canonical Frame Address) - usually SP of caller
+                    let cfa = match row.cfa() {
+                        gimli::CfaRule::RegisterAndOffset { register, offset } => {
+                            let reg_val = if register.0 == 13 { current_sp } else { 0 }; // TODO: Handle other regs
+                            (reg_val as i64 + offset) as u64
+                        }
+                        _ => current_sp, // Fallback
+                    };
 
-                           // Evaluate Return Address (RA) -> PC of caller
-                           // Usually stores in LR (14) or on stack
-                           let ra_rule = row.register(gimli::Register(14)); // LR
-                           let caller_pc = match ra_rule {
-                               gimli::RegisterRule::Undefined => {
-                                   // If Undefined, maybe we are at bottom or uses LR directly
-                                   if current_lr != 0 { current_lr } else { 0 }
-                               },
-                               gimli::RegisterRule::SameValue => current_lr,
-                               gimli::RegisterRule::Offset(offset) => {
-                                   // Saved at CFA + offset
-                                   let addr = (cfa as i64 + offset) as u64;
-                                   match core.read_word_32(addr) {
-                                       Ok(val) => val as u64,
-                                       Err(_) => 0
-                                   }
-                               },
-                               gimli::RegisterRule::ValOffset(offset) => (cfa as i64 + offset) as u64,
-                               gimli::RegisterRule::Register(reg) => {
-                                    if reg.0 == 14 { current_lr } else { 0 } // Simplified
-                               },
-                               _ => 0
-                           };
+                    // Evaluate Return Address (RA) -> PC of caller
+                    // Usually stores in LR (14) or on stack
+                    let ra_rule = row.register(gimli::Register(14)); // LR
+                    let caller_pc = match ra_rule {
+                        gimli::RegisterRule::Undefined => {
+                            // If Undefined, maybe we are at bottom or uses LR directly
+                            if current_lr != 0 {
+                                current_lr
+                            } else {
+                                0
+                            }
+                        }
+                        gimli::RegisterRule::SameValue => current_lr,
+                        gimli::RegisterRule::Offset(offset) => {
+                            // Saved at CFA + offset
+                            let addr = (cfa as i64 + offset) as u64;
+                            match core.read_word_32(addr) {
+                                Ok(val) => val as u64,
+                                Err(_) => 0,
+                            }
+                        }
+                        gimli::RegisterRule::ValOffset(offset) => (cfa as i64 + offset) as u64,
+                        gimli::RegisterRule::Register(reg) => {
+                            if reg.0 == 14 {
+                                current_lr
+                            } else {
+                                0
+                            } // Simplified
+                        }
+                        _ => 0,
+                    };
 
-                           if caller_pc == 0 || caller_pc == current_pc {
-                               break; // Stop unwinding
-                           }
+                    if caller_pc == 0 || caller_pc == current_pc {
+                        break; // Stop unwinding
+                    }
 
-                           // Update state for next frame
-                           current_pc = caller_pc;
-                           current_sp = cfa;
-                           // current_lr should be updated too if possible, but simpler is ok for now
-                           unwound = true;
-                      }
-                 }
+                    // Update state for next frame
+                    current_pc = caller_pc;
+                    current_sp = cfa;
+                    // current_lr should be updated too if possible, but simpler is ok for now
+                    unwound = true;
+                }
             }
+        }
 
         // If DWARF failed, maybe try primitive LR unwinding for one step?
         if !unwound {
-             // Basic leaf function handling: if we are in a leaf, LR holds the caller
-             // But we simulate this inside loop usually.
-             // If we haven't found DWARF, we assume we can't unwind further safely.
-             break;
+            // Basic leaf function handling: if we are in a leaf, LR holds the caller
+            // But we simulate this inside loop usually.
+            // If we haven't found DWARF, we assume we can't unwind further safely.
+            break;
         }
 
         // Resolve symbol for new PC
         let func_name = if let Some(info) = symbol_manager.lookup(current_pc) {
-             info.function.unwrap_or_else(|| format!("0x{:08x}", current_pc))
+            info.function.unwrap_or_else(|| format!("0x{:08x}", current_pc))
         } else {
-             format!("0x{:08x}", current_pc)
+            format!("0x{:08x}", current_pc)
         };
         let source_loc = symbol_manager.lookup(current_pc);
 

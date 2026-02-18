@@ -1,11 +1,13 @@
 use anyhow::Result;
-use probe_rs::{Core, RegisterValue, MemoryInterface};
+use probe_rs::{Core, MemoryInterface, RegisterValue};
 
-pub struct SemihostingManager {}
+pub struct SemihostingManager {
+    _enabled: bool,
+}
 
 impl SemihostingManager {
     pub fn new() -> Self {
-        Self {}
+        Self { _enabled: false }
     }
 
     /// Check if the core is halted due to a semihosting request and handle it.
@@ -14,9 +16,9 @@ impl SemihostingManager {
         // 1. Get PC
         let pc_val = core.read_core_reg(core.program_counter())?;
         let pc: u64 = match pc_val {
-             RegisterValue::U32(v) => v as u64,
-             RegisterValue::U64(v) => v,
-             RegisterValue::U128(v) => v as u64,
+            RegisterValue::U32(v) => v as u64,
+            RegisterValue::U64(v) => v,
+            RegisterValue::U128(v) => v as u64,
         };
 
         // 2. Read instruction at PC
@@ -30,32 +32,33 @@ impl SemihostingManager {
         // Thumb: `BKPT 0xAB` (0xBEAB)
 
         // Let's try to read 16 bits.
-        let msg = if let Ok(_inst) = core.read_word_8(pc) { // Read 2 bytes?
-             // read_word_8 reads 1 byte.
-             // We need 2 bytes.
-             let mut buf = [0u8; 2];
-             core.read(pc, &mut buf)?;
-             let inst16 = u16::from_le_bytes(buf);
+        let msg = if let Ok(_inst) = core.read_word_8(pc) {
+            // Read 2 bytes?
+            // read_word_8 reads 1 byte.
+            // We need 2 bytes.
+            let mut buf = [0u8; 2];
+            core.read(pc, &mut buf)?;
+            let inst16 = u16::from_le_bytes(buf);
 
-             if inst16 == 0xBEAB {
-                 // Thumb Semihosting
-                 self.handle_semihosting(core, pc, 2)?
-             } else {
-                 // Check ARM?
-                 // Read 4 bytes
-                 let mut buf4 = [0u8; 4];
-                 if core.read(pc, &mut buf4).is_ok() {
-                     let inst32 = u32::from_le_bytes(buf4);
-                     if inst32 == 0xEF123456 {
-                         // ARM Semihosting
-                         self.handle_semihosting(core, pc, 4)?
-                     } else {
-                         None
-                     }
-                 } else {
-                     None
-                 }
-             }
+            if inst16 == 0xBEAB {
+                // Thumb Semihosting
+                self.handle_semihosting(core, pc, 2)?
+            } else {
+                // Check ARM?
+                // Read 4 bytes
+                let mut buf4 = [0u8; 4];
+                if core.read(pc, &mut buf4).is_ok() {
+                    let inst32 = u32::from_le_bytes(buf4);
+                    if inst32 == 0xEF123456 {
+                        // ARM Semihosting
+                        self.handle_semihosting(core, pc, 4)?
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                }
+            }
         } else {
             None
         };
@@ -63,7 +66,12 @@ impl SemihostingManager {
         Ok(msg)
     }
 
-    fn handle_semihosting(&mut self, core: &mut Core, pc: u64, inst_size: u64) -> Result<Option<String>> {
+    fn handle_semihosting(
+        &mut self,
+        core: &mut Core,
+        pc: u64,
+        inst_size: u64,
+    ) -> Result<Option<String>> {
         // ... (omitted op reading, assume correct from context)
         // Re-implementing logic to be safe or just fixing the write line?
         // Replace_file_content replaces the whole block or chunks.
@@ -87,20 +95,22 @@ impl SemihostingManager {
         let mut result = None;
 
         match op {
-            0x04 => { // SYS_WRITE0 (Write string to console)
-                 // R1 points to null-terminated string
-                 result = Some(self.read_string(core, param)?);
+            0x04 => {
+                // SYS_WRITE0 (Write string to console)
+                // R1 points to null-terminated string
+                result = Some(self.read_string(core, param)?);
             }
-            0x05 => { // SYS_WRITEC (Write character)
-                 // R1 points to character
-                 let mut buf = [0u8; 1];
-                 core.read(param, &mut buf)?;
-                 result = Some(String::from_utf8_lossy(&buf).to_string());
+            0x05 => {
+                // SYS_WRITEC (Write character)
+                // R1 points to character
+                let mut buf = [0u8; 1];
+                core.read(param, &mut buf)?;
+                result = Some(String::from_utf8_lossy(&buf).to_string());
             }
             0x18 => { // SYS_EXIT (AngelSWI_Reason_ReportException)
-                // This is used by qemu-semihosting to exit.
-                // We might want to signal this?
-                // For now, just log?
+                 // This is used by qemu-semihosting to exit.
+                 // We might want to signal this?
+                 // For now, just log?
             }
             _ => {
                 // Unknown or unhandled op
@@ -128,10 +138,17 @@ impl SemihostingManager {
             }
             out.push(buf[0] as char);
             curr += 1;
-            if out.len() > 1024 { // Safety limit
+            if out.len() > 1024 {
+                // Safety limit
                 break;
             }
         }
         Ok(out)
+    }
+}
+
+impl Default for SemihostingManager {
+    fn default() -> Self {
+        Self::new()
     }
 }

@@ -1,8 +1,8 @@
 use super::RtosAware;
-use crate::{TaskInfo, TaskState};
-use probe_rs::MemoryInterface;
 use crate::symbols::SymbolManager;
-use anyhow::{Result};
+use crate::{TaskInfo, TaskState};
+use anyhow::Result;
+use probe_rs::MemoryInterface;
 
 pub struct FreeRtos;
 
@@ -17,7 +17,13 @@ impl FreeRtos {
         Self
     }
 
-    fn read_list(&self, core: &mut dyn MemoryInterface, list_addr: u64, state: TaskState, tasks: &mut Vec<TaskInfo>) -> Result<()> {
+    fn read_list(
+        &self,
+        core: &mut dyn MemoryInterface,
+        list_addr: u64,
+        state: TaskState,
+        tasks: &mut Vec<TaskInfo>,
+    ) -> Result<()> {
         // FreeRTOS List_t structure (simplified):
         // uxNumberOfItems (u32)
         // pxIndex (pointer)
@@ -55,7 +61,12 @@ impl FreeRtos {
         Ok(())
     }
 
-    fn read_tcb(&self, core: &mut dyn MemoryInterface, tcb_addr: u64, state: TaskState) -> Result<TaskInfo> {
+    fn read_tcb(
+        &self,
+        core: &mut dyn MemoryInterface,
+        tcb_addr: u64,
+        state: TaskState,
+    ) -> Result<TaskInfo> {
         // TCB_t structure (simplified, may vary by FreeRTOS version/config):
         // pxTopOfStack (offset 0)
         // ...
@@ -69,9 +80,7 @@ impl FreeRtos {
 
         let mut name_bytes = [0u8; 16];
         core.read_8(tcb_addr + 52, &mut name_bytes)?;
-        let name = String::from_utf8_lossy(&name_bytes)
-            .trim_matches(char::from(0))
-            .to_string();
+        let name = String::from_utf8_lossy(&name_bytes).trim_matches(char::from(0)).to_string();
 
         // Calculate stack usage (simple version: current at time of switch)
         // stack_start is the bottom (lowest address if stack grows down, but pxStack is usually the beginning of the allocated block)
@@ -82,7 +91,8 @@ impl FreeRtos {
 
         // High water mark scan
         let _stack_size = 0; // Unknown without more TCB parsing or config
-        let high_water_mark = self.scan_high_water_mark(core, stack_start as u64, top_of_stack as u64).unwrap_or(0);
+        let high_water_mark =
+            self.scan_high_water_mark(core, stack_start as u64, top_of_stack as u64).unwrap_or(0);
 
         let stack_usage = top_of_stack.saturating_sub(stack_start);
         Ok(TaskInfo {
@@ -96,7 +106,12 @@ impl FreeRtos {
         })
     }
 
-    fn scan_high_water_mark(&self, core: &mut dyn MemoryInterface, stack_start: u64, top_of_stack: u64) -> Result<u64> {
+    fn scan_high_water_mark(
+        &self,
+        core: &mut dyn MemoryInterface,
+        stack_start: u64,
+        top_of_stack: u64,
+    ) -> Result<u64> {
         // Scan from stack_start upwards matching 0xa5 pattern
         const CHUNK_SIZE: usize = 256;
         let mut buffer = [0u8; CHUNK_SIZE];
@@ -128,7 +143,11 @@ impl RtosAware for FreeRtos {
         "FreeRTOS"
     }
 
-    fn get_tasks(&self, core: &mut dyn MemoryInterface, symbols: &SymbolManager) -> Result<Vec<TaskInfo>> {
+    fn get_tasks(
+        &self,
+        core: &mut dyn MemoryInterface,
+        symbols: &SymbolManager,
+    ) -> Result<Vec<TaskInfo>> {
         let mut tasks = Vec::new();
 
         // 1. pxReadyTasksLists
@@ -277,9 +296,15 @@ mod tests {
             }
             Ok(())
         }
-        fn flush(&mut self) -> Result<(), probe_rs::Error> { Ok(()) }
-        fn supports_native_64bit_access(&mut self) -> bool { false }
-        fn supports_8bit_transfers(&self) -> Result<bool, probe_rs::Error> { Ok(true) }
+        fn flush(&mut self) -> Result<(), probe_rs::Error> {
+            Ok(())
+        }
+        fn supports_native_64bit_access(&mut self) -> bool {
+            false
+        }
+        fn supports_8bit_transfers(&self) -> Result<bool, probe_rs::Error> {
+            Ok(true)
+        }
     }
 
     #[test]
@@ -331,6 +356,6 @@ mod tests {
         assert_eq!(tasks[0].state, TaskState::Ready);
         assert_eq!(tasks[0].handle, 0x4000);
         assert_eq!(tasks[0].stack_usage, 0x10); // 0x3010 - 0x3000
-        assert_eq!(tasks[0].stack_size, 4);      // High water mark: 4 unused bytes
+        assert_eq!(tasks[0].stack_size, 4); // High water mark: 4 unused bytes
     }
 }

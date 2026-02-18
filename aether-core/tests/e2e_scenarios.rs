@@ -1,4 +1,4 @@
-use aether_core::{SessionHandle, DebugCommand, DebugEvent, TaskState};
+use aether_core::{DebugCommand, DebugEvent, SessionHandle, TaskState};
 use std::sync::Arc;
 use tokio::time::{timeout, Duration};
 
@@ -84,7 +84,7 @@ async fn test_scenario_rtos_tasks_discovery() {
             assert_eq!(tasks.len(), 2);
             assert_eq!(tasks[0].name, "MainTask");
             assert_eq!(tasks[1].name, "IdleTask");
-        },
+        }
         _ => panic!("Expected Tasks event, got {:?}", event),
     }
 }
@@ -153,7 +153,7 @@ async fn test_scenario_stack_unwind() {
             line: Some(10),
             pc: 0x08000100,
             sp: 0x20004020,
-        }
+        },
     ];
     event_tx.send(DebugEvent::Stack(mock_stack)).expect("Failed to send Stack event");
 
@@ -169,7 +169,7 @@ async fn test_scenario_stack_unwind() {
             assert_eq!(frames[0].function_name, "main");
             assert_eq!(frames[0].line, Some(42));
             assert_eq!(frames[1].function_name, "Reset_Handler");
-        },
+        }
         _ => panic!("Expected Stack event, got {:?}", event),
     }
 }
@@ -211,7 +211,7 @@ async fn test_scenario_trace_streaming() {
     match event {
         DebugEvent::TraceData(data) => {
             assert_eq!(data, trace_bytes);
-        },
+        }
         _ => panic!("Expected TraceData event, got {:?}", event),
     }
 }
@@ -289,7 +289,7 @@ async fn test_scenario_memory_stress() {
             assert_eq!(addr, 0x20000000);
             assert_eq!(data.len(), 1024);
             assert_eq!(data, large_data);
-        },
+        }
         _ => panic!("Expected MemoryData event"),
     }
 }
@@ -375,13 +375,11 @@ async fn test_scenario_svd_interaction() {
     assert!(matches!(cmd, DebugCommand::GetPeripherals));
 
     // 4. Simulate Peripherals List
-    let mock_periphs = vec![
-        aether_core::svd::PeripheralInfo {
-            name: "GPIOA".to_string(),
-            base_address: 0x48000000,
-            description: Some("GPIO Port A".to_string()),
-        }
-    ];
+    let mock_periphs = vec![aether_core::svd::PeripheralInfo {
+        name: "GPIOA".to_string(),
+        base_address: 0x48000000,
+        description: Some("GPIO Port A".to_string()),
+    }];
     event_tx.send(DebugEvent::Peripherals(mock_periphs)).unwrap();
     let ev = timeout(Duration::from_millis(100), receiver.recv()).await.unwrap().unwrap();
     if let DebugEvent::Peripherals(p) = ev {
@@ -399,10 +397,12 @@ async fn test_scenario_variable_plotting() {
     let mut receiver = handle.subscribe();
 
     // 1. Add Plot
-    handle.send(DebugCommand::AddPlot {
-        name: "temperature".to_string(),
-        var_type: aether_core::VarType::F32
-    }).unwrap();
+    handle
+        .send(DebugCommand::AddPlot {
+            name: "temperature".to_string(),
+            var_type: aether_core::VarType::F32,
+        })
+        .unwrap();
 
     let cmd = cmd_rx.try_recv().expect("Core did not receive AddPlot");
     if let DebugCommand::AddPlot { name, var_type } = cmd {
@@ -413,11 +413,9 @@ async fn test_scenario_variable_plotting() {
     }
 
     // 2. Simulate Periodic Data Arrival
-    event_tx.send(DebugEvent::PlotData {
-        name: "temperature".to_string(),
-        timestamp: 1.0,
-        value: 25.5,
-    }).unwrap();
+    event_tx
+        .send(DebugEvent::PlotData { name: "temperature".to_string(), timestamp: 1.0, value: 25.5 })
+        .unwrap();
 
     // 3. Verify propagation
     let ev = timeout(Duration::from_millis(100), receiver.recv()).await.unwrap().unwrap();
@@ -440,7 +438,11 @@ async fn test_scenario_rtt_advanced() {
     assert!(matches!(cmd_rx.try_recv().unwrap(), DebugCommand::RttAttach));
 
     // 2. Simulate RTT Discovery
-    let up = vec![aether_core::rtt::RttChannelInfo { number: 0, name: Some("Log".to_string()), buffer_size: 1024 }];
+    let up = vec![aether_core::rtt::RttChannelInfo {
+        number: 0,
+        name: Some("Log".to_string()),
+        buffer_size: 1024,
+    }];
     event_tx.send(DebugEvent::RttChannels { up_channels: up, down_channels: vec![] }).unwrap();
 
     let ev = timeout(Duration::from_millis(100), receiver.recv()).await.unwrap().unwrap();
@@ -568,7 +570,7 @@ async fn test_scenario_rust_async_observability() {
             stack_size: 1024,
             handle: 0x20003000,
             task_type: aether_core::TaskType::Async,
-        }
+        },
     ];
     event_tx.send(DebugEvent::Tasks(async_tasks)).unwrap();
 
@@ -621,7 +623,9 @@ async fn test_error_invalid_memory_access() {
     assert!(matches!(cmd_rx.try_recv().unwrap(), DebugCommand::ReadMemory(0xDEADBEEF, 4)));
 
     // 2. Core emits Error event
-    event_tx.send(DebugEvent::Error("Invalid memory access: 0xDEADBEEF is protected".to_string())).unwrap();
+    event_tx
+        .send(DebugEvent::Error("Invalid memory access: 0xDEADBEEF is protected".to_string()))
+        .unwrap();
 
     // 3. Verify UI receives the error specifically
     let ev = timeout(Duration::from_millis(100), receiver.recv()).await.unwrap().unwrap();
@@ -643,7 +647,11 @@ async fn test_edge_breakpoint_limit_reached() {
     assert!(matches!(cmd_rx.try_recv().unwrap(), DebugCommand::SetBreakpoint(_)));
 
     // 2. Core emits Error event about hardware limits
-    event_tx.send(DebugEvent::Error("Hardware limit reached: No more breakpoint units available".to_string())).unwrap();
+    event_tx
+        .send(DebugEvent::Error(
+            "Hardware limit reached: No more breakpoint units available".to_string(),
+        ))
+        .unwrap();
 
     // 3. Verify Error
     let ev = timeout(Duration::from_millis(100), receiver.recv()).await.unwrap().unwrap();
@@ -661,7 +669,9 @@ async fn test_stress_rtt_drop_detected() {
     let mut receiver = handle.subscribe();
 
     // 1. Simulate data burst that causes a drop (via error event used for telemetry)
-    event_tx.send(DebugEvent::Error("RTT Drop Detected: Buffer overflow in Channel 0".to_string())).unwrap();
+    event_tx
+        .send(DebugEvent::Error("RTT Drop Detected: Buffer overflow in Channel 0".to_string()))
+        .unwrap();
 
     // 2. Verify status bar/UI notification source
     let ev = timeout(Duration::from_millis(100), receiver.recv()).await.unwrap().unwrap();
@@ -679,7 +689,9 @@ async fn test_scenario_stepping_in_exception() {
     let mut receiver = handle.subscribe();
 
     // 1. Core is currently in HardFault
-    event_tx.send(DebugEvent::Status(probe_rs::CoreStatus::Halted(probe_rs::HaltReason::Exception))).unwrap();
+    event_tx
+        .send(DebugEvent::Status(probe_rs::CoreStatus::Halted(probe_rs::HaltReason::Exception)))
+        .unwrap();
 
     // 2. Verify UI sees the exception state
     let ev = timeout(Duration::from_millis(100), receiver.recv()).await.unwrap().unwrap();
@@ -722,7 +734,9 @@ async fn test_edge_plot_variable_out_of_scope() {
 
     // 1. Plotting is active for 'temp'
     // 2. Variable goes out of scope (simulated by error or stop event)
-    event_tx.send(DebugEvent::Error("Plot Error: Variable 'temp' is out of scope".to_string())).unwrap();
+    event_tx
+        .send(DebugEvent::Error("Plot Error: Variable 'temp' is out of scope".to_string()))
+        .unwrap();
 
     // 3. Verify UI notification
     let ev = timeout(Duration::from_millis(100), receiver.recv()).await.unwrap().unwrap();
@@ -744,7 +758,9 @@ async fn test_error_source_not_found() {
     assert!(matches!(cmd_rx.try_recv().unwrap(), DebugCommand::LookupSource(0xDEADBEEF)));
 
     // 2. Core emits Error: No symbols
-    event_tx.send(DebugEvent::Error("Symbol Error: No debug symbols found for 0xDEADBEEF".to_string())).unwrap();
+    event_tx
+        .send(DebugEvent::Error("Symbol Error: No debug symbols found for 0xDEADBEEF".to_string()))
+        .unwrap();
 
     // 3. Verify Error
     let ev = timeout(Duration::from_millis(100), receiver.recv()).await.unwrap().unwrap();
@@ -765,7 +781,11 @@ async fn test_error_stack_corrupted() {
     handle.send(DebugCommand::GetStack).unwrap();
 
     // 2. Core emits Error: Corrupt Stack
-    event_tx.send(DebugEvent::Error("Unwind Error: Stack corrupted (invalid SP: 0xDEADBEEF)".to_string())).unwrap();
+    event_tx
+        .send(DebugEvent::Error(
+            "Unwind Error: Stack corrupted (invalid SP: 0xDEADBEEF)".to_string(),
+        ))
+        .unwrap();
 
     // 3. Verify Error
     let ev = timeout(Duration::from_millis(100), receiver.recv()).await.unwrap().unwrap();
@@ -783,7 +803,11 @@ async fn test_edge_rtt_pending_initialization() {
     let mut receiver = handle.subscribe();
 
     // 1. Simulate RTT symbol found but magic sequence invalid (pending init)
-    event_tx.send(DebugEvent::FlashStatus("RTT Pending... Waiting for target initialization".to_string())).unwrap();
+    event_tx
+        .send(DebugEvent::FlashStatus(
+            "RTT Pending... Waiting for target initialization".to_string(),
+        ))
+        .unwrap();
 
     // 2. Verify status update
     let ev = timeout(Duration::from_millis(100), receiver.recv()).await.unwrap().unwrap();
@@ -801,7 +825,9 @@ async fn test_edge_swo_baud_mismatch_detection() {
     let mut receiver = handle.subscribe();
 
     // 1. Simulate SWO decoder seeing garbage due to baud rate mismatch
-    event_tx.send(DebugEvent::Error("Trace Error: SWO Baud rate mismatch detected".to_string())).unwrap();
+    event_tx
+        .send(DebugEvent::Error("Trace Error: SWO Baud rate mismatch detected".to_string()))
+        .unwrap();
 
     // 2. Verify UI warning
     let ev = timeout(Duration::from_millis(100), receiver.recv()).await.unwrap().unwrap();
@@ -973,11 +999,9 @@ async fn test_scenario_task_switch_monitoring() {
 
     // 1. Simulate a task switch event (from TCB1 to TCB2)
     let timestamp = 1.234;
-    event_tx.send(DebugEvent::TaskSwitch {
-        from: Some(0x20001000),
-        to: 0x20002000,
-        timestamp,
-    }).unwrap();
+    event_tx
+        .send(DebugEvent::TaskSwitch { from: Some(0x20001000), to: 0x20002000, timestamp })
+        .unwrap();
 
     // 2. Verify UI/Agent receives the switch
     let ev = timeout(Duration::from_millis(100), receiver.recv()).await.unwrap().unwrap();
@@ -1072,7 +1096,9 @@ async fn test_fuzz_corrupt_symbols() {
     let _ = cmd_rx.try_recv().unwrap();
 
     // 2. Core reports DWARF error
-    event_tx.send(DebugEvent::Error("WARF Fuzz: Invalid compilation unit header".to_string())).unwrap();
+    event_tx
+        .send(DebugEvent::Error("WARF Fuzz: Invalid compilation unit header".to_string()))
+        .unwrap();
 
     let ev = receiver.recv().await.unwrap();
     if let DebugEvent::Error(msg) = ev {
@@ -1086,7 +1112,9 @@ async fn test_scenario_dwarf_variable_resolution() {
     let handle = Arc::new(handle);
 
     // 1. User wants to watch a complex variable "config"
-    handle.send(DebugCommand::WatchVariable("config".to_string())).expect("Failed to send WatchVariable");
+    handle
+        .send(DebugCommand::WatchVariable("config".to_string()))
+        .expect("Failed to send WatchVariable");
 
     // 2. Verify Command received by core
     let cmd = cmd_rx.try_recv().expect("Core did not receive WatchVariable command");
@@ -1123,7 +1151,9 @@ async fn test_scenario_dwarf_variable_resolution() {
         ]),
     };
 
-    event_tx.send(DebugEvent::VariableResolved(mock_info.clone())).expect("Failed to broadcast VariableResolved event");
+    event_tx
+        .send(DebugEvent::VariableResolved(mock_info.clone()))
+        .expect("Failed to broadcast VariableResolved event");
 
     // 5. Verify propagation to UI
     let event: DebugEvent = timeout(Duration::from_millis(100), receiver.recv())
@@ -1139,7 +1169,7 @@ async fn test_scenario_dwarf_variable_resolution() {
             assert_eq!(members.len(), 2);
             assert_eq!(members[0].name, "enabled");
             assert_eq!(members[1].name, "threshold");
-        },
+        }
         _ => panic!("Expected VariableResolved event, got {:?}", event),
     }
 }
@@ -1169,11 +1199,13 @@ async fn test_stress_large_scale_task_switching() {
         let to_index = i % 50;
         let from_index = if i > 0 { Some((i - 1) % 50) } else { None };
 
-        event_tx.send(DebugEvent::TaskSwitch {
-            from: from_index.map(|idx| tasks[idx].handle),
-            to: tasks[to_index].handle,
-            timestamp: i as f64 * 0.01,
-        }).unwrap();
+        event_tx
+            .send(DebugEvent::TaskSwitch {
+                from: from_index.map(|idx| tasks[idx].handle),
+                to: tasks[to_index].handle,
+                timestamp: i as f64 * 0.01,
+            })
+            .unwrap();
     }
 
     // 3. Verify event propagation
@@ -1182,7 +1214,9 @@ async fn test_stress_large_scale_task_switching() {
         if let Ok(DebugEvent::TaskSwitch { .. }) = event {
             count += 1;
         }
-        if count >= 100 { break; }
+        if count >= 100 {
+            break;
+        }
     }
     assert_eq!(count, 100);
 }
@@ -1213,7 +1247,9 @@ async fn test_perf_rtt_10khz_simulation() {
             }
             _ => {}
         }
-        if received >= message_count { break; }
+        if received >= message_count {
+            break;
+        }
     }
 
     assert_eq!(received, message_count);

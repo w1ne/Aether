@@ -1,28 +1,60 @@
 use aether_core::symbols::SymbolManager;
-use std::path::PathBuf;
 use probe_rs::MemoryInterface;
+use std::path::PathBuf;
 
 struct MockMemory;
 impl MemoryInterface for MockMemory {
     fn read(&mut self, _address: u64, data: &mut [u8]) -> Result<(), probe_rs::Error> {
-        for b in data.iter_mut() { *b = 0; }
+        for b in data.iter_mut() {
+            *b = 0;
+        }
         Ok(())
     }
-    fn read_word_32(&mut self, _address: u64) -> Result<u32, probe_rs::Error> { Ok(0) }
-    fn read_word_64(&mut self, _address: u64) -> Result<u64, probe_rs::Error> { Ok(0) }
-    fn read_8(&mut self, _address: u64, data: &mut [u8]) -> Result<(), probe_rs::Error> { self.read(_address, data) }
-    fn read_16(&mut self, _address: u64, _data: &mut [u16]) -> Result<(), probe_rs::Error> { Ok(()) }
-    fn read_32(&mut self, _address: u64, _data: &mut [u32]) -> Result<(), probe_rs::Error> { Ok(()) }
-    fn read_64(&mut self, _address: u64, _data: &mut [u64]) -> Result<(), probe_rs::Error> { Ok(()) }
-    fn write_word_32(&mut self, _address: u64, _data: u32) -> Result<(), probe_rs::Error> { Ok(()) }
-    fn write_word_64(&mut self, _address: u64, _data: u64) -> Result<(), probe_rs::Error> { Ok(()) }
-    fn write_8(&mut self, _address: u64, _data: &[u8]) -> Result<(), probe_rs::Error> { Ok(()) }
-    fn write_16(&mut self, _address: u64, _data: &[u16]) -> Result<(), probe_rs::Error> { Ok(()) }
-    fn write_32(&mut self, _address: u64, _data: &[u32]) -> Result<(), probe_rs::Error> { Ok(()) }
-    fn write_64(&mut self, _address: u64, _data: &[u64]) -> Result<(), probe_rs::Error> { Ok(()) }
-    fn flush(&mut self) -> Result<(), probe_rs::Error> { Ok(()) }
-    fn supports_native_64bit_access(&mut self) -> bool { false }
-    fn supports_8bit_transfers(&self) -> Result<bool, probe_rs::Error> { Ok(true) }
+    fn read_word_32(&mut self, _address: u64) -> Result<u32, probe_rs::Error> {
+        Ok(0)
+    }
+    fn read_word_64(&mut self, _address: u64) -> Result<u64, probe_rs::Error> {
+        Ok(0)
+    }
+    fn read_8(&mut self, _address: u64, data: &mut [u8]) -> Result<(), probe_rs::Error> {
+        self.read(_address, data)
+    }
+    fn read_16(&mut self, _address: u64, _data: &mut [u16]) -> Result<(), probe_rs::Error> {
+        Ok(())
+    }
+    fn read_32(&mut self, _address: u64, _data: &mut [u32]) -> Result<(), probe_rs::Error> {
+        Ok(())
+    }
+    fn read_64(&mut self, _address: u64, _data: &mut [u64]) -> Result<(), probe_rs::Error> {
+        Ok(())
+    }
+    fn write_word_32(&mut self, _address: u64, _data: u32) -> Result<(), probe_rs::Error> {
+        Ok(())
+    }
+    fn write_word_64(&mut self, _address: u64, _data: u64) -> Result<(), probe_rs::Error> {
+        Ok(())
+    }
+    fn write_8(&mut self, _address: u64, _data: &[u8]) -> Result<(), probe_rs::Error> {
+        Ok(())
+    }
+    fn write_16(&mut self, _address: u64, _data: &[u16]) -> Result<(), probe_rs::Error> {
+        Ok(())
+    }
+    fn write_32(&mut self, _address: u64, _data: &[u32]) -> Result<(), probe_rs::Error> {
+        Ok(())
+    }
+    fn write_64(&mut self, _address: u64, _data: &[u64]) -> Result<(), probe_rs::Error> {
+        Ok(())
+    }
+    fn flush(&mut self) -> Result<(), probe_rs::Error> {
+        Ok(())
+    }
+    fn supports_native_64bit_access(&mut self) -> bool {
+        false
+    }
+    fn supports_8bit_transfers(&self) -> Result<bool, probe_rs::Error> {
+        Ok(true)
+    }
 }
 
 #[test]
@@ -39,7 +71,9 @@ fn test_dwarf_nested_resolution() {
 
     // 1. Resolve MY_CONFIG (Global Struct)
     let addr = symbol_manager.lookup_symbol("MY_CONFIG").expect("Symbol 'MY_CONFIG' not found");
-    let info = symbol_manager.resolve_variable(&mut core, "MY_CONFIG", addr).expect("Failed to resolve MY_CONFIG");
+    let info = symbol_manager
+        .resolve_variable(&mut core, "MY_CONFIG", addr)
+        .expect("Failed to resolve MY_CONFIG");
 
     assert_eq!(info.name, "MY_CONFIG");
     assert_eq!(info.kind, "Struct");
@@ -89,7 +123,8 @@ fn test_dwarf_rust_vec_resolution() {
     symbol_manager.load_elf(&elf_path).expect("Failed to load elf");
 
     let addr = symbol_manager.lookup_symbol("G_V").expect("Symbol 'G_V' not found");
-    let info = symbol_manager.resolve_variable(&mut core, "G_V", addr).expect("Failed to resolve G_V");
+    let info =
+        symbol_manager.resolve_variable(&mut core, "G_V", addr).expect("Failed to resolve G_V");
 
     assert!(info.name == "G_V");
     assert!(info.kind == "Array", "Expected kind Array for Vec, got {}", info.kind);
@@ -107,10 +142,15 @@ fn test_dwarf_rust_option_resolution() {
     symbol_manager.load_elf(&elf_path).expect("Failed to load elf");
 
     let addr = symbol_manager.lookup_symbol("G_O").expect("Symbol 'G_O' not found");
-    let info = symbol_manager.resolve_variable(&mut core, "G_O", addr).expect("Failed to resolve G_O");
+    let info =
+        symbol_manager.resolve_variable(&mut core, "G_O", addr).expect("Failed to resolve G_O");
 
     assert!(info.name == "G_O");
-    assert!(info.kind == "Struct" || info.kind == "Enum", "Expected Struct (or Enum) for Option, got {}", info.kind);
+    assert!(
+        info.kind == "Struct" || info.kind == "Enum",
+        "Expected Struct (or Enum) for Option, got {}",
+        info.kind
+    );
 
     let members = info.members.as_ref().expect("Option members missing");
     // Option<u32> should have variants like None and Some

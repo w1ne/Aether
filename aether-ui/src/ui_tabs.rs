@@ -1,6 +1,6 @@
+use crate::AetherApp;
 use eframe::egui;
 use egui_dock::TabViewer;
-use crate::AetherApp;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum DebugTab {

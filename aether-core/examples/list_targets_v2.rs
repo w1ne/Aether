@@ -1,11 +1,4 @@
 fn main() {
-    let families = probe_rs_target::families().expect("Failed to get families");
-    for family in families {
-        if family.name.to_lowercase().contains("l476") {
-            println!("Family: {}", family.name);
-            for variant in family.variants {
-                 println!("  - {}", variant.name);
-            }
-        }
-    }
+    // This example is currently broken due to probe-rs 0.31 API changes.
+    println!("Please refer to probe-rs documentation for target listing.");
 }

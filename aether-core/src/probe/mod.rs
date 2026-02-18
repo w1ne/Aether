@@ -4,8 +4,8 @@
 
 use anyhow::{Context, Result};
 use probe_rs::probe::list::Lister;
-use probe_rs::probe::{DebugProbeInfo, Probe};
 pub use probe_rs::probe::WireProtocol;
+use probe_rs::probe::{DebugProbeInfo, Probe};
 
 /// Information about an available debug probe.
 #[derive(Debug, Clone)]
@@ -116,8 +116,8 @@ impl ProbeManager {
         target_name: &str,
         under_reset: bool,
     ) -> Result<(TargetInfo, probe_rs::Session)> {
-        use probe_rs::Permissions;
         use probe_rs::config::MemoryRegion;
+        use probe_rs::Permissions;
 
         use probe_rs::config::TargetSelector;
 
@@ -145,7 +145,9 @@ impl ProbeManager {
                 // but usually you need to re-open.
                 return Err(e).context(format!("Failed to attach to target ({})", target_name));
             }
-            Err(e) => return Err(e).context(format!("Failed to attach to target ({})", target_name)),
+            Err(e) => {
+                return Err(e).context(format!("Failed to attach to target ({})", target_name))
+            }
         };
 
         let target = session.target();
@@ -195,7 +197,10 @@ impl ProbeManager {
             match self.detect_target_internal(probe, target_name, under_reset) {
                 Ok(res) => Ok(res),
                 Err(e) if !under_reset && target_name.eq_ignore_ascii_case("auto") => {
-                    log::warn!("Specified protocol ({:?}) attach failed. Retrying under reset...", proto);
+                    log::warn!(
+                        "Specified protocol ({:?}) attach failed. Retrying under reset...",
+                        proto
+                    );
                     let mut probe = probe_info.open()?;
                     probe.select_protocol(proto)?;
                     self.detect_target_internal(probe, target_name, true)
@@ -275,7 +280,8 @@ impl ProbeManager {
                 }
             }
 
-            Err(last_error.unwrap_or_else(|| anyhow::anyhow!("Discovery failed"))).context("Zero-config attachment failed")
+            Err(last_error.unwrap_or_else(|| anyhow::anyhow!("Discovery failed")))
+                .context("Zero-config attachment failed")
         }
     }
 

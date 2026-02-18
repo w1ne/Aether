@@ -1,11 +1,13 @@
-use clap::{Parser, Subcommand};
+#![allow(clippy::pedantic, clippy::nursery)]
+//! Aether CLI - Command Line Interface for Aether Debugger Agent.
+
 use aether_agent_api::proto::aether_debug_client::AetherDebugClient;
 use aether_agent_api::proto::{
-    Empty, ReadRegisterRequest, ReadMemoryRequest, WriteMemoryRequest, BreakpointRequest,
-    WriteRegisterRequest, WatchVariableRequest, PeripheralRequest, PeripheralWriteRequest,
-    RttWriteRequest, FileRequest, DisasmRequest, ItmConfig,
-    AttachRequest, ProbeList, ProbeInfo
+    AttachRequest, BreakpointRequest, DisasmRequest, Empty, FileRequest, ItmConfig,
+    PeripheralRequest, PeripheralWriteRequest, ReadMemoryRequest, ReadRegisterRequest,
+    RttWriteRequest, WatchVariableRequest, WriteMemoryRequest, WriteRegisterRequest,
 };
+use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -87,10 +89,7 @@ enum CoreCommands {
 #[derive(Subcommand)]
 enum MemoryCommands {
     /// Read memory range
-    Read {
-        address: String,
-        length: u32,
-    },
+    Read { address: String, length: u32 },
     /// Write bytes to memory
     Write {
         address: String,
@@ -110,7 +109,7 @@ enum TargetCommands {
     Disasm {
         address: String,
         #[arg(default_value_t = 10)]
-        count: u32
+        count: u32,
     },
     /// List active breakpoints
     Breakpoints,
@@ -119,10 +118,7 @@ enum TargetCommands {
     /// Clear a breakpoint
     Clear { address: String },
     /// Read peripheral register
-    ReadPeri {
-        peripheral: String,
-        register: String,
-    },
+    ReadPeri { peripheral: String, register: String },
     /// Write peripheral register field
     WritePeri {
         peripheral: String,
@@ -151,10 +147,11 @@ enum TraceCommands {
     /// Enable ITM
     EnableItm {
         #[arg(default_value_t = 115200)]
-        baud: u32
+        baud: u32,
     },
 }
 
+/// Commands for probe discovery and attachment.
 #[derive(Subcommand)]
 pub enum ProbeCommands {
     /// List available debug probes
@@ -164,7 +161,7 @@ pub enum ProbeCommands {
         /// Probe index
         #[arg(default_value_t = 0)]
         index: usize,
-        /// Chip name (e.g. STM32L476RGTx or 'auto')
+        /// Chip name (e.g. `STM32L476RGTx` or 'auto')
         #[arg(short, long, default_value = "auto")]
         chip: String,
         /// Protocol (swd or jtag)
@@ -194,38 +191,73 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     match cli.command {
         Commands::Status => {
             let status = client.get_status(Empty {}).await?.into_inner();
-            println!("Status: {:?}", status);
+            println!("Status: {status:?}");
         }
         Commands::Core { cmd } => match cmd {
-            CoreCommands::Halt => { client.halt(Empty {}).await?; println!("Halted."); }
-            CoreCommands::Resume => { client.resume(Empty {}).await?; println!("Resumed."); }
-            CoreCommands::Reset => { client.reset(Empty {}).await?; println!("Reset."); }
-            CoreCommands::Step => { client.step(Empty {}).await?; println!("Stepped."); }
-            CoreCommands::StepOver => { client.step_over(Empty {}).await?; println!("Stepped Over."); }
-            CoreCommands::StepInto => { client.step_into(Empty {}).await?; println!("Stepped Into."); }
-            CoreCommands::StepOut => { client.step_out(Empty {}).await?; println!("Stepped Out."); }
+            CoreCommands::Halt => {
+                client.halt(Empty {}).await?;
+                println!("Halted.");
+            }
+            CoreCommands::Resume => {
+                client.resume(Empty {}).await?;
+                println!("Resumed.");
+            }
+            CoreCommands::Reset => {
+                client.reset(Empty {}).await?;
+                println!("Reset.");
+            }
+            CoreCommands::Step => {
+                client.step(Empty {}).await?;
+                println!("Stepped.");
+            }
+            CoreCommands::StepOver => {
+                client.step_over(Empty {}).await?;
+                println!("Stepped Over.");
+            }
+            CoreCommands::StepInto => {
+                client.step_into(Empty {}).await?;
+                println!("Stepped Into.");
+            }
+            CoreCommands::StepOut => {
+                client.step_out(Empty {}).await?;
+                println!("Stepped Out.");
+            }
             CoreCommands::Regs { num } => {
                 if let Some(n) = num {
-                    let val = client.read_register(ReadRegisterRequest { register_number: n }).await?.into_inner().value;
-                    println!("R{}: 0x{:08X}", n, val);
+                    let val = client
+                        .read_register(ReadRegisterRequest { register_number: n })
+                        .await?
+                        .into_inner()
+                        .value;
+                    println!("R{n}: 0x{val:08X}");
                 } else {
                     for i in 0..16 {
-                        let val = client.read_register(ReadRegisterRequest { register_number: i }).await?.into_inner().value;
-                        println!("R{}: 0x{:08X}", i, val);
+                        let val = client
+                            .read_register(ReadRegisterRequest { register_number: i })
+                            .await?
+                            .into_inner()
+                            .value;
+                        println!("R{i}: 0x{val:08X}");
                     }
                 }
             }
             CoreCommands::WriteReg { num, value } => {
                 let val = parse_hex(&value)?;
-                client.write_register(WriteRegisterRequest { register_number: num, value: val }).await?;
-                println!("Written R{}: 0x{:08X}", num, val);
+                client
+                    .write_register(WriteRegisterRequest { register_number: num, value: val })
+                    .await?;
+                println!("Written R{num}: 0x{val:08X}");
             }
         },
         Commands::Memory { cmd } => match cmd {
             MemoryCommands::Read { address, length } => {
                 let addr = parse_hex(&address)?;
-                let data = client.read_memory(ReadMemoryRequest { address: addr, length }).await?.into_inner().data;
-                println!("0x{:08X}: {:02X?}", addr, data);
+                let data = client
+                    .read_memory(ReadMemoryRequest { address: addr, length })
+                    .await?
+                    .into_inner()
+                    .data;
+                println!("0x{addr:08X}: {data:02X?}");
             }
             MemoryCommands::Write { address, data } => {
                 let addr = parse_hex(&address)?;
@@ -242,40 +274,63 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         eprintln!("Error: {}", p.error);
                         std::process::exit(1);
                     } else if p.done {
-                        println!("Flash Complete!"); break;
+                        println!("Flash Complete!");
+                        break;
                     } else {
                         println!("[{}] {:.1}%", p.status, p.progress * 100.0);
                     }
                 }
             }
-            TargetCommands::LoadSvd { path } => { client.load_svd(FileRequest { path }).await?; println!("SVD Loaded."); }
-            TargetCommands::LoadSymbols { path } => { client.load_symbols(FileRequest { path }).await?; println!("Symbols Loaded."); }
+            TargetCommands::LoadSvd { path } => {
+                client.load_svd(FileRequest { path }).await?;
+                println!("SVD Loaded.");
+            }
+            TargetCommands::LoadSymbols { path } => {
+                client.load_symbols(FileRequest { path }).await?;
+                println!("Symbols Loaded.");
+            }
             TargetCommands::Disasm { address, count } => {
                 let addr = parse_hex(&address)?;
-                let resp = client.disassemble(DisasmRequest { address: addr, count }).await?.into_inner();
-                for line in resp.instructions { println!("{}", line); }
+                let resp =
+                    client.disassemble(DisasmRequest { address: addr, count }).await?.into_inner();
+                for line in resp.instructions {
+                    println!("{line}");
+                }
             }
             TargetCommands::Breakpoints => {
                 let bps = client.list_breakpoints(Empty {}).await?.into_inner().addresses;
-                for bp in bps { println!("BP: 0x{:08X}", bp); }
+                for bp in bps {
+                    println!("BP: 0x{bp:08X}");
+                }
             }
             TargetCommands::Break { address } => {
                 let addr = parse_hex(&address)?;
                 client.set_breakpoint(BreakpointRequest { address: addr }).await?;
-                println!("Breakpoint set at 0x{:08X}", addr);
+                println!("Breakpoint set at 0x{addr:08X}");
             }
             TargetCommands::Clear { address } => {
                 let addr = parse_hex(&address)?;
                 client.clear_breakpoint(BreakpointRequest { address: addr }).await?;
-                println!("Breakpoint cleared at 0x{:08X}", addr);
+                println!("Breakpoint cleared at 0x{addr:08X}");
             }
             TargetCommands::ReadPeri { peripheral, register } => {
-                let val = client.read_peripheral(PeripheralRequest { peripheral, register }).await?.into_inner().value;
-                println!("Value: 0x{:08X}", val);
+                let val = client
+                    .read_peripheral(PeripheralRequest { peripheral, register })
+                    .await?
+                    .into_inner()
+                    .value;
+                println!("Value: 0x{val:08X}");
             }
             TargetCommands::WritePeri { peripheral, register, field, value } => {
                 let val = parse_hex(&value)?;
-                client.write_peripheral(PeripheralWriteRequest { peripheral, register, field, value: val }).await?;
+                client
+                    .write_peripheral(PeripheralWriteRequest {
+                        peripheral,
+                        register,
+                        field,
+                        value: val,
+                    })
+                    .await?;
                 println!("Written.");
             }
         },
@@ -284,7 +339,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let tasks = client.get_tasks(Empty {}).await?.into_inner().tasks;
                 println!("{:<20} {:<10} {:<10} {:<10}", "Name", "State", "Stack", "Type");
                 for t in tasks {
-                    println!("{:<20} {:<10} {}/{}  {}", t.name, t.state, t.stack_usage, t.stack_size, t.task_type);
+                    println!(
+                        "{:<20} {:<10} {}/{}  {}",
+                        t.name, t.state, t.stack_usage, t.stack_size, t.task_type
+                    );
                 }
             }
             RtosCommands::Stack => {
@@ -292,19 +350,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 for (i, f) in frames.iter().enumerate() {
                     let func = f.function_name.as_deref().unwrap_or("??");
                     let file = f.file.as_deref().unwrap_or("??");
-                    let line = f.line.map(|l| l.to_string()).unwrap_or_else(|| "??".to_string());
+                    let line = f.line.map_or_else(|| "??".to_string(), |l| l.to_string());
                     println!("#{}: 0x{:08X} in {} ({}:{})", i, f.pc, func, file, line);
                 }
             }
             RtosCommands::Watch { name } => {
                 client.watch_variable(WatchVariableRequest { name: name.clone() }).await?;
-                println!("Watching variable: {}", name);
+                println!("Watching variable: {name}");
             }
         },
         Commands::Trace { cmd } => match cmd {
             TraceCommands::RttWrite { channel, data } => {
                 client.rtt_write(RttWriteRequest { channel, data: data.into_bytes() }).await?;
-                println!("Sent to RTT ch{}", channel);
+                println!("Sent to RTT ch{channel}");
             }
             TraceCommands::EnableSemihosting => {
                 client.enable_semihosting(Empty {}).await?;
@@ -312,9 +370,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             TraceCommands::EnableItm { baud } => {
                 client.enable_itm(ItmConfig { baud_rate: baud }).await?;
-                println!("ITM enabled at {} baud.", baud);
+                println!("ITM enabled at {baud} baud.");
             }
-        }
+        },
         Commands::Probe { cmd } => match cmd {
             ProbeCommands::List => {
                 let resp = client.list_probes(Empty {}).await?.into_inner();
@@ -324,16 +382,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
             ProbeCommands::Attach { index, chip, protocol, under_reset } => {
-                println!("Attaching to {} via probe {}...", chip, index);
-                client.attach(AttachRequest {
-                    probe_index: index as u32,
-                    chip,
-                    protocol,
-                    under_reset,
-                }).await?;
+                println!("Attaching to {chip} via probe {index}...");
+                client
+                    .attach(AttachRequest {
+                        probe_index: u32::try_from(index).unwrap_or(0),
+                        chip,
+                        protocol,
+                        under_reset,
+                    })
+                    .await?;
                 println!("Successfully attached.");
             }
-        }
+        },
     }
 
     Ok(())
