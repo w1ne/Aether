@@ -1,15 +1,21 @@
 ## [Unreleased]
 
-
 ### Added
+- **Semihosting & ITM/SWV**: Full gRPC and CLI support for ARM Semihosting and ITM/SWV protocol streams.
+- **Headless Mode**: `aether-daemon` for background execution and `aether-cli` for terminal-based control.
+- **Improved HIL Testing**: New regression tests for real-hardware verification and automated flash programming checks.
+- **UI Enhancements**: 
+  - Overhauled view icons with high-unicode symbols (`⫘`, `✍`, `📈`, `⛃`, `🔎`, `🖴`, `☷`).
+  - Improved font fallback for Linux environments.
+  - Tab recovery mechanism for closed views.
 
-#### Phase 12: Headless Agent Support
-- **`aether-daemon`**: Headless server binary (`cargo run --bin aether-daemon`) exposing gRPC API on `0.0.0.0:50051`.
-- **`aether-cli`**: Command-line client (`cargo run --bin aether-cli`) for controlling the debugger (halt, resume, step, read/write memory).
-- **Mock Mode**: `aether-daemon --mock` flag for running without hardware, useful for CI/testing.
+### Fixed
+- Non-exhaustive match in agent-api for session handle types.
+- Flash programming progress reporting and reliability on varied board resets.
+- Dependency synchronization across `aether-core` and `aether-agent-api`.
 
 ### Removed
-- **Agent Chat**: Removed experimental chat interface from `aether-ui` to streamline the agent interaction model.
+- Experimental Agent Chat interface from UI to focus on core gRPC stream interactions.
 
 
 #### Phase 4: Advanced Analysis & Remote Debugging
