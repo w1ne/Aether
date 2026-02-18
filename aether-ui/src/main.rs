@@ -11,6 +11,10 @@ use std::sync::Arc;
 use aether_core::VarType;
 use serde::{Serialize, Deserialize};
 use tokio_stream::StreamExt;
+use egui_dock::{DockArea, DockState, NodeIndex, Style};
+
+mod ui_tabs;
+use ui_tabs::{DebugTab, AetherTabViewer};
 
 fn main() -> eframe::Result<()> {
     env_logger::init();
@@ -36,7 +40,7 @@ enum RttDisplayMode {
     Binary,
 }
 
-struct AetherApp {
+pub struct AetherApp {
     probe_manager: aether_core::ProbeManager,
     probes: Vec<aether_core::ProbeInfo>,
     selected_probe: Option<usize>,
@@ -85,8 +89,6 @@ struct AetherApp {
     rtt_raw_buffers: std::collections::HashMap<usize, Vec<u8>>,
     rtt_input: String,
     
-    // Tabs state
-    active_tab: DebugTab,
 
     // Symbols & Source state
     symbols_loaded: bool,
@@ -123,6 +125,9 @@ struct AetherApp {
     // Syntax Highlighting
     syntax_set: SyntaxSet,
     theme_set: ThemeSet,
+    
+    // Docking State
+    dock_state: Option<DockState<DebugTab>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -133,6 +138,7 @@ pub struct TimelineEvent {
     pub end_time: Option<f64>,
 }
 
+<<<<<<< Updated upstream
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 enum DebugTab {
     Peripherals,
@@ -145,6 +151,8 @@ enum DebugTab {
     Variables,
     Agent,
 }
+=======
+>>>>>>> Stashed changes
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum ConnectionStatus {
@@ -155,7 +163,41 @@ enum ConnectionStatus {
 }
 
 impl AetherApp {
-    fn new(_cc: &eframe::CreationContext<'_>) -> Self {
+    fn setup_fonts(ctx: &egui::Context) {
+        let mut fonts = egui::FontDefinitions::default();
+
+        // 1. Try to load Noto Color Emoji or DejaVu Sans for better Unicode coverage on Linux
+        let font_paths = [
+            "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+        ];
+
+        for path in font_paths {
+            if let Ok(font_data) = std::fs::read(path) {
+                let font_name = path.split('/').last().unwrap_or("fallback_font").to_string();
+                fonts.font_data.insert(
+                    font_name.clone(),
+                    egui::FontData::from_owned(font_data),
+                );
+
+                // Add to standard families
+                if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Proportional) {
+                    vec.push(font_name.clone());
+                }
+                if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Monospace) {
+                    vec.push(font_name);
+                }
+                log::info!("Loaded fallback font: {}", path);
+                break; // Stop after first successful load
+            }
+        }
+
+        ctx.set_fonts(fonts);
+    }
+
+    fn new(cc: &eframe::CreationContext<'_>) -> Self {
+        Self::setup_fonts(&cc.egui_ctx);
         Self {
             probe_manager: aether_core::ProbeManager::new(),
             probes: Vec::new(),
@@ -190,7 +232,6 @@ impl AetherApp {
             rtt_buffers: std::collections::HashMap::new(),
             rtt_raw_buffers: std::collections::HashMap::new(),
             rtt_input: String::new(),
-            active_tab: DebugTab::Source,
             symbols_loaded: false,
             source_info: None,
             breakpoint_locations: Vec::new(),
@@ -210,6 +251,33 @@ impl AetherApp {
             variable_input: String::new(),
             syntax_set: SyntaxSet::load_defaults_newlines(),
             theme_set: ThemeSet::load_defaults(),
+            dock_state: Some({
+                let mut dock_state = DockState::new(vec![DebugTab::Control]);
+                let surface = dock_state.main_surface_mut();
+
+                // 1. Split root (Control) to the right for the rest of the app
+                let [_control, right_section] = surface.split_right(
+                    NodeIndex::root(),
+                    0.20,
+                    vec![DebugTab::Peripherals, DebugTab::Variables, DebugTab::Stack, DebugTab::Tasks, DebugTab::Timeline, DebugTab::Rtt, DebugTab::Agent]
+                );
+
+                // 2. Split the right section further to the right for Source
+                let [middle_section, _source] = surface.split_right(
+                    right_section,
+                    0.65,
+                    vec![DebugTab::Source]
+                );
+
+                // 3. Split the middle section below for Memory/Logs
+                let [_top_middle, _bottom_middle] = surface.split_below(
+                    middle_section,
+                    0.65,
+                    vec![DebugTab::Memory, DebugTab::Disassembly, DebugTab::Logs]
+                );
+
+                dock_state
+            }),
         }
     }
 
@@ -273,7 +341,7 @@ impl AetherApp {
                         format!("Connected to {}. Detecting target...", self.probes[index].name());
                     
                     // Detect target first - consumes probe, returns (info, session)
-                    match self.probe_manager.detect_target(probe) {
+                    match self.probe_manager.detect_target(probe, "any", None, false) {
                         Ok((target, session)) => {
                             self.target_info = Some(target.clone());
                             self.status_message = format!(
@@ -613,7 +681,8 @@ impl AetherApp {
                             }
                         }
                         self.source_info = Some(info);
-                        self.active_tab = DebugTab::Source;
+                        // TODO: Focus Source tab in DockState (requires iterating/finding tab)
+                        // if let Some(dock_state) = &mut self.dock_state { ... }
                     }
                     aether_core::DebugEvent::BreakpointLocations(locs) => {
                         self.breakpoint_locations = locs;
@@ -643,11 +712,20 @@ impl AetherApp {
                         self.flashing_progress = Some(1.0);
                         self.flashing_status = "Flashing Successful".to_string();
                     }
+                    aether_core::DebugEvent::SemihostingOutput(msg) => {
+                        self.status_message = format!("Semihosting: {}", msg);
+                    }
+                    aether_core::DebugEvent::ItmPacket(_) => {
+                        // ITM Visualization pending
+                    }
                 }
             }
     }
 
-    fn draw_agent_view(&mut self, ui: &mut egui::Ui) {
+<<<<<<< Updated upstream
+    fn draw_plot_view(&mut self, ui: &mut egui::Ui) {
+=======
+    pub(crate) fn draw_agent_view(&mut self, ui: &mut egui::Ui) {
         ui.heading("🤖 Agent Interface");
         ui.add_space(8.0);
         
@@ -697,7 +775,8 @@ stub.Resume(aether_pb2.Empty())
         });
     }
 
-    fn draw_plot_view(&mut self, ui: &mut egui::Ui) {
+    pub(crate) fn draw_plot_view(&mut self, ui: &mut egui::Ui) {
+>>>>>>> Stashed changes
         ui.heading("Live Variable Plotting");
 
         ui.horizontal(|ui| {
@@ -765,9 +844,9 @@ stub.Resume(aether_pb2.Empty())
         }
     }
 
-    fn draw_tasks_view(&mut self, ui: &mut egui::Ui) {
+    pub(crate) fn draw_tasks_view(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
-            ui.heading("🛰️ RTOS Analysis");
+            ui.heading("🛰 RTOS Analysis");
             ui.add_space(8.0);
             if ui.button("🔄 Refresh").clicked() {
                 if let Some(h) = &self.session_handle {
@@ -869,7 +948,7 @@ stub.Resume(aether_pb2.Empty())
         });
     }
 
-    fn draw_timeline_view(&mut self, ui: &mut egui::Ui) {
+    pub(crate) fn draw_timeline_view(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
             ui.heading("📊 Execution Timeline");
             ui.add_space(8.0);
@@ -949,7 +1028,7 @@ stub.Resume(aether_pb2.Empty())
         ui.label("Vertical axis shows different RTOS tasks. Horizontal axis is session time (s).");
     }
 
-    fn draw_stack_view(&mut self, ui: &mut egui::Ui) {
+    pub(crate) fn draw_stack_view(&mut self, ui: &mut egui::Ui) {
         ui.heading("Call Stack");
         
         if ui.button("🔄 Refresh Stack").clicked() {
@@ -990,7 +1069,8 @@ stub.Resume(aether_pb2.Empty())
                                 }
                              }
                              self.source_info = Some(info);
-                             self.active_tab = DebugTab::Source;
+                             // TODO: Focus Source tab in DockState (requires iterating/finding tab)
+                        // if let Some(dock_state) = &mut self.dock_state { ... }
                          }
                      }
                      
@@ -1002,7 +1082,20 @@ stub.Resume(aether_pb2.Empty())
     }
 
 
+<<<<<<< Updated upstream
     fn draw_memory_view(&mut self, ui: &mut egui::Ui) {
+        ui.heading("Memory View");
+        
+        ui.horizontal(|ui| {
+             ui.label("Addr:");
+             if ui.text_edit_singleline(&mut self.memory_address_input).lost_focus() {
+                 let addr_str = self.memory_address_input.trim_start_matches("0x");
+                 if let Ok(addr) = u64::from_str_radix(addr_str, 16) {
+                     self.memory_base_address = addr;
+                     if let Some(handle) = &self.session_handle {
+                         let _ = handle.send(aether_core::DebugCommand::ReadMemory(addr, 256));
+=======
+    pub(crate) fn draw_memory_view(&mut self, ui: &mut egui::Ui) {
         egui::ScrollArea::both().id_source("mem_view_scroll").show(ui, |ui| {
             ui.heading("Memory View");
             
@@ -1015,6 +1108,7 @@ stub.Resume(aether_pb2.Empty())
                          if let Some(handle) = &self.session_handle {
                              let _ = handle.send(aether_core::DebugCommand::ReadMemory(addr, 256));
                          }
+>>>>>>> Stashed changes
                      }
                  }
                  
@@ -1042,10 +1136,17 @@ stub.Resume(aether_pb2.Empty())
             }
         });
     }
+<<<<<<< Updated upstream
     fn draw_disassembly_view(&mut self, ui: &mut egui::Ui) {
+        ui.heading("Disassembly");
+        
+        egui::ScrollArea::vertical().id_source("disasm").show(ui, |ui| {
+=======
+    pub(crate) fn draw_disassembly_view(&mut self, ui: &mut egui::Ui) {
         egui::ScrollArea::both().id_source("disasm_view_scroll").show(ui, |ui| {
             ui.heading("Disassembly");
             
+>>>>>>> Stashed changes
             egui::Grid::new("disasm_grid")
                 .striped(true)
                 .num_columns(5)
@@ -1094,7 +1195,7 @@ stub.Resume(aether_pb2.Empty())
         });
     }
 
-    fn draw_breakpoints_view(&mut self, ui: &mut egui::Ui) {
+    pub(crate) fn draw_breakpoints_view(&mut self, ui: &mut egui::Ui) {
         ui.heading("Breakpoints");
         
         ui.horizontal(|ui| {
@@ -1131,7 +1232,7 @@ stub.Resume(aether_pb2.Empty())
         });
     }
 
-    fn draw_peripherals_view(&mut self, ui: &mut egui::Ui) {
+    pub(crate) fn draw_peripherals_view(&mut self, ui: &mut egui::Ui) {
         ui.heading("Peripherals (SVD)");
         
         ui.horizontal(|ui| {
@@ -1242,7 +1343,7 @@ stub.Resume(aether_pb2.Empty())
         }
     }
 
-    fn draw_variables_view(&mut self, ui: &mut egui::Ui) {
+    pub(crate) fn draw_variables_view(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
             ui.heading("🔍 Variable Watch");
             ui.add_space(8.0);
@@ -1339,7 +1440,7 @@ stub.Resume(aether_pb2.Empty())
         }
     }
 
-    fn draw_rtt_view(&mut self, ui: &mut egui::Ui) {
+    pub(crate) fn draw_rtt_view(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
             if ui.button("🔌 Attach RTT").clicked() {
                 if let Some(handle) = &self.session_handle {
@@ -1468,7 +1569,7 @@ stub.Resume(aether_pb2.Empty())
         }).collect()
     }
 
-    fn draw_source_view(&mut self, ui: &mut egui::Ui) {
+    pub(crate) fn draw_source_view(&mut self, ui: &mut egui::Ui) {
         ui.heading("Source Code");
         
         ui.horizontal(|ui| {
@@ -1581,6 +1682,156 @@ stub.Resume(aether_pb2.Empty())
         style.visuals.widgets.active.rounding = egui::Rounding::same(4.0);
         ctx.set_style(style);
     }
+    pub(crate) fn draw_control_view(&mut self, ui: &mut egui::Ui) {
+        // Connection Section
+        ui.add_space(8.0);
+        ui.collapsing("🔌 Connection", |ui| {
+            ui.vertical(|ui| {
+                ui.horizontal(|ui| {
+                    if ui.button("🔄 Refresh").clicked() {
+                        self.refresh_probes();
+                    }
+                    if ui.button("🔌 Connect").clicked() {
+                        self.connect_probe();
+                    }
+                });
+                
+                egui::ScrollArea::vertical().id_source("probes").max_height(100.0).show(ui, |ui| {
+                    for (i, probe) in self.probes.iter().enumerate() {
+                        let is_selected = self.selected_probe == Some(i);
+                        if ui.selectable_label(is_selected, format!("▷ {}", probe.name())).clicked() {
+                            self.selected_probe = Some(i);
+                        }
+                    }
+                });
+
+                ui.separator();
+                ui.label(egui::RichText::new("🌐 Remote").strong());
+                ui.horizontal(|ui| {
+                    ui.label("Host:");
+                    ui.text_edit_singleline(&mut self.remote_host);
+                });
+                ui.horizontal(|ui| {
+                    ui.label("Port:");
+                    ui.text_edit_singleline(&mut self.remote_port);
+                });
+                if ui.button("🚀 Connect Remote").clicked() {
+                    self.connect_remote();
+                }
+            });
+        });
+
+        ui.add_space(8.0);
+        
+        // Core Control Section
+        ui.group(|ui| {
+            ui.heading("🕹 Core Control");
+            ui.horizontal_wrapped(|ui| {
+                let btn_size = egui::vec2(70.0, 30.0);
+                
+                ui.add_enabled_ui(self.session_handle.is_some(), |ui| {
+                        if ui.add(egui::Button::new("⏸ Halt").min_size(btn_size)).clicked() {
+                            let _ = self.session_handle.as_ref().unwrap().send(aether_core::DebugCommand::Halt);
+                        }
+                        if ui.add(egui::Button::new("▶ Resume").min_size(btn_size)).clicked() {
+                            let _ = self.session_handle.as_ref().unwrap().send(aether_core::DebugCommand::Resume);
+                        }
+                        if ui.add(egui::Button::new("⏭ Step").min_size(btn_size)).clicked() {
+                            let _ = self.session_handle.as_ref().unwrap().send(aether_core::DebugCommand::Step);
+                        }
+                        if ui.add(egui::Button::new("↷ Over").min_size(btn_size)).clicked() {
+                            let _ = self.session_handle.as_ref().unwrap().send(aether_core::DebugCommand::StepOver);
+                        }
+                        if ui.add(egui::Button::new("↘ Into").min_size(btn_size)).clicked() {
+                            let _ = self.session_handle.as_ref().unwrap().send(aether_core::DebugCommand::StepInto);
+                        }
+                        if ui.add(egui::Button::new("↗ Out").min_size(btn_size)).clicked() {
+                            let _ = self.session_handle.as_ref().unwrap().send(aether_core::DebugCommand::StepOut);
+                        }
+                });
+            });
+        });
+
+        ui.add_space(8.0);
+        
+        // Registers Section
+        ui.collapsing("🔢 Registers", |ui| {
+            egui::ScrollArea::vertical().id_source("regs").show(ui, |ui| {
+                egui::Grid::new("reg_grid").striped(true).spacing(egui::vec2(20.0, 4.0)).show(ui, |ui| {
+                    for i in 0..16 {
+                        ui.label(egui::RichText::new(format!("R{}", i)).color(egui::Color32::from_rgb(0, 200, 255)));
+                        if let Some(val) = self.registers.get(&i) {
+                            ui.label(egui::RichText::new(format!("0x{:08X}", val)).monospace());
+                        } else {
+                            ui.label("?");
+                        }
+                        if i % 2 == 1 { ui.end_row(); }
+                    }
+                });
+            });
+        });
+
+        ui.add_space(8.0);
+
+        // Breakpoints Section
+        ui.collapsing("🛑 Breakpoints", |ui| {
+            self.draw_breakpoints_view(ui);
+        });
+        
+        ui.add_space(8.0);
+        
+        // Flashing Section
+        ui.collapsing("🚀 Flash Programming", |ui| {
+            ui.horizontal(|ui| {
+                if ui.button("📂 File").clicked() {
+                    if let Some(path) = rfd::FileDialog::new()
+                        .add_filter("Binaries", &["bin", "elf", "hex"])
+                        .pick_file()
+                    {
+                        self.selected_file = Some(path);
+                    }
+                }
+                if let Some(file) = &self.selected_file {
+                    ui.label(file.file_name().unwrap_or_default().to_string_lossy());
+                }
+            });
+
+            if ui.add_enabled(self.selected_file.is_some() && self.connection_status == ConnectionStatus::Connected, egui::Button::new("🚀 Flash")).clicked() {
+                self.start_flashing();
+            }
+
+            if let Some(p) = self.flashing_progress {
+                ui.add(egui::ProgressBar::new(p).text(&self.flashing_status));
+            }
+        });
+    }
+
+    pub(crate) fn draw_logs_view(&mut self, ui: &mut egui::Ui) {
+         ui.heading("System Logs");
+         egui::ScrollArea::vertical().id_source("logs_scroll").show(ui, |ui| {
+             ui.monospace(&self.status_message);
+             for req in &self.failed_requests {
+                  ui.label(egui::RichText::new(format!("Error: {}", req)).color(egui::Color32::RED));
+             }
+         });
+         
+         ui.add_space(8.0);
+         ui.heading("Quick Connect (Python)");
+         let code = r#"import grpc
+import aether_pb2
+import aether_pb2_grpc
+
+channel = grpc.insecure_channel('localhost:50051')
+stub = aether_pb2_grpc.AetherDebugStub(channel)
+
+# Halt and Inspect (Synchronous)
+stub.Halt(aether_pb2.Empty())
+print(stub.ReadRegister(aether_pb2.ReadRegisterRequest(register_number=15)))
+stub.Resume(aether_pb2.Empty())
+"#;
+         let mut code_buf = code.to_string();
+         ui.add(egui::TextEdit::multiline(&mut code_buf).font(egui::TextStyle::Monospace).desired_width(f32::INFINITY));
+    }
 }
 
 impl eframe::App for AetherApp {
@@ -1623,6 +1874,7 @@ impl eframe::App for AetherApp {
             ui.add_space(4.0);
         });
 
+<<<<<<< Updated upstream
         // Left Panel: Connection & Core Control
         egui::SidePanel::left("left_panel").resizable(true).default_width(260.0).show(ctx, |ui| {
             ui.add_space(8.0);
@@ -1772,6 +2024,9 @@ impl eframe::App for AetherApp {
         });
 
         // Bottom Panel: Status & Logs
+=======
+        // Bottom Panel: Status
+>>>>>>> Stashed changes
         egui::TopBottomPanel::bottom("bottom_status").show(ctx, |ui| {
             ui.add_space(4.0);
             ui.horizontal(|ui| {
@@ -1781,17 +2036,15 @@ impl eframe::App for AetherApp {
                     if let Some(status) = self.core_status {
                         ui.label(format!("State: {:?}", status));
                     }
-
-                    ui.separator();
-                    self.draw_disassembly_view(ui);
                 });
 
             });
             ui.add_space(4.0);
         });
 
-        // Central Panel: Source / Disasm / Memory / Plot
+        // Main Dock Area
         egui::CentralPanel::default().show(ctx, |ui| {
+<<<<<<< Updated upstream
             ui.horizontal(|ui| {
                 ui.selectable_value(&mut self.active_tab, DebugTab::Source, "Source");
                 ui.selectable_value(&mut self.active_tab, DebugTab::Plot, "Plot");
@@ -1826,6 +2079,15 @@ impl eframe::App for AetherApp {
                     self.draw_disassembly_view(&mut cols[1]);
                 });
             });
+=======
+             if let Some(mut dock_state) = self.dock_state.take() {
+                 let mut tab_viewer = AetherTabViewer { app: self };
+                 DockArea::new(&mut dock_state)
+                     .style(Style::from_egui(ctx.style().as_ref()))
+                     .show_inside(ui, &mut tab_viewer);
+                 self.dock_state = Some(dock_state);
+             }
+>>>>>>> Stashed changes
         });
 
         if self.progress_receiver.is_some() || self.session_handle.is_some() {

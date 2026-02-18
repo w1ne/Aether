@@ -1,6 +1,6 @@
 # Hardware Setup
 
-Platform-specific instructions for debug probe configuration.
+Platform-specific instructions for debug probe configuration. For the specific guide on our reference board (STM32L476 Nucleo), see [STM32 Nucleo Setup](HARDWARE_SETUP_STM32.md).
 
 ## Linux
 

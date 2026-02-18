@@ -57,8 +57,18 @@ pub enum DebugCommand {
     EnableTrace(crate::trace::TraceConfig),
     Exit,
     StartFlashing(std::path::PathBuf),
+<<<<<<< Updated upstream
+=======
     EnableSemihosting,
     EnableItm { baud_rate: u32 },
+    ListProbes,
+    Attach {
+        probe_index: usize,
+        chip: String,
+        protocol: Option<crate::probe::WireProtocol>,
+        under_reset: bool,
+    },
+>>>>>>> Stashed changes
 }
 
 struct PlotConfig {
@@ -105,8 +115,13 @@ pub enum DebugEvent {
     FlashStatus(String),
     FlashDone,
     VariableResolved(crate::symbols::TypeInfo),
+<<<<<<< Updated upstream
+=======
     SemihostingOutput(String),
     ItmPacket(Vec<u8>),
+    Probes(Vec<crate::probe::ProbeInfo>),
+    Attached(crate::probe::TargetInfo),
+>>>>>>> Stashed changes
 }
 
 /// A handle to the debug session running in a background thread.
@@ -140,13 +155,14 @@ impl SessionHandle {
     }
 
 
-    pub fn new(mut session: Session) -> Result<Self> {
+    pub fn new(session: Option<Session>) -> Result<Self> {
         let (cmd_tx, cmd_rx) = crossbeam_channel::unbounded();
         // create a broadcast channel with capacity 100
         let (evt_tx, _) = tokio::sync::broadcast::channel(100);
         let evt_tx_thread = evt_tx.clone();
 
         let thread_handle = thread::spawn(move || {
+            let mut session = session;
             let evt_tx = evt_tx_thread; // Shadow for inner scope
             let debug_manager = DebugManager::new();
             let _memory_manager = crate::MemoryManager::new();
@@ -167,15 +183,17 @@ impl SessionHandle {
             let mut last_task_handle: Option<u32> = None;
             let mut last_status_poll = Instant::now();
             
-            let arch = format!("{:?}", session.target().architecture());
+            let mut arch = session.as_ref().map(|s| format!("{:?}", s.target().architecture()));
             let session_start = Instant::now();
 
             // Loop for processing commands and events
             loop {
                 // 1. Trace Polling (needs &mut Session)
-                if let Ok(data) = trace_manager.read_data(&mut session) {
-                    if !data.is_empty() {
-                         let _ = evt_tx.send(DebugEvent::TraceData(data));
+                if let Some(ref mut s) = session {
+                    if let Ok(data) = trace_manager.read_data(s) {
+                        if !data.is_empty() {
+                             let _ = evt_tx.send(DebugEvent::TraceData(data));
+                        }
                     }
                 }
 
@@ -185,13 +203,18 @@ impl SessionHandle {
                 if let Some(cmd) = cmd_opt {
                     match cmd {
                          DebugCommand::EnableTrace(config) => {
-                             if let Err(e) = trace_manager.enable(&mut session, config) {
-                                  let _ = evt_tx.send(DebugEvent::Error(format!("Failed to enable trace: {}", e)));
+                             if let Some(ref mut s) = session {
+                                 if let Err(e) = trace_manager.enable(s, config) {
+                                      let _ = evt_tx.send(DebugEvent::Error(format!("Failed to enable trace: {}", e)));
+                                 }
+                             } else {
+                                 let _ = evt_tx.send(DebugEvent::Error("No active session".to_string()));
                              }
                              continue;
                          }
                          DebugCommand::Exit => return,
                          DebugCommand::StartFlashing(path) => {
+<<<<<<< Updated upstream
                              let flash_manager = crate::flash::FlashManager::new();
                              let tx_clone = evt_tx.clone();
                              
@@ -212,6 +235,50 @@ impl SessionHandle {
                              }
                              continue;
                          }
+=======
+                             if let Some(ref mut s) = session {
+                                 let flash_manager = crate::flash::FlashManager::new();
+                                 let tx_clone = evt_tx.clone();
+                                  let total_size = std::sync::Arc::new(std::sync::atomic::AtomicU64::new(0));
+                                  let current_size = std::sync::Arc::new(std::sync::atomic::AtomicU64::new(0));
+                                  let progress = FlashProgress::new(move |event| {
+                                       let size_ref = total_size.clone();
+                                       let current_ref = current_size.clone();
+                                       let update = match event {
+                                           ProgressEvent::AddProgressBar { total, .. } => {
+                                               if let Some(t) = total {
+                                                   size_ref.fetch_add(t, std::sync::atomic::Ordering::Relaxed);
+                                               }
+                                               return;
+                                           }
+                                           ProgressEvent::Started(op) => {
+                                               DebugEvent::FlashStatus(format!("{:?}", op))
+                                           }
+                                           ProgressEvent::Progress { size, .. } => {
+                                               let total = size_ref.load(std::sync::atomic::Ordering::Relaxed);
+                                               let current = current_ref.fetch_add(size, std::sync::atomic::Ordering::Relaxed) + size;
+                                               if total > 0 {
+                                                   DebugEvent::FlashProgress(current as f32 / total as f32)
+                                               } else {
+                                                   DebugEvent::FlashProgress(0.0)
+                                               }
+                                           }
+                                           ProgressEvent::Finished(_) => DebugEvent::FlashStatus("Finished".to_string()),
+                                           ProgressEvent::Failed(_) => DebugEvent::Error("Flash failed".to_string()),
+                                           _ => return,
+                                       };
+                                       let _ = tx_clone.send(update);
+                                   });
+
+                                 match flash_manager.flash_elf(s, &path, progress) {
+                                     Ok(_) => { let _ = evt_tx.send(DebugEvent::FlashDone); }
+                                     Err(e) => { let _ = evt_tx.send(DebugEvent::Error(format!("Flash failed: {}", e))); }
+                                 }
+                             } else {
+                                 let _ = evt_tx.send(DebugEvent::Error("No active session".to_string()));
+                             }
+                             continue;
+                         }
                          DebugCommand::EnableSemihosting => {
                              // Just a flag or similar? The manager doesn't store state yet, but we will use it.
                              // Actually the manager doesn't need enabling, we just start checking.
@@ -223,16 +290,50 @@ impl SessionHandle {
                              continue;
                          }
                          DebugCommand::EnableItm { baud_rate } => {
-                             if let Err(e) = itm_manager.configure(&mut session, baud_rate) {
-                                  let _ = evt_tx.send(DebugEvent::Error(format!("Failed to enable ITM: {}", e)));
+                             if let Some(ref mut s) = session {
+                                 if let Err(e) = itm_manager.configure(s, baud_rate) {
+                                      let _ = evt_tx.send(DebugEvent::Error(format!("Failed to enable ITM: {}", e)));
+                                 } else {
+                                      log::info!("ITM enabled at {} baud", baud_rate);
+                                 }
                              } else {
-                                  log::info!("ITM enabled at {} baud", baud_rate);
+                                 let _ = evt_tx.send(DebugEvent::Error("No active session".to_string()));
                              }
                              continue;
                          }
+                         DebugCommand::ListProbes => {
+                             let pm = crate::probe::ProbeManager::new();
+                             match pm.list_probes() {
+                                 Ok(p) => { let _ = evt_tx.send(DebugEvent::Probes(p)); }
+                                 Err(e) => { let _ = evt_tx.send(DebugEvent::Error(format!("Failed to list probes: {}", e))); }
+                             }
+                             continue;
+                         }
+                         DebugCommand::Attach { probe_index, chip, protocol, under_reset } => {
+                             let pm = crate::probe::ProbeManager::new();
+                             match pm.connect(probe_index, &chip, protocol, under_reset) {
+                                 Ok((info, s)) => {
+                                     session = Some(s);
+                                     arch = Some(info.architecture.clone());
+                                     let _ = evt_tx.send(DebugEvent::Attached(info));
+                                 }
+                                 Err(e) => {
+                                     let _ = evt_tx.send(DebugEvent::Error(format!("Failed to attach: {}", e)));
+                                 }
+                             }
+                             continue;
+                         }
+>>>>>>> Stashed changes
                          // Core commands
                          core_cmd => {
-                             let mut core = match session.core(0) {
+                             let s = match session.as_mut() {
+                                 Some(s) => s,
+                                 None => {
+                                     let _ = evt_tx.send(DebugEvent::Error("No active session".to_string()));
+                                     continue;
+                                 }
+                             };
+                             let mut core = match s.core(0) {
                                  Ok(c) => c,
                                  Err(e) => {
                                      let _ = evt_tx.send(DebugEvent::Error(format!("Failed to attach core: {}", e)));
@@ -269,6 +370,7 @@ impl SessionHandle {
                                           let _ = evt_tx.send(DebugEvent::Error("No symbols".to_string()));
                                      }
                                  }
+<<<<<<< Updated upstream
                                  DebugCommand::StepInto => {
                                      if let Some(debug_info) = symbol_manager.debug_info() {
                                          match SteppingMode::IntoStatement.step(&mut core, debug_info) {
@@ -282,6 +384,27 @@ impl SessionHandle {
                                  DebugCommand::StepOut => {
                                       let _ = debug_manager.step(&mut core); 
                                  }
+=======
+                                  DebugCommand::StepInto => {
+                                      if let Some(debug_info) = symbol_manager.debug_info() {
+                                          match SteppingMode::IntoStatement.step(&mut core, debug_info) {
+                                               Ok((_status, pc)) => { let _ = evt_tx.send(DebugEvent::Halted { pc }); }
+                                               Err(e) => { let _ = evt_tx.send(DebugEvent::Error(format!("StepInto failed: {:?}", e))); }
+                                          }
+                                      } else {
+                                           let _ = evt_tx.send(DebugEvent::Error("No symbols".to_string()));
+                                      }
+                                  }
+                                  DebugCommand::StepOut => {
+                                      if let Some(debug_info) = symbol_manager.debug_info() {
+                                          match SteppingMode::OutOfStatement.step(&mut core, debug_info) {
+                                               Ok((_status, pc)) => { let _ = evt_tx.send(DebugEvent::Halted { pc }); }
+                                               Err(e) => { let _ = evt_tx.send(DebugEvent::Error(format!("StepOut failed: {:?}", e))); }
+                                          }
+                                      } else {
+                                           let _ = evt_tx.send(DebugEvent::Error("No symbols".to_string()));
+                                      }
+                                  }
                                  DebugCommand::Reset => {
                                      match core.reset_and_halt(Duration::from_millis(100)) {
                                          Ok(_) => { 
@@ -298,6 +421,7 @@ impl SessionHandle {
                                          Err(e) => { let _ = evt_tx.send(DebugEvent::Error(format!("Reset failed: {}", e))); }
                                      }
                                  }
+>>>>>>> Stashed changes
                                  DebugCommand::ReadMemory(addr, size) => {
                                      let mut data = vec![0u8; size];
                                      match core.read(addr, &mut data) {
@@ -314,10 +438,12 @@ impl SessionHandle {
                                  DebugCommand::Disassemble(addr, count) => {
                                      let mut code = vec![0u8; count * 4];
                                      if core.read(addr, &mut code).is_ok() {
-                                         match disasm_manager.disassemble(&arch, &code, addr) {
-                                             Ok(lines) => { let _ = evt_tx.send(DebugEvent::Disassembly(lines)); }
-                                             Err(e) => { let _ = evt_tx.send(DebugEvent::Error(e.to_string())); }
-                                         }
+                                      if let Some(ref a) = arch {
+                                          match disasm_manager.disassemble(a, &code, addr) {
+                                              Ok(lines) => { let _ = evt_tx.send(DebugEvent::Disassembly(lines)); }
+                                              Err(e) => { let _ = evt_tx.send(DebugEvent::Error(e.to_string())); }
+                                          }
+                                      }
                                      }
                                  }
                                  DebugCommand::ReadRegister(id) => {
@@ -469,10 +595,35 @@ impl SessionHandle {
                 } else {
                     // 3. Polling (Status, RTT, Plots)
                     {
+<<<<<<< Updated upstream
+                        let mut core = match session.core(0) {
+                             Ok(c) => c,
+                             Err(_) => continue,
+                        };
+                        
+                        // Poll Status
+                        if let Ok(status) = core.status() {
+                             let is_halted = status.is_halted();
+                             let was_halted = core_status.as_ref().map(|s: &CoreStatus| s.is_halted()) == Some(true);
+                             
+                             if is_halted && !was_halted {
+                                  // Just halted
+                                  if let Ok(pc_val) = core.read_core_reg(core.program_counter()) {
+                                      let pc: u64 = match pc_val {
+                                          probe_rs::RegisterValue::U32(v) => v as u64,
+                                          probe_rs::RegisterValue::U64(v) => v,
+                                          probe_rs::RegisterValue::U128(v) => v as u64,
+                                      };
+                                      let _ = evt_tx.send(DebugEvent::Halted { pc });
+=======
 
                         // Scope for core usage
                         {
-                            let mut core = match session.core(0) {
+                            let s = match session.as_mut() {
+                                Some(s) => s,
+                                None => continue,
+                            };
+                            let mut core = match s.core(0) {
                                 Ok(c) => c,
                                 Err(_) => continue,
                             };
@@ -496,6 +647,7 @@ impl SessionHandle {
                                   if core_status != Some(status) {
                                        core_status = Some(status);
                                        let _ = evt_tx.send(DebugEvent::Status(status));
+>>>>>>> Stashed changes
                                   }
                              }
 
@@ -533,38 +685,31 @@ impl SessionHandle {
                                  last_plot_poll = Instant::now();
                             }
 
-                            // Poll RTOS Task Switch (20Hz)
-                            if last_status_poll.elapsed() >= Duration::from_millis(50) {
-                                 if let Some(current_tcb_ptr) = symbol_manager.lookup_symbol("pxCurrentTCB") {
-                                      if let Ok(current_tcb) = core.read_word_32(current_tcb_ptr) {
-                                           if Some(current_tcb) != last_task_handle {
-                                                let _ = evt_tx.send(DebugEvent::TaskSwitch {
-                                                    from: last_task_handle,
-                                                    to: current_tcb,
-                                                    timestamp: session_start.elapsed().as_secs_f64(),
-                                                });
-                                                last_task_handle = Some(current_tcb);
-                                           }
-                                      }
-                                 }
-                                 last_status_poll = Instant::now();
-                            }
-                            
-                            // Check for semihosting
-                            if let Ok(status) = core.status() {
-                                 if status.is_halted() {
-                                      if let Ok(Some(msg)) = semihosting_manager.check_for_semihosting(&mut core) {
-                                           let _ = evt_tx.send(DebugEvent::SemihostingOutput(msg));
-                                      }
-                                 }
-                            }
-                        } // End of core scope
-
+<<<<<<< Updated upstream
+                        // Poll RTOS Task Switch (20Hz) - Foundation for Timeline View
+                        if last_status_poll.elapsed() >= Duration::from_millis(50) {
+                             if let Some(current_tcb_ptr) = symbol_manager.lookup_symbol("pxCurrentTCB") {
+                                  if let Ok(current_tcb) = core.read_word_32(current_tcb_ptr) {
+                                       if Some(current_tcb) != last_task_handle {
+                                            let _ = evt_tx.send(DebugEvent::TaskSwitch {
+                                                from: last_task_handle,
+                                                to: current_tcb,
+                                                timestamp: session_start.elapsed().as_secs_f64(),
+                                            });
+                                            last_task_handle = Some(current_tcb);
+                                       }
+                                  }
+                             }
+                             last_status_poll = Instant::now();
+=======
                         // Poll ITM (needs mutable session)
-                        if let Ok(data) = itm_manager.read_swo(&mut session) {
-                            if !data.is_empty() {
-                                let _ = evt_tx.send(DebugEvent::ItmPacket(data));
+                        if let Some(ref mut s) = session {
+                            if let Ok(data) = itm_manager.read_swo(s) {
+                                if !data.is_empty() {
+                                    let _ = evt_tx.send(DebugEvent::ItmPacket(data));
+                                }
                             }
+>>>>>>> Stashed changes
                         }
                     }
                 }

@@ -21,6 +21,18 @@ struct Args {
     /// Run in mock mode (no hardware required)
     #[arg(long)]
     mock: bool,
+
+    /// Chip name (e.g. STM32L476RGTx). Use 'auto' for auto-detection.
+    #[arg(short, long, default_value = "auto")]
+    chip: String,
+
+    /// Debug protocol (swd, jtag)
+    #[arg(long)]
+    protocol: Option<String>,
+
+    /// Connect under reset
+    #[arg(long)]
+    under_reset: bool,
 }
 
 #[tokio::main]
@@ -58,6 +70,87 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                              let data = vec![0xAA; len];
                              let _ = event_tx.send(DebugEvent::MemoryData(addr, data));
                         }
+                        DebugCommand::Step | DebugCommand::StepOver | DebugCommand::StepInto | DebugCommand::StepOut => {
+                            let _ = event_tx.send(DebugEvent::Halted { pc: 0x08000124 });
+                        }
+                        DebugCommand::WriteRegister(_, _) => {
+                             // Mock write success (no event needed usually, or maybe RegisterValue?)
+                        }
+                        DebugCommand::GetTasks => {
+                            let tasks = vec![
+                                aether_core::TaskInfo {
+                                    name: "Idle".to_string(),
+                                    priority: 0,
+                                    state: aether_core::TaskState::Running,
+                                    stack_usage: 100,
+                                    stack_size: 200,
+                                    handle: 0,
+                                    task_type: aether_core::TaskType::Thread,
+                                },
+                            ];
+                            let _ = event_tx.send(DebugEvent::Tasks(tasks));
+                        }
+                        DebugCommand::RttWrite { channel, data } => {
+                             // Echo back on same channel?
+                             let _ = event_tx.send(DebugEvent::RttData(channel, data));
+                        }
+                        DebugCommand::StartFlashing(_) => {
+                            // Simulate flashing sequence
+                            let _ = event_tx.send(DebugEvent::FlashStatus("Erasing...".to_string()));
+                            std::thread::sleep(std::time::Duration::from_millis(100));
+                            let _ = event_tx.send(DebugEvent::FlashProgress(0.5));
+                            std::thread::sleep(std::time::Duration::from_millis(100));
+                            let _ = event_tx.send(DebugEvent::FlashDone);
+                        }
+                        DebugCommand::Disassemble(addr, count) => {
+                             let mut lines = Vec::new();
+                             for i in 0..count {
+                                 lines.push(aether_core::disasm::InstructionInfo {
+                                     address: addr + (i as u64 * 4),
+                                     mnemonic: "mov".to_string(),
+                                     op_str: format!("r{}, r{}", i, i+1),
+                                     bytes: vec![0x00, 0xbf],
+                                 });
+                             }
+                             let _ = event_tx.send(DebugEvent::Disassembly(lines));
+                        }
+                        DebugCommand::LoadSvd(_) => {
+                            let _ = event_tx.send(DebugEvent::SvdLoaded);
+                        }
+                        DebugCommand::LoadSymbols(_) => {
+                             let _ = event_tx.send(DebugEvent::SymbolsLoaded);
+                        }
+                        DebugCommand::ReadPeripheralValues(_name) => {
+                             let regs = vec![
+                                 aether_core::svd::RegisterInfo {
+                                     name: "CR".to_string(),
+                                     address_offset: 0x0,
+                                     size: 32,
+                                     value: Some(0x1),
+                                     fields: vec![],
+                                     description: Some("Control Register".to_string()),
+                                 },
+                             ];
+                             let _ = event_tx.send(DebugEvent::Registers(regs));
+                        }
+                        DebugCommand::WatchVariable(name) => {
+                             let _ = event_tx.send(DebugEvent::VariableResolved(aether_core::symbols::TypeInfo {
+                                 name: name.clone(),
+                                 value_formatted_string: "42".to_string(),
+                                 kind: "Primitive".to_string(),
+                                 members: None,
+                                 address: Some(0x20000000),
+                             }));
+                        }
+                        DebugCommand::Reset => {
+                             let _ = event_tx.send(DebugEvent::Halted { pc: 0x08000000 });
+                        }
+                        DebugCommand::SetBreakpoint(addr) => {
+                             let _ = event_tx.send(DebugEvent::Breakpoints(vec![addr]));
+                        }
+                        DebugCommand::ClearBreakpoint(_) => {
+                             let _ = event_tx.send(DebugEvent::Breakpoints(vec![]));
+                        }
                         _ => {}
                     }
                 }
@@ -66,26 +159,43 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         
         Arc::new(handle)
     } else {
-        // 1. Connect to Probe
-        let probe_manager = ProbeManager::new();
-        let probes = probe_manager.list_probes()?;
-
-        if probes.is_empty() {
-            error!("No debug probes found!");
-            return Ok(());
-        }
-
-        if args.probe_index >= probes.len() {
-            error!("Probe index {} out of range (found {} probes)", args.probe_index, probes.len());
-            return Ok(());
-        }
-
-        info!("Connecting to probe: {}", probes[args.probe_index].name());
-        let probe = probe_manager.open_probe(args.probe_index)?;
+        // 1. Initial Connection (Optional)
+        let mut session = None;
         
-        info!("Detecting target...");
-        let (target, session) = probe_manager.detect_target(probe)?;
-        info!("Attached to target: {}", target.name);
+        // Only try to connect if the user provided something beyond the defaults
+        // OR if they want us to try auto-discovery immediately.
+        // For "zero-config", we start disconnected and let the user attach later.
+        if args.chip != "auto" {
+            let probe_manager = ProbeManager::new();
+            let probes = probe_manager.list_probes()?;
+
+            if !probes.is_empty() && args.probe_index < probes.len() {
+                let protocol = match args.protocol.as_deref() {
+                    Some("swd") => Some(aether_core::WireProtocol::Swd),
+                    Some("jtag") => Some(aether_core::WireProtocol::Jtag),
+                    _ => None,
+                };
+
+                info!("Attempting initial connection to target: {}...", args.chip);
+                    
+                match probe_manager.connect(
+                    args.probe_index, 
+                    &args.chip, 
+                    protocol, 
+                    args.under_reset,
+                ) {
+                    Ok((target, s)) => {
+                        info!("Attached to target: {}", target.name);
+                        session = Some(s);
+                    }
+                    Err(e) => {
+                        error!("Initial attachment failed: {}. Starting in disconnected mode.", e);
+                    }
+                }
+            }
+        } else {
+            info!("Starting in zero-config mode. Use 'attach' command to connect to a target.");
+        }
 
         // 2. Create Session Handle
         Arc::new(SessionHandle::new(session)?)
@@ -95,7 +205,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("Starting gRPC server on {}:{}", args.host, args.port);
     
     // Handle Ctrl+C
-    let server_handle = session_handle.clone();
+    let _server_handle = session_handle.clone();
     tokio::spawn(async move {
         match tokio::signal::ctrl_c().await {
             Ok(()) => {

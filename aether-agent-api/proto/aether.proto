@@ -46,8 +46,29 @@ service AetherDebug {
     rpc EnableSemihosting (Empty) returns (Empty);
     rpc EnableItm (ItmConfig) returns (Empty);
 
+    // Discovery & Connection
+    rpc ListProbes (Empty) returns (ProbeList);
+    rpc Attach (AttachRequest) returns (Empty);
+
     // Event stream
     rpc SubscribeEvents (Empty) returns (stream DebugEvent);
+}
+
+message ProbeList {
+    repeated ProbeInfo probes = 1;
+}
+
+message ProbeInfo {
+    uint32 index = 1;
+    string name = 2;
+    string serial = 3;
+}
+
+message AttachRequest {
+    uint32 probe_index = 1;
+    string chip = 2; // e.g. "STM32L476RGTx" or "auto"
+    optional string protocol = 3; // "swd" or "jtag"
+    bool under_reset = 4;
 }
 
 message Empty {}
@@ -163,11 +184,25 @@ message DebugEvent {
         TaskSwitchEvent task_switch = 6;
         PlotEvent plot = 7;
         RttEvent rtt = 8;
+<<<<<<< Updated upstream
+    }
+}
+
+=======
         BreakpointEvent breakpoint = 9;
         VariableEvent variable = 10;
         SemihostingEvent semihosting = 11;
         ItmEvent itm = 12;
+        ProbeList probes = 13;
+        TargetInfo attached = 14;
     }
+}
+
+message TargetInfo {
+    string name = 1;
+    uint64 flash_size = 2;
+    uint64 ram_size = 3;
+    string architecture = 4;
 }
 
 message SemihostingEvent {
@@ -178,6 +213,7 @@ message ItmEvent {
     bytes data = 1;
 }
 
+>>>>>>> Stashed changes
 message TasksEvent {
     repeated TaskInfo tasks = 1;
 }

@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["aether-agent-api","aether-core", "aether-ui"]
+members = ["aether-agent-api","aether-core", "aether-ui", "aether-demo-fw"]
 
 [workspace.package]
 version = "0.1.0"
@@ -26,7 +26,7 @@ gimli = "0.31"
 eframe = { version = "0.28", features = ["glow"] }
 egui = "0.28"
 egui_plot = "0.28"
-egui_dock = "0.12"
+egui_dock = "0.13"
 crossbeam-channel = "0.5"
 rfd = "0.14"
 

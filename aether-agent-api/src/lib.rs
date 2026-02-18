@@ -20,6 +20,9 @@ pub mod proto {
 }
 
 use proto::aether_debug_server::{AetherDebug, AetherDebugServer};
+<<<<<<< Updated upstream
+use proto::{Empty, StatusResponse, ReadMemoryRequest, ReadMemoryResponse, ReadRegisterRequest, ReadRegisterResponse, DebugEvent};
+=======
 use proto::{
     Empty, StatusResponse, ReadMemoryRequest, ReadMemoryResponse, WriteMemoryRequest,
     ReadRegisterRequest, ReadRegisterResponse, WriteRegisterRequest,
@@ -27,8 +30,10 @@ use proto::{
     TasksEvent, TaskInfo, PeripheralRequest, PeripheralResponse, PeripheralWriteRequest,
     WatchVariableRequest, RttWriteRequest, DebugEvent,
     FileRequest, FlashProgress, DisasmRequest, DisasmResponse,
-    ItmConfig, SemihostingEvent, ItmEvent
+    ItmConfig, SemihostingEvent, ItmEvent,
+    ProbeList, ProbeInfo as ProtoProbeInfo, AttachRequest
 };
+>>>>>>> Stashed changes
 
 pub struct AetherDebugService {
     session: Arc<SessionHandle>,
@@ -39,33 +44,31 @@ impl AetherDebugService {
     pub const fn new(session: Arc<SessionHandle>) -> Self {
         Self { session }
     }
+<<<<<<< Updated upstream
+=======
 
     async fn wait_for_match<F>(&self, rx: &mut broadcast::Receiver<CoreDebugEvent>, matcher: F) -> Result<CoreDebugEvent, Status>
     where
         F: Fn(&CoreDebugEvent) -> bool + Send + 'static,
     {
-        let timeout = Duration::from_secs(2);
-        let start = std::time::Instant::now();
+        let timeout = Duration::from_secs(15); // Increased further to allow for multi-stage SWD/JTAG/Reset scan
         
         loop {
-            if start.elapsed() > timeout {
-                return Err(Status::deadline_exceeded("Timeout waiting for debug event"));
-            }
-            
-            match rx.recv().await {
-                Ok(event) => {
+            match tokio::time::timeout(timeout, rx.recv()).await {
+                Ok(Ok(event)) => {
                     if matcher(&event) {
                         return Ok(event);
                     }
-                    if let CoreDebugEvent::Error(_e) = event {
-                        // Log error but continue waiting? OR fail?
-                        // For now just continue implementation as per previous plan
+                    if let CoreDebugEvent::Error(e) = event {
+                        return Err(Status::internal(format!("Core error: {e}")));
                     }
                 }
-                Err(_) => return Err(Status::internal("Event stream lagged or closed")),
+                Ok(Err(_)) => return Err(Status::internal("Event stream lagged or closed")),
+                Err(_) => return Err(Status::deadline_exceeded("Timeout waiting for debug event")),
             }
         }
     }
+>>>>>>> Stashed changes
 }
 
 #[tonic::async_trait]
@@ -213,114 +216,8 @@ impl AetherDebug for AetherDebugService {
         }
     }
 
-    async fn write_register(&self, request: Request<WriteRegisterRequest>) -> Result<Response<Empty>, Status> {
-        let req = request.into_inner();
-        self.session.send(DebugCommand::WriteRegister(req.register_number as u16, req.value))
-            .map_err(|e| Status::internal(e.to_string()))?;
-        Ok(Response::new(Empty {}))
-    }
-    
-    // --- High Level ---
-    
-    async fn get_stack(&self, _request: Request<Empty>) -> Result<Response<StackResponse>, Status> {
-        let mut rx = self.session.subscribe();
-        self.session.send(DebugCommand::GetStack).map_err(|e| Status::internal(e.to_string()))?;
-        
-        let event = self.wait_for_match(&mut rx, |e| matches!(e, CoreDebugEvent::Stack(_))).await?;
-        
-        if let CoreDebugEvent::Stack(frames) = event {
-            let proto_frames = frames.into_iter().map(|f| StackFrame {
-                pc: u64::from(f.pc),
-                function_name: f.function_name,
-                file: f.source_file.unwrap_or_default(),
-                line: f.line.unwrap_or(0) as u32,
-            }).collect();
-            Ok(Response::new(StackResponse { frames: proto_frames }))
-        } else {
-            Err(Status::internal("Unexpected event"))
-        }
-    }
-    
-    async fn get_tasks(&self, _request: Request<Empty>) -> Result<Response<TasksEvent>, Status> {
-        let mut rx = self.session.subscribe();
-        self.session.send(DebugCommand::GetTasks).map_err(|e| Status::internal(e.to_string()))?;
-        
-        let event = self.wait_for_match(&mut rx, |e| matches!(e, CoreDebugEvent::Tasks(_))).await?;
-        
-        if let CoreDebugEvent::Tasks(tasks) = event {
-             let proto_tasks = tasks.into_iter().map(|t| TaskInfo {
-                 name: t.name,
-                 priority: t.priority,
-                 state: format!("{:?}", t.state),
-                 stack_usage: t.stack_usage,
-                 stack_size: t.stack_size,
-                 handle: t.handle,
-                 task_type: format!("{:?}", t.task_type),
-             }).collect();
-             Ok(Response::new(TasksEvent { tasks: proto_tasks }))
-        } else {
-             Err(Status::internal("Unexpected event"))
-        }
-    }
-    
-    async fn watch_variable(&self, request: Request<WatchVariableRequest>) -> Result<Response<Empty>, Status> {
-        let req = request.into_inner();
-        self.session.send(DebugCommand::WatchVariable(req.name))
-             .map_err(|e| Status::internal(e.to_string()))?;
-        Ok(Response::new(Empty {}))
-    }
-    
-    // --- Peripherals ---
-    
-    async fn read_peripheral(&self, request: Request<PeripheralRequest>) -> Result<Response<PeripheralResponse>, Status> {
-         let req = request.into_inner();
-         let mut rx = self.session.subscribe();
-         
-         self.session.send(DebugCommand::ReadPeripheralValues(req.peripheral.clone()))
-             .map_err(|e| Status::internal(e.to_string()))?;
-             
-         let event = self.wait_for_match(&mut rx, |e| matches!(e, CoreDebugEvent::Registers(_))).await?;
-         
-         if let CoreDebugEvent::Registers(regs) = event {
-             if let Some(r) = regs.iter().find(|r| r.name == req.register) {
-                  return Ok(Response::new(PeripheralResponse { value: r.value.unwrap_or(0) }));
-             }
-             Err(Status::not_found("Register not found"))
-         } else {
-             Err(Status::internal("Unexpected event"))
-         }
-    }
-    
-    async fn write_peripheral(&self, request: Request<PeripheralWriteRequest>) -> Result<Response<Empty>, Status> {
-        let req = request.into_inner();
-        self.session.send(DebugCommand::WritePeripheralField {
-            peripheral: req.peripheral,
-            register: req.register,
-            field: req.field,
-            value: req.value
-        }).map_err(|e| Status::internal(e.to_string()))?;
-        Ok(Response::new(Empty {}))
-    }
-
-    // --- RTT ---
-    
-    async fn rtt_write(&self, request: Request<RttWriteRequest>) -> Result<Response<Empty>, Status> {
-        let req = request.into_inner();
-        self.session.send(DebugCommand::RttWrite {
-            channel: req.channel as usize,
-            data: req.data,
-        }).map_err(|e| Status::internal(e.to_string()))?;
-        Ok(Response::new(Empty {}))
-    }
-
-
-    async fn load_svd(&self, request: Request<FileRequest>) -> Result<Response<Empty>, Status> {
-        let req = request.into_inner();
-        self.session.send(DebugCommand::LoadSvd(std::path::PathBuf::from(req.path)))
-            .map_err(|e| Status::internal(e.to_string()))?;
-        Ok(Response::new(Empty {}))
-    }
-
+<<<<<<< Updated upstream
+=======
     async fn load_symbols(&self, request: Request<FileRequest>) -> Result<Response<Empty>, Status> {
         let req = request.into_inner();
         self.session.send(DebugCommand::LoadSymbols(std::path::PathBuf::from(req.path)))
@@ -406,9 +303,49 @@ impl AetherDebug for AetherDebugService {
             .map_err(|e| Status::internal(e.to_string()))?;
         Ok(Response::new(Empty {}))
     }
+
+    async fn list_probes(&self, _request: Request<Empty>) -> Result<Response<ProbeList>, Status> {
+        let mut rx = self.session.subscribe();
+        self.session.send(DebugCommand::ListProbes).map_err(|e| Status::internal(e.to_string()))?;
+        
+        let event = self.wait_for_match(&mut rx, |e| matches!(e, CoreDebugEvent::Probes(_))).await?;
+        
+        if let CoreDebugEvent::Probes(probes) = event {
+             let proto_probes = probes.into_iter().enumerate().map(|(i, p)| ProtoProbeInfo {
+                 index: i as u32,
+                 name: p.name(),
+                 serial: p.serial_number.unwrap_or_default(),
+             }).collect();
+             Ok(Response::new(ProbeList { probes: proto_probes }))
+        } else {
+             Err(Status::internal("Unexpected event"))
+        }
+    }
+
+    async fn attach(&self, request: Request<AttachRequest>) -> Result<Response<Empty>, Status> {
+        let req = request.into_inner();
+        let mut rx = self.session.subscribe();
+        
+        let protocol = match req.protocol.as_deref() {
+            Some("swd") => Some(aether_core::WireProtocol::Swd),
+            Some("jtag") => Some(aether_core::WireProtocol::Jtag),
+            _ => None,
+        };
+
+        self.session.send(DebugCommand::Attach {
+            probe_index: req.probe_index as usize,
+            chip: req.chip,
+            protocol,
+            under_reset: req.under_reset,
+        }).map_err(|e| Status::internal(e.to_string()))?;
+        
+        let _ = self.wait_for_match(&mut rx, |e| matches!(e, CoreDebugEvent::Attached(_))).await?;
+        Ok(Response::new(Empty {}))
+    }
     
     // --- Events ---
     
+>>>>>>> Stashed changes
     async fn subscribe_events(&self, _request: Request<Empty>) -> Result<Response<Self::SubscribeEventsStream>, Status> {
         let rx = self.session.subscribe();
         let stream = BroadcastStream::new(rx);
@@ -475,6 +412,8 @@ pub fn map_core_event_to_proto(event: CoreDebugEvent) -> Option<DebugEvent> {
                 data,
             }))
         }),
+<<<<<<< Updated upstream
+=======
         CoreDebugEvent::SemihostingOutput(output) => Some(DebugEvent {
             event: Some(proto::debug_event::Event::Semihosting(SemihostingEvent {
                 output
@@ -485,6 +424,24 @@ pub fn map_core_event_to_proto(event: CoreDebugEvent) -> Option<DebugEvent> {
                 data
             }))
         }),
+        CoreDebugEvent::Probes(probes) => Some(DebugEvent {
+            event: Some(proto::debug_event::Event::Probes(proto::ProbeList {
+                probes: probes.into_iter().enumerate().map(|(i, p)| proto::ProbeInfo {
+                    index: i as u32,
+                    name: p.name(),
+                    serial: p.serial_number.unwrap_or_default(),
+                }).collect()
+            }))
+        }),
+        CoreDebugEvent::Attached(info) => Some(DebugEvent {
+            event: Some(proto::debug_event::Event::Attached(proto::TargetInfo {
+                name: info.name,
+                flash_size: info.flash_size,
+                ram_size: info.ram_size,
+                architecture: info.architecture,
+            }))
+        }),
+>>>>>>> Stashed changes
         _ => None
     }
 }
@@ -520,9 +477,24 @@ pub fn map_proto_event_to_core(event: DebugEvent) -> Option<CoreDebugEvent> {
             value: p.value,
         }),
         proto::debug_event::Event::Rtt(r) => Some(CoreDebugEvent::RttData(r.channel as usize, r.data)),
+<<<<<<< Updated upstream
+=======
         proto::debug_event::Event::Breakpoint(_) | proto::debug_event::Event::Variable(_) => None,
         proto::debug_event::Event::Semihosting(s) => Some(CoreDebugEvent::SemihostingOutput(s.output)),
         proto::debug_event::Event::Itm(i) => Some(CoreDebugEvent::ItmPacket(i.data)),
+        proto::debug_event::Event::Probes(p) => Some(CoreDebugEvent::Probes(p.probes.into_iter().map(|pi| aether_core::ProbeInfo {
+            vendor_id: 0,
+            product_id: 0,
+            serial_number: if pi.serial.is_empty() { None } else { Some(pi.serial) },
+            probe_type: aether_core::ProbeType::Other,
+        }).collect())),
+        proto::debug_event::Event::Attached(i) => Some(CoreDebugEvent::Attached(aether_core::TargetInfo {
+            name: i.name,
+            flash_size: i.flash_size,
+            ram_size: i.ram_size,
+            architecture: i.architecture,
+        })),
+>>>>>>> Stashed changes
     }
 }
 

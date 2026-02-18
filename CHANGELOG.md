@@ -1,6 +1,16 @@
 ## [Unreleased]
 
+
 ### Added
+
+#### Phase 12: Headless Agent Support
+- **`aether-daemon`**: Headless server binary (`cargo run --bin aether-daemon`) exposing gRPC API on `0.0.0.0:50051`.
+- **`aether-cli`**: Command-line client (`cargo run --bin aether-cli`) for controlling the debugger (halt, resume, step, read/write memory).
+- **Mock Mode**: `aether-daemon --mock` flag for running without hardware, useful for CI/testing.
+
+### Removed
+- **Agent Chat**: Removed experimental chat interface from `aether-ui` to streamline the agent interaction model.
+
 
 #### Phase 4: Advanced Analysis & Remote Debugging
 - **Remote Debug Relay**: gRPC server now supports configurable binding (`0.0.0.0` for network access).

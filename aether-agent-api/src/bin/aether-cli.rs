@@ -3,7 +3,8 @@ use aether_agent_api::proto::aether_debug_client::AetherDebugClient;
 use aether_agent_api::proto::{
     Empty, ReadRegisterRequest, ReadMemoryRequest, WriteMemoryRequest, BreakpointRequest,
     WriteRegisterRequest, WatchVariableRequest, PeripheralRequest, PeripheralWriteRequest,
-    RttWriteRequest, FileRequest, DisasmRequest, ItmConfig
+    RttWriteRequest, FileRequest, DisasmRequest, ItmConfig,
+    AttachRequest, ProbeList, ProbeInfo
 };
 
 #[derive(Parser)]
@@ -43,6 +44,11 @@ enum Commands {
     Trace {
         #[command(subcommand)]
         cmd: TraceCommands,
+    },
+    /// Probe discovery and attachment
+    Probe {
+        #[command(subcommand)]
+        cmd: ProbeCommands,
     },
     
     // Legacy support for common top-level commands (optional, but keep it clean)
@@ -149,6 +155,27 @@ enum TraceCommands {
     },
 }
 
+#[derive(Subcommand)]
+pub enum ProbeCommands {
+    /// List available debug probes
+    List,
+    /// Attach to a target
+    Attach {
+        /// Probe index
+        #[arg(default_value_t = 0)]
+        index: usize,
+        /// Chip name (e.g. STM32L476RGTx or 'auto')
+        #[arg(short, long, default_value = "auto")]
+        chip: String,
+        /// Protocol (swd or jtag)
+        #[arg(long)]
+        protocol: Option<String>,
+        /// Connect under reset
+        #[arg(long)]
+        under_reset: bool,
+    },
+}
+
 fn parse_hex(s: &str) -> Result<u64, std::num::ParseIntError> {
     let s = s.trim_start_matches("0x");
     u64::from_str_radix(s, 16)
@@ -212,7 +239,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let mut stream = client.flash(FileRequest { path }).await?.into_inner();
                 while let Some(p) = stream.message().await? {
                     if !p.error.is_empty() {
-                        eprintln!("Error: {}", p.error); break;
+                        eprintln!("Error: {}", p.error); 
+                        std::process::exit(1);
                     } else if p.done {
                         println!("Flash Complete!"); break;
                     } else {
@@ -282,6 +310,25 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             TraceCommands::EnableItm { baud } => {
                 client.enable_itm(ItmConfig { baud_rate: baud }).await?;
                 println!("ITM enabled at {} baud.", baud);
+            }
+        }
+        Commands::Probe { cmd } => match cmd {
+            ProbeCommands::List => {
+                let resp = client.list_probes(Empty {}).await?.into_inner();
+                println!("{:<5} {:<20} {:<20}", "Index", "Model", "Serial");
+                for p in resp.probes {
+                    println!("{:<5} {:<20} {:<20}", p.index, p.name, p.serial);
+                }
+            }
+            ProbeCommands::Attach { index, chip, protocol, under_reset } => {
+                println!("Attaching to {} via probe {}...", chip, index);
+                client.attach(AttachRequest {
+                    probe_index: index as u32,
+                    chip,
+                    protocol,
+                    under_reset,
+                }).await?;
+                println!("Successfully attached.");
             }
         }
     }
