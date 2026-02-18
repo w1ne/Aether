@@ -18,7 +18,7 @@ async fn test_agent_api_basic_ops() {
     let handle = Arc::new(handle);
 
     // 2. Start server on random port
-    let port = 50056; // For test simplicity, ideally find a free port
+    let port = 50057; // Unique port for this test
     let server_handle = handle.clone();
     tokio::spawn(async move {
         if let Err(e) = run_server(server_handle, "127.0.0.1", port).await {
@@ -26,8 +26,16 @@ async fn test_agent_api_basic_ops() {
         }
     });
 
-    // Give server time to start
-    sleep(Duration::from_millis(100)).await;
+    // Wait for server to start robustly
+    let mut started = false;
+    for _ in 0..50 {
+        if std::net::TcpStream::connect(format!("127.0.0.1:{port}")).is_ok() {
+            started = true;
+            break;
+        }
+        sleep(Duration::from_millis(100)).await;
+    }
+    assert!(started, "Server did not start on port {port}");
 
     // 3. Connect client with timeout
     let addr = format!("http://127.0.0.1:{}", port);

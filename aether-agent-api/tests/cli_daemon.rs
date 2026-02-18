@@ -5,9 +5,21 @@ use std::process::{Command, Stdio};
 use std::thread;
 use std::time::Duration;
 
+struct DaemonHandle {
+    child: std::process::Child,
+}
+
+impl Drop for DaemonHandle {
+    fn drop(&mut self) {
+        let _ = self.child.kill();
+        let _ = self.child.wait();
+    }
+}
+
 fn wait_for_port(port: u16) -> bool {
     let addr = format!("127.0.0.1:{port}");
-    for i in 0..100 {
+    // Wait up to 15 seconds (150 * 100ms)
+    for i in 0..150 {
         if std::net::TcpStream::connect(&addr).is_ok() {
             return true;
         }
@@ -33,15 +45,17 @@ fn run_cli(url: &str, args: &[&str]) -> (String, String) {
 
 #[test]
 fn test_cli_daemon_integration() {
-    let port = 50053; // Use different port to avoid conflicts
+    let port = 50059; // Use a distinct port for this test
 
     // 1. Start Daemon in MOCK mode
-    let mut daemon = Command::new("cargo")
+    let daemon_child = Command::new("cargo")
         .args(["run", "--bin", "aether-daemon", "--", "--mock", "--port", &port.to_string()])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
         .expect("Failed to start daemon");
+
+    let _daemon = DaemonHandle { child: daemon_child };
 
     // Wait for daemon to start
     assert!(wait_for_port(port), "Daemon did not start on port {port}");
@@ -71,7 +85,4 @@ fn test_cli_daemon_integration() {
     // Test Target LoadSvd
     let (stdout, stderr) = run_cli(&url, &["target", "load-svd", "dummy.svd"]);
     assert!(stdout.contains("SVD Loaded"), "STDOUT: {stdout}\nSTDERR: {stderr}");
-
-    // 3. Kill Daemon
-    let _ = daemon.kill();
 }
