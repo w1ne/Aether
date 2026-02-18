@@ -12,7 +12,7 @@ Common errors and solutions.
 1. **Check USB connection**
    - Try different USB port
    - Try different USB cable (data cable, not charge-only)
-   
+
 2. **Linux: Install udev rules**
    ```bash
    # See docs/HARDWARE_SETUP.md for your probe type

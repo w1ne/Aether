@@ -40,7 +40,7 @@ impl SymbolManager {
         let data = std::fs::read(path)?;
         let debug_info = DebugInfo::from_file(path)
             .map_err(|e| anyhow::anyhow!("Failed to parse ELF/DWARF with probe-rs: {:?}", e))?;
-        
+
         self.debug_info = Some(debug_info);
         self.elf_data = Some(data);
         log::info!("Loaded symbols from {}", path.display());
@@ -50,10 +50,10 @@ impl SymbolManager {
     /// Map a program counter address to a source location.
     pub fn lookup(&self, address: u64) -> Option<SourceInfo> {
         let debug_info = self.debug_info.as_ref()?;
-        
+
         // probe-rs-debug 0.31 API
         let location = debug_info.get_source_location(address)?;
-        
+
         // Convert TypedPathBuf to PathBuf via string representation
         let path_str = location.path.to_string_lossy().to_string();
         let file = PathBuf::from(path_str);
@@ -89,18 +89,18 @@ impl SymbolManager {
 
         // Helper to load sections ensuring we don't drop data prematurely
         // We iterate specifically here rather than using Dwarf::load heavily
-        
+
         // 1. Get .debug_line section
         let debug_line_section = obj.section_by_name(".debug_line")?;
         let debug_line_data = debug_line_section.uncompressed_data().ok()?;
         let debug_line = gimli::DebugLine::new(&debug_line_data, endian);
 
-        // 2. Iterate units to find line programs. 
+        // 2. Iterate units to find line programs.
         // PROPER WAY: We need to iterate .debug_info to get unit headers, which give us stmt_list offset in .debug_line
         let debug_info_section = obj.section_by_name(".debug_info")?;
         let debug_info_data = debug_info_section.uncompressed_data().ok()?;
         let debug_info = gimli::DebugInfo::new(&debug_info_data, endian);
-        
+
         let debug_abbrev_section = obj.section_by_name(".debug_abbrev")?;
         let debug_abbrev_data = debug_abbrev_section.uncompressed_data().ok()?;
         let debug_abbrev = gimli::DebugAbbrev::new(&debug_abbrev_data, endian);
@@ -111,12 +111,12 @@ impl SymbolManager {
         let mut iter = debug_info.units();
         while let Ok(Some(header)) = iter.next() {
             let abbrev = header.abbreviations(&debug_abbrev).ok()?;
-            
+
             // Get DW_AT_stmt_list
             let mut tree = header.entries(&abbrev);
             let root = tree.next_dfs().ok()?.map(|(_, node)| node)?;
             let stmt_list = root.attr_value(gimli::DW_AT_stmt_list).ok()??;
-            
+
             let offset = match stmt_list {
                 gimli::AttributeValue::DebugLineRef(offset) => offset,
                 _ => continue,
@@ -124,7 +124,7 @@ impl SymbolManager {
 
             let program = debug_line.program(offset, header.address_size(), None, None).ok()?;
             let header = program.header();
-            
+
             // Check files matches
             let mut file_idx = None;
             let file_index_base = if header.version() < 5 { 1 } else { 0 };
@@ -171,7 +171,7 @@ impl SymbolManager {
     pub fn lookup_symbol(&self, name: &str) -> Option<u64> {
         let data = self.elf_data.as_ref()?;
         let obj = object::File::parse(&**data).ok()?;
-        
+
         for symbol in obj.symbols() {
             if let Ok(sym_name) = symbol.name() {
                  if sym_name == name {
@@ -203,7 +203,7 @@ impl SymbolManager {
         while let Ok(Some(header)) = units.next() {
             let abbrev = header.abbreviations(&debug_abbrev).ok()?;
             let mut entries = header.entries(&abbrev);
-            
+
             while let Ok(Some((_, entry))) = entries.next_dfs() {
                 if entry.tag() == gimli::DW_TAG_variable || entry.tag() == gimli::DW_TAG_formal_parameter {
                     let entry_name = entry.attr_value(gimli::DW_AT_name).ok().flatten().and_then(|attr| {
@@ -295,7 +295,7 @@ impl SymbolManager {
                 while let Ok(Some((depth_delta, child))) = children.next_dfs() {
                     current_depth += depth_delta;
                     if current_depth <= 0 { break; }
-                    
+
                     if current_depth == 1 && child.tag() == gimli::DW_TAG_member {
                          let member_name = child.attr_value(gimli::DW_AT_name).ok().flatten().and_then(|attr| {
                             match attr {
@@ -314,7 +314,7 @@ impl SymbolManager {
 
                          if let Ok(Some(AttributeValue::UnitRef(type_off))) = child.attr_value(gimli::DW_AT_type) {
                              if let Some(mut member_info) = self.resolve_type_from_offset(core, header, abbrev, debug_str, type_off, base_address + member_offset, depth + 1) {
-                                 member_info.name = member_name; 
+                                 member_info.name = member_name;
                                  members.push(member_info);
                              }
                          }
@@ -323,12 +323,12 @@ impl SymbolManager {
                         // This is a simplification: we'll try to find the active variant
                         let mut variant_children = header.entries_at_offset(abbrev, child.offset()).ok()?;
                         variant_children.next_dfs().ok()?; // Skip variant_part
-                        
+
                         let mut v_depth = 0;
                         while let Ok(Some((v_delta, v_child))) = variant_children.next_dfs() {
                             v_depth += v_delta;
                             if v_depth <= 0 { break; }
-                            
+
                             if v_depth == 1 && v_child.tag() == gimli::DW_TAG_variant {
                                 let discr_val = v_child.attr_value(gimli::DW_AT_discr_value).ok().flatten().and_then(|v| {
                                     match v {
@@ -341,7 +341,7 @@ impl SymbolManager {
                                         _ => None,
                                     }
                                 }).unwrap_or(0);
-                                
+
                                 // For now, we'll collect all variants as pseudo-members
                                 // In a better implementation, we'd read the discriminant from memory
                                 let mut v_entries = header.entries_at_offset(abbrev, v_child.offset()).ok()?;

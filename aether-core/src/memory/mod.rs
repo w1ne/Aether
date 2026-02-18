@@ -156,7 +156,7 @@ mod tests {
     fn test_memory_manager_read_write_32() {
         let mut mock = MockMemory::new();
         let mgr = MemoryManager::new();
-        
+
         mgr.write_32(&mut mock, 0x1000, 0xDEADBEEF).unwrap();
         assert_eq!(mgr.read_32(&mut mock, 0x1000).unwrap(), 0xDEADBEEF);
     }
@@ -166,9 +166,8 @@ mod tests {
         let mut mock = MockMemory::new();
         let mgr = MemoryManager::new();
         let data = vec![1, 2, 3, 4, 5, 6, 7, 8];
-        
+
         mgr.write_block(&mut mock, 0x2000, &data).unwrap();
         assert_eq!(mgr.read_block(&mut mock, 0x2000, 8).unwrap(), data);
     }
 }
-

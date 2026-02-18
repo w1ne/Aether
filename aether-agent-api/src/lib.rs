@@ -36,7 +36,7 @@ impl AetherDebugService {
         F: Fn(&CoreDebugEvent) -> bool + Send + 'static,
     {
         let timeout = Duration::from_secs(15); // Increased further to allow for multi-stage SWD/JTAG/Reset scan
-        
+
         loop {
             match tokio::time::timeout(timeout, rx.recv()).await {
                 Ok(Ok(event)) => {
@@ -211,7 +211,7 @@ impl AetherDebug for AetherDebugService {
     async fn flash(&self, request: Request<FileRequest>) -> Result<Response<Self::FlashStream>, Status> {
         let req = request.into_inner();
         let path = std::path::PathBuf::from(req.path);
-        
+
         let (tx, rx) = tokio::sync::mpsc::channel(10);
         let mut session_rx = self.session.subscribe();
 
@@ -246,10 +246,10 @@ impl AetherDebug for AetherDebugService {
 
     async fn disassemble(&self, request: Request<DisasmRequest>) -> Result<Response<DisasmResponse>, Status> {
         let req = request.into_inner();
-        // Disassembly is tricky because it returns via event usually. 
+        // Disassembly is tricky because it returns via event usually.
         // We'll implemented a request-response pattern by waiting for the specific event.
         // This acts as a bridge.
-        
+
         let mut session_rx = self.session.subscribe();
         self.session.send(DebugCommand::Disassemble(req.address, req.count as usize))
             .map_err(|e| Status::internal(e.to_string()))?;
@@ -288,9 +288,9 @@ impl AetherDebug for AetherDebugService {
     async fn list_probes(&self, _request: Request<Empty>) -> Result<Response<ProbeList>, Status> {
         let mut rx = self.session.subscribe();
         self.session.send(DebugCommand::ListProbes).map_err(|e| Status::internal(e.to_string()))?;
-        
+
         let event = self.wait_for_match(&mut rx, |e| matches!(e, CoreDebugEvent::Probes(_))).await?;
-        
+
         if let CoreDebugEvent::Probes(probes) = event {
              let proto_probes = probes.into_iter().enumerate().map(|(i, p)| ProtoProbeInfo {
                  index: i as u32,
@@ -306,7 +306,7 @@ impl AetherDebug for AetherDebugService {
     async fn attach(&self, request: Request<AttachRequest>) -> Result<Response<Empty>, Status> {
         let req = request.into_inner();
         let mut rx = self.session.subscribe();
-        
+
         let protocol = match req.protocol.as_deref() {
             Some("swd") => Some(aether_core::WireProtocol::Swd),
             Some("jtag") => Some(aether_core::WireProtocol::Jtag),
@@ -319,13 +319,13 @@ impl AetherDebug for AetherDebugService {
             protocol,
             under_reset: req.under_reset,
         }).map_err(|e| Status::internal(e.to_string()))?;
-        
+
         let _ = self.wait_for_match(&mut rx, |e| matches!(e, CoreDebugEvent::Attached(_))).await?;
         Ok(Response::new(Empty {}))
     }
-    
+
     // --- Events ---
-    
+
     async fn subscribe_events(&self, _request: Request<Empty>) -> Result<Response<Self::SubscribeEventsStream>, Status> {
         let rx = self.session.subscribe();
         let stream = BroadcastStream::new(rx);
@@ -353,9 +353,9 @@ pub fn map_core_event_to_proto(event: CoreDebugEvent) -> Option<DebugEvent> {
             event: Some(proto::debug_event::Event::Memory(proto::MemoryEvent { address, data }))
         }),
         CoreDebugEvent::RegisterValue(address, value) => Some(DebugEvent {
-            event: Some(proto::debug_event::Event::Register(proto::RegisterEvent { 
-                register: address as u32, 
-                value 
+            event: Some(proto::debug_event::Event::Register(proto::RegisterEvent {
+                register: address as u32,
+                value
             }))
         }),
         CoreDebugEvent::Tasks(tasks) => Some(DebugEvent {

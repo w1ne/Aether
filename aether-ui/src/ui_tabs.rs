@@ -6,7 +6,7 @@ use crate::AetherApp;
 pub enum DebugTab {
     // Left Panel Tabs
     Control,
-    
+
     // Original Tabs
     Peripherals,
     Rtt,
@@ -17,7 +17,7 @@ pub enum DebugTab {
     Timeline,
     Variables,
     Agent,
-    
+
     // New Separate Tabs
     Memory,
     Disassembly,

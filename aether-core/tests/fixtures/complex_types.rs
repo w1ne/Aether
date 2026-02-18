@@ -22,8 +22,8 @@ pub struct Config {
 pub static mut MY_CONFIG: Config = Config {
     enabled: true,
     threshold: 42,
-    nested: Nested { 
-        x: 10, 
+    nested: Nested {
+        x: 10,
         b: false,
         deep: Deep { a: 100, b: 3.14 }
     },

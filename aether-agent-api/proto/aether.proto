@@ -26,7 +26,7 @@ service AetherDebug {
     // Symbols & Debug info
     rpc LoadSymbols (FileRequest) returns (Empty);
     rpc GetStack (Empty) returns (StackResponse);
-    
+
     // Peripherals (SVD)
     rpc LoadSvd (FileRequest) returns (Empty);
     rpc GetPeripherals (Empty) returns (PeripheralResponse);

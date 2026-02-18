@@ -2,7 +2,7 @@ pub fn main() {
     let _v: Vec<u32> = vec![1, 2, 3];
     let _o: Option<u32> = Some(42);
     let _r: Result<u32, &str> = Ok(100);
-    
+
     // Globals to make them easier to find via symbol lookups in tests
     unsafe {
         G_V = vec![1, 2, 3];

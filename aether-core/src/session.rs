@@ -136,7 +136,7 @@ impl SessionHandle {
     pub fn new_test() -> (Self, Receiver<DebugCommand>, tokio::sync::broadcast::Sender<DebugEvent>) {
         let (cmd_tx, cmd_rx) = crossbeam_channel::unbounded();
         let (evt_tx, _) = tokio::sync::broadcast::channel(1024);
-        
+
         (
             Self {
                 command_tx: cmd_tx,
@@ -170,12 +170,12 @@ impl SessionHandle {
             let mut _last_poll = Instant::now();
             let mut core_status = None;
             let mut itm_manager = crate::itm::ItmManager::new();
-            
+
             let mut plots: Vec<PlotConfig> = Vec::new();
             let mut last_plot_poll = Instant::now();
             let mut last_task_handle: Option<u32> = None;
             let mut last_status_poll = Instant::now();
-            
+
             let mut arch = session.as_ref().map(|s| format!("{:?}", s.target().architecture()));
             let session_start = Instant::now();
 
@@ -304,7 +304,7 @@ impl SessionHandle {
                                      continue;
                                  }
                              };
-                             
+
                              match core_cmd {
                                  DebugCommand::Halt => {
                                      match debug_manager.halt(&mut core) {
@@ -356,7 +356,7 @@ impl SessionHandle {
                                   }
                                  DebugCommand::Reset => {
                                      match core.reset_and_halt(Duration::from_millis(100)) {
-                                         Ok(_) => { 
+                                         Ok(_) => {
                                              // After reset, we are halted at reset vector
                                              if let Ok(pc_val) = core.read_core_reg(core.program_counter()) {
                                                   let pc: u64 = match pc_val {
@@ -491,7 +491,7 @@ impl SessionHandle {
                                     if let Some(addr) = symbol_manager.get_address(&std::path::Path::new(&file), line) {
                                         let _ = breakpoint_manager.toggle_breakpoint(&mut core, addr);
                                         let _ = evt_tx.send(DebugEvent::Breakpoints(breakpoint_manager.list()));
-                                        
+
                                         // Send locations
                                         let locations = breakpoint_manager.list().iter()
                                              .filter_map(|&a| symbol_manager.lookup(a))
@@ -552,7 +552,7 @@ impl SessionHandle {
                              if let Ok(status) = core.status() {
                                   let is_halted = status.is_halted();
                                   let was_halted = core_status.as_ref().map(|s: &CoreStatus| s.is_halted()) == Some(true);
-                                  
+
                                   if is_halted && !was_halted {
                                        // Just halted
                                        if let Ok(pc_val) = core.read_core_reg(core.program_counter()) {
@@ -581,7 +581,7 @@ impl SessionHandle {
                                     }
                                 }
                             }
-                            
+
                             // Poll Plots (10Hz)
                             if last_plot_poll.elapsed() >= Duration::from_millis(100) {
                                  for plot in &plots {
@@ -592,7 +592,7 @@ impl SessionHandle {
                                            }
                                            _ => None
                                        };
-                                       
+
                                        if let Some(v) = val {
                                            let _ = evt_tx.send(DebugEvent::PlotData {
                                                name: plot.name.clone(),
@@ -654,16 +654,16 @@ mod tests {
     #[tokio::test]
     async fn test_session_handle_send_receive() {
         let (handle, cmd_rx, event_tx) = SessionHandle::new_test();
-        
+
         // Test Command sending
         handle.send(DebugCommand::Halt).unwrap();
         let cmd = cmd_rx.recv_timeout(Duration::from_millis(100)).unwrap();
         assert!(matches!(cmd, DebugCommand::Halt));
-        
+
         // Test Event broadcasting
         let mut receiver = handle.subscribe();
         event_tx.send(DebugEvent::Resumed).unwrap();
-        
+
         let event = receiver.recv().await.unwrap();
         assert!(matches!(event, DebugEvent::Resumed));
     }

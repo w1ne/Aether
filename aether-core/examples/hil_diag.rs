@@ -17,7 +17,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let chip = "STM32L476RGTx";
     println!("Attempting to attach to {}...", chip);
-    
+
     match probe.attach(chip, Permissions::default()) {
         Ok(_session) => {
             println!("SUCCESS: Attached to {} without under-reset!", chip);
@@ -36,7 +36,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
                 Err(e2) => {
                     println!("Attach under reset failed: {}", e2);
-                    
+
                     println!("Attempting auto-detect...");
                     let mut probe = lister.list_all()[0].open()?;
                     probe.select_protocol(WireProtocol::Swd)?;

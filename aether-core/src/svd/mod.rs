@@ -220,7 +220,7 @@ mod tests {
 
         // Reg value: 0x0000_00A0 -> Field [4..7] should be A (10)
         assert_eq!(field.decode(0x0000_00A0), 0xA);
-        
+
         // Reg value: 0xFFFF_FFAF -> Field [4..7] should be A (10)
         assert_eq!(field.decode(0xFFFF_FFAF), 0xA);
 

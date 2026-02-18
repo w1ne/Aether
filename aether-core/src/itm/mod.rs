@@ -19,14 +19,14 @@ impl ItmManager {
         if session.target().architecture() != probe_rs::Architecture::Arm {
             return Err(anyhow::anyhow!("ITM is only supported on ARM targets"));
         }
-        
+
         // probe-rs 0.31 uses setup_tracing to enable SWO.
         // It likely configures default baud rate or uses values from chip definition if available?
         // Limitations: We can't easily set baud rate without finding where SwoConfig goes.
         // But setup_tracing is the entry point.
-        
+
         session.setup_tracing(0, TraceSink::TraceMemory)?;
-            
+
         self.enabled = true;
         Ok(())
     }
@@ -35,7 +35,7 @@ impl ItmManager {
         if !self.enabled {
             return Ok(Vec::new());
         }
-        
+
         // Read SWV data.
         // In probe-rs 0.31, reading trace data might be on Session?
         // read_trace_data()?

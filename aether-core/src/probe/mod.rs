@@ -120,7 +120,7 @@ impl ProbeManager {
         use probe_rs::config::MemoryRegion;
 
         use probe_rs::config::TargetSelector;
-        
+
         let selector = if target_name.eq_ignore_ascii_case("auto") {
             TargetSelector::Auto
         } else {
@@ -191,7 +191,7 @@ impl ProbeManager {
             // User specified protocol
             let mut probe = probe_info.open()?;
             probe.select_protocol(proto)?;
-            
+
             match self.detect_target_internal(probe, target_name, under_reset) {
                 Ok(res) => Ok(res),
                 Err(e) if !under_reset && target_name.eq_ignore_ascii_case("auto") => {
@@ -209,7 +209,7 @@ impl ProbeManager {
 
             for &proto in &protocols {
                 log::info!("Trying protocol: {:?}...", proto);
-                
+
                 // 1. Normal Attach
                 let mut probe = match probe_info.open() {
                     Ok(p) => p,
@@ -283,9 +283,9 @@ impl ProbeManager {
     /// If target_name is "auto", probe-rs will try to detect the chip automatically.
     /// Returns the TargetInfo and the active Session.
     pub fn detect_target(
-        &self, 
-        probe: Probe, 
-        target_name: &str, 
+        &self,
+        probe: Probe,
+        target_name: &str,
         under_reset: bool,
     ) -> Result<(TargetInfo, probe_rs::Session)> {
         self.detect_target_internal(probe, target_name, under_reset)

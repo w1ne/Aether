@@ -50,7 +50,7 @@ enum Commands {
         #[command(subcommand)]
         cmd: ProbeCommands,
     },
-    
+
     // Legacy support for common top-level commands (optional, but keep it clean)
     /// Quick Status
     Status,
@@ -107,10 +107,10 @@ enum TargetCommands {
     /// Load ELF symbols for debugging
     LoadSymbols { path: String },
     /// Disassemble instructions at an address
-    Disasm { 
-        address: String, 
+    Disasm {
+        address: String,
         #[arg(default_value_t = 10)]
-        count: u32 
+        count: u32
     },
     /// List active breakpoints
     Breakpoints,
@@ -149,9 +149,9 @@ enum TraceCommands {
     /// Enable Semihosting
     EnableSemihosting,
     /// Enable ITM
-    EnableItm { 
+    EnableItm {
         #[arg(default_value_t = 115200)]
-        baud: u32 
+        baud: u32
     },
 }
 
@@ -239,7 +239,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let mut stream = client.flash(FileRequest { path }).await?.into_inner();
                 while let Some(p) = stream.message().await? {
                     if !p.error.is_empty() {
-                        eprintln!("Error: {}", p.error); 
+                        eprintln!("Error: {}", p.error);
                         std::process::exit(1);
                     } else if p.done {
                         println!("Flash Complete!"); break;

@@ -11,19 +11,19 @@ use embassy_time::Timer;
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) {
     let p = embassy_stm32::init(Default::default());
-    
+
     // LD2 is on PA5 on Nucleo-L476RG
     let mut led = Output::new(p.PA5, Level::Low, Speed::Low);
-    
+
     let mut counter: u32 = 0;
 
     loop {
         led.set_high();
         Timer::after_millis(500).await;
-        
+
         led.set_low();
         Timer::after_millis(500).await;
-        
+
         counter = counter.wrapping_add(1);
         defmt::info!("Blink count: {}", counter);
 

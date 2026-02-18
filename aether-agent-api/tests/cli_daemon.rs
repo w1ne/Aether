@@ -19,12 +19,12 @@ fn wait_for_port(port: u16) -> bool {
 fn run_cli(url: &str, args: &[&str]) -> (String, String) {
     let mut full_args = vec!["run", "--bin", "aether-cli", "--", "--url", url];
     full_args.extend_from_slice(args);
-    
+
     let output = Command::new("cargo")
         .args(&full_args)
         .output()
         .expect("Failed to run CLI");
-        
+
     (
         String::from_utf8_lossy(&output.stdout).to_string(),
         String::from_utf8_lossy(&output.stderr).to_string(),
@@ -34,7 +34,7 @@ fn run_cli(url: &str, args: &[&str]) -> (String, String) {
 #[test]
 fn test_cli_daemon_integration() {
     let port = 50053; // Use different port to avoid conflicts
-    
+
     // 1. Start Daemon in MOCK mode
     let mut daemon = Command::new("cargo")
         .args(&["run", "--bin", "aether-daemon", "--", "--mock", "--port", &port.to_string()])

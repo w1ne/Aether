@@ -45,12 +45,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let session_handle = if args.mock {
         info!("Starting in MOCK mode. No hardware will be accessed.");
         let (handle, cmd_rx, event_tx) = SessionHandle::new_test();
-        
+
         // Spawn mock simulation loop
         tokio::task::spawn_blocking(move || {
             use aether_core::DebugCommand;
             use aether_core::DebugEvent;
-            
+
             loop {
                 if let Ok(cmd) = cmd_rx.recv() {
                     match cmd {
@@ -156,12 +156,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
         });
-        
+
         Arc::new(handle)
     } else {
         // 1. Initial Connection (Optional)
         let mut session = None;
-        
+
         // Only try to connect if the user provided something beyond the defaults
         // OR if they want us to try auto-discovery immediately.
         // For "zero-config", we start disconnected and let the user attach later.
@@ -177,11 +177,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 };
 
                 info!("Attempting initial connection to target: {}...", args.chip);
-                    
+
                 match probe_manager.connect(
-                    args.probe_index, 
-                    &args.chip, 
-                    protocol, 
+                    args.probe_index,
+                    &args.chip,
+                    protocol,
                     args.under_reset,
                 ) {
                     Ok((target, s)) => {
@@ -203,7 +203,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 3. Start Server
     info!("Starting gRPC server on {}:{}", args.host, args.port);
-    
+
     // Handle Ctrl+C
     let _server_handle = session_handle.clone();
     tokio::spawn(async move {

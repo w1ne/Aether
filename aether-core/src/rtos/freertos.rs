@@ -22,7 +22,7 @@ impl FreeRtos {
         // uxNumberOfItems (u32)
         // pxIndex (pointer)
         // xListEnd (MiniListItem_t)
-        
+
         let num_items: u32 = core.read_word_32(list_addr)?;
         if num_items == 0 {
             return Ok(());
@@ -41,7 +41,7 @@ impl FreeRtos {
             // ListItem_t: xItemValue (u32), pxNext (pointer), pxPrevious (pointer), pvOwner (pointer), pvContainer (pointer)
             // pvOwner is at offset 12
             let tcb_addr: u32 = core.read_word_32(current_item_addr as u64 + 12)?;
-            
+
             if tcb_addr != 0 {
                 if let Ok(task) = self.read_tcb(core, tcb_addr as u64, state) {
                     tasks.push(task);
@@ -66,7 +66,7 @@ impl FreeRtos {
         let top_of_stack: u32 = core.read_word_32(tcb_addr)?;
         let priority: u32 = core.read_word_32(tcb_addr + 44)?;
         let stack_start: u32 = core.read_word_32(tcb_addr + 48)?;
-        
+
         let mut name_bytes = [0u8; 16];
         core.read_8(tcb_addr + 52, &mut name_bytes)?;
         let name = String::from_utf8_lossy(&name_bytes)
@@ -79,7 +79,7 @@ impl FreeRtos {
         // So stack_size = (end_of_stack_allocated - pxStack)
         // But we don't always know end_of_stack easily without config.
         // However, (top_of_stack - stack_start) gives us a window.
-        
+
         // High water mark scan
         let _stack_size = 0; // Unknown without more TCB parsing or config
         let high_water_mark = self.scan_high_water_mark(core, stack_start as u64, top_of_stack as u64).unwrap_or(0);
@@ -286,7 +286,7 @@ mod tests {
     fn test_freertos_scanning() {
         let mut mock = MockMemory::new();
         let _syms = SymbolManager::new(); // Empty for now, we'll manually use addrs
-        
+
         // Mock a ReadyTask List (at 0x2000)
         // uxNumberOfItems = 1
         mock.set_word_32(0x2000, 1);
@@ -296,14 +296,14 @@ mod tests {
         mock.set_word_32(0x2008, 0xFFFFFFFF);
         mock.set_word_32(0x200C, 0x3000);
         mock.set_word_32(0x2010, 0x3000);
-        
+
         // Mock a ListItem (at 0x3000)
         // xItemValue = 1, pxNext = 0x2008, pxPrevious = 0x2008, pvOwner = 0x4000 (TCB), pvContainer = 0x2000
         mock.set_word_32(0x3000, 1);
         mock.set_word_32(0x3004, 0x2008);
         mock.set_word_32(0x3008, 0x2008);
         mock.set_word_32(0x300C, 0x4000); // pvOwner points to TCB
-        
+
         // Mock a TCB (at 0x4000)
         // pxTopOfStack = 0x3010 (offset 0)
         mock.set_word_32(0x4000, 0x3010);
@@ -324,7 +324,7 @@ mod tests {
         let freertos = FreeRtos::new();
         let mut tasks = Vec::new();
         freertos.read_list(&mut mock, 0x2000, TaskState::Ready, &mut tasks).unwrap();
-        
+
         assert_eq!(tasks.len(), 1);
         assert_eq!(tasks[0].name, "TestTask");
         assert_eq!(tasks[0].priority, 5);

@@ -2,7 +2,7 @@ use probe_rs::{Core, MemoryInterface};
 use probe_rs_debug::StackFrame as ProbeStackFrame;
 use serde::{Serialize, Deserialize};
 use gimli::{
-    BaseAddresses, UnwindSection, UnwindContext, RunTimeEndian, 
+    BaseAddresses, UnwindSection, UnwindContext, RunTimeEndian,
     DebugFrame
 };
 use object::{Object, ObjectSection};
@@ -22,12 +22,12 @@ pub struct StackFrame {
 impl From<&ProbeStackFrame> for StackFrame {
     fn from(frame: &ProbeStackFrame) -> Self {
         StackFrame {
-            id: 0, 
+            id: 0,
             function_name: frame.function_name.clone(),
             source_file: frame.source_location.as_ref().map(|l| l.path.to_string_lossy().to_string()),
             line: frame.source_location.as_ref().and_then(|l| l.line),
             pc: frame.pc.to_string().parse::<u64>().unwrap_or(0) as u32,
-            sp: 0, 
+            sp: 0,
         }
     }
 }
@@ -35,13 +35,13 @@ impl From<&ProbeStackFrame> for StackFrame {
 pub fn unwind_stack(core: &mut Core, symbol_manager: &SymbolManager) -> Result<Vec<StackFrame>, String> {
     // 1. Initial State
     let mut frames = Vec::new();
-    
+
     // Get current registers
     let pc_val: u64 = core.read_core_reg(core.program_counter()).map_err(|e| e.to_string())?;
     let sp_val: u64 = core.read_core_reg(core.stack_pointer()).map_err(|e| e.to_string())?;
     // We might need LR for leaf functions or if DWARF is missing
     let lr_val: u64 = core.read_core_reg(core.return_address()).map_err(|e| e.to_string())?;
-    
+
     // Current frame (Top of Stack)
     // Try to resolve function name for PC
     let func_name = if let Some(info) = symbol_manager.lookup(pc_val) {
@@ -78,13 +78,13 @@ pub fn unwind_stack(core: &mut Core, symbol_manager: &SymbolManager) -> Result<V
 
     // Create UnwindContext
     let mut ctx = UnwindContext::new();
-    
+
     // Register state state (DWARF register numbers)
     // Cortex-M: 13=SP, 14=LR, 15=PC
     let mut current_pc = pc_val;
     let mut current_sp = sp_val;
     let current_lr = lr_val;
-    
+
     // Limit depth
     for _ in 0..20 {
         let mut unwound = false;
@@ -103,7 +103,7 @@ pub fn unwind_stack(core: &mut Core, symbol_manager: &SymbolManager) -> Result<V
                                }
                                _ => current_sp // Fallback
                            };
-                           
+
                            // Evaluate Return Address (RA) -> PC of caller
                            // Usually stores in LR (14) or on stack
                            let ra_rule = row.register(gimli::Register(14)); // LR
@@ -131,7 +131,7 @@ pub fn unwind_stack(core: &mut Core, symbol_manager: &SymbolManager) -> Result<V
                            if caller_pc == 0 || caller_pc == current_pc {
                                break; // Stop unwinding
                            }
-                           
+
                            // Update state for next frame
                            current_pc = caller_pc;
                            current_sp = cfa;
@@ -140,15 +140,15 @@ pub fn unwind_stack(core: &mut Core, symbol_manager: &SymbolManager) -> Result<V
                       }
                  }
             }
-        
+
         // If DWARF failed, maybe try primitive LR unwinding for one step?
         if !unwound {
              // Basic leaf function handling: if we are in a leaf, LR holds the caller
-             // But we simulate this inside loop usually. 
+             // But we simulate this inside loop usually.
              // If we haven't found DWARF, we assume we can't unwind further safely.
              break;
         }
-        
+
         // Resolve symbol for new PC
         let func_name = if let Some(info) = symbol_manager.lookup(current_pc) {
              info.function.unwrap_or_else(|| format!("0x{:08x}", current_pc))
@@ -156,7 +156,7 @@ pub fn unwind_stack(core: &mut Core, symbol_manager: &SymbolManager) -> Result<V
              format!("0x{:08x}", current_pc)
         };
         let source_loc = symbol_manager.lookup(current_pc);
-        
+
         frames.push(StackFrame {
             id: frames.len() as u64,
             function_name: func_name,
@@ -165,12 +165,12 @@ pub fn unwind_stack(core: &mut Core, symbol_manager: &SymbolManager) -> Result<V
             pc: current_pc as u32,
             sp: current_sp as u32,
         });
-        
+
         // Stop if we hit typical end-of-stack markers (e.g. 0xFFFFFFFF or 0)
         if current_pc == 0 || current_pc == 0xFFFFFFFF {
             break;
         }
     }
-    
+
     Ok(frames)
 }

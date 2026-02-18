@@ -16,7 +16,7 @@ pub fn detect_rtos(symbols: &SymbolManager) -> Option<Box<dyn RtosAware>> {
     if symbols.lookup_symbol("pxReadyTasksLists").is_some() {
         return Some(Box::new(freertos::FreeRtos::new()));
     }
-    
+
     // 2. Embassy
     if symbols.lookup_symbol("__embassy_executor_global").is_some() {
         return Some(Box::new(embassy::Embassy::new()));

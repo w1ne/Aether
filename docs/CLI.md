@@ -117,7 +117,7 @@ aether-cli trace rtt-write 0 "Hello World"
 
 ## AI Agent Integration (OpenClaw)
 
-`aether-cli` is designed to be easily wrapped by AI agents like **OpenClaw**. 
+`aether-cli` is designed to be easily wrapped by AI agents like **OpenClaw**.
 
 ### Example Tool Definition
 You can map CLI commands to agent tools. For example, in an `aether_tools.yaml` for OpenClaw:

@@ -26,7 +26,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Send Halt
     println!("Sending Halt...");
     client.halt(Empty {}).await?;
-    
+
     // Wait a bit
     tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
 

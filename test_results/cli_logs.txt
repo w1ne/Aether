@@ -70,7 +70,7 @@ Stepped Over.
 [TEST] Write Register
 Written R0: 0x00001234
 [TEST] Tasks
-Name                 State      Stack      Type      
+Name                 State      Stack      Type
 Idle                 Running    100/200  Thread
 [TEST] Load SVD
 SVD Loaded.
@@ -130,7 +130,7 @@ Stepped Over.
 [TEST] Write Register
 Written R0: 0x00001234
 [TEST] Tasks
-Name                 State      Stack      Type      
+Name                 State      Stack      Type
 Idle                 Running    100/200  Thread
 [TEST] Load SVD
 SVD Loaded.
@@ -190,7 +190,7 @@ Stepped Over.
 [TEST] Write Register
 Written R0: 0x00001234
 [TEST] Tasks
-Name                 State      Stack      Type      
+Name                 State      Stack      Type
 Idle                 Running    100/200  Thread
 [TEST] Load SVD
 SVD Loaded.

@@ -20,7 +20,7 @@ impl SemihostingManager {
         };
 
         // 2. Read instruction at PC
-        // We need to know if it's Thumb or ARM. 
+        // We need to know if it's Thumb or ARM.
         // For Cortex-M it's always Thumb? Not necessarily (M0/M3/M4/M7 yes, but A-series no).
         // `aether` focuses on Cortex-M?
         // Let's assume Thumb for now as most common, or check T bit in EPSR?
@@ -28,7 +28,7 @@ impl SemihostingManager {
         // Semihosting Opcode:
         // ARM: `SVC 0x123456` (0xEF123456)
         // Thumb: `BKPT 0xAB` (0xBEAB)
-        
+
         // Let's try to read 16 bits.
         let msg = if let Ok(_inst) = core.read_word_8(pc) { // Read 2 bytes?
              // read_word_8 reads 1 byte.
@@ -36,7 +36,7 @@ impl SemihostingManager {
              let mut buf = [0u8; 2];
              core.read(pc, &mut buf)?;
              let inst16 = u16::from_le_bytes(buf);
-             
+
              if inst16 == 0xBEAB {
                  // Thumb Semihosting
                  self.handle_semihosting(core, pc, 2)?
@@ -59,7 +59,7 @@ impl SemihostingManager {
         } else {
             None
         };
-        
+
         Ok(msg)
     }
 
@@ -68,24 +68,24 @@ impl SemihostingManager {
         // Re-implementing logic to be safe or just fixing the write line?
         // Replace_file_content replaces the whole block or chunks.
         // I will replace the function handle_semihosting to be safe.
-        
+
         let r0 = core.read_core_reg(0)?;
         let r1 = core.read_core_reg(1)?;
-        
+
         let op = match r0 {
             RegisterValue::U32(v) => v,
             RegisterValue::U64(v) => v as u32,
             _ => 0,
         };
-        
+
         let param = match r1 {
             RegisterValue::U32(v) => v as u64,
             RegisterValue::U64(v) => v,
             _ => 0,
         };
-        
+
         let mut result = None;
-        
+
         match op {
             0x04 => { // SYS_WRITE0 (Write string to console)
                  // R1 points to null-terminated string
@@ -106,17 +106,17 @@ impl SemihostingManager {
                 // Unknown or unhandled op
             }
         }
-        
+
         // Resume execution: Advance PC
         let new_pc = pc + inst_size;
         core.write_core_reg(core.program_counter(), new_pc)?;
-        
+
         // Resume
         core.run()?;
-        
+
         Ok(result)
     }
-    
+
     fn read_string(&self, core: &mut Core, addr: u64) -> Result<String> {
         let mut out = String::new();
         let mut curr = addr;
@@ -129,7 +129,7 @@ impl SemihostingManager {
             out.push(buf[0] as char);
             curr += 1;
             if out.len() > 1024 { // Safety limit
-                break; 
+                break;
             }
         }
         Ok(out)

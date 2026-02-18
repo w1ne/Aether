@@ -72,7 +72,7 @@ impl RttManager {
         let mut buffer = vec![0u8; channel.buffer_size()];
         let bytes_read = channel.read(core, &mut buffer)
             .context("Failed to read from RTT up channel")?;
-        
+
         buffer.truncate(bytes_read);
         Ok(buffer)
     }
@@ -85,7 +85,7 @@ impl RttManager {
 
         let bytes_written = channel.write(core, data)
             .context("Failed to write to RTT down channel")?;
-        
+
         Ok(bytes_written)
     }
 }

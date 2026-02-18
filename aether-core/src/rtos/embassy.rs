@@ -29,15 +29,15 @@ impl RtosAware for Embassy {
         // Embassy doesn't have a single "Task" structure like FreeRTOS.
         // It uses a pool of tasks (Executors).
         // Common symbol for global executor: __embassy_executor_global
-        
+
         if let Some(executor_ptr) = symbols.lookup_symbol("__embassy_executor_global") {
              // This is a rough estimation of how we'd find the tasks.
              // Usually involve iterating through the executor's task list.
              // Placeholder logic for now to show the pattern.
-             
+
              // 1. Read task list head from executor
              // 2. Iterate and resolve future types using DWARF
-             
+
              tasks.push(TaskInfo {
                  name: "Embassy Executor".to_string(),
                  priority: 0,

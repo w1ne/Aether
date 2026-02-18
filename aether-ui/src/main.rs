@@ -88,7 +88,7 @@ pub struct AetherApp {
     rtt_buffers: std::collections::HashMap<usize, String>,
     rtt_raw_buffers: std::collections::HashMap<usize, Vec<u8>>,
     rtt_input: String,
-    
+
 
     // Symbols & Source state
     symbols_loaded: bool,
@@ -96,18 +96,18 @@ pub struct AetherApp {
     breakpoint_locations: Vec<aether_core::SourceInfo>,
     // Cache stores raw lines and the pre-calculated layout job for syntax highlighting
     source_cache: HashMap<PathBuf, (Vec<String>, Vec<egui::text::LayoutJob>)>,
-    
+
     // Plot State
     plots: HashMap<String, std::collections::VecDeque<[f64; 2]>>,
     plot_names: Vec<String>,
     new_plot_name: String,
     new_plot_type: VarType,
-    
+
     // Remote Connection State
     remote_host: String,
     remote_port: String,
     is_remote: bool,
-    
+
     // RTOS State
     tasks: Vec<aether_core::TaskInfo>,
     timeline_events: Vec<TimelineEvent>,
@@ -118,11 +118,11 @@ pub struct AetherApp {
     // Watch State
     watched_variables: Vec<aether_core::symbols::TypeInfo>,
     variable_input: String,
-    
+
     // Syntax Highlighting
     syntax_set: SyntaxSet,
     theme_set: ThemeSet,
-    
+
     // Docking State
     dock_state: Option<DockState<DebugTab>>,
 }
@@ -291,7 +291,7 @@ impl AetherApp {
                 .enable_all()
                 .build()
                 .unwrap();
-            
+
             rt.block_on(async {
                 let endpoint = format!("http://{}:{}", host, port);
                 match aether_agent_api::proto::aether_debug_client::AetherDebugClient::connect(endpoint).await {
@@ -321,7 +321,7 @@ impl AetherApp {
                 Ok(probe) => {
                     self.status_message =
                         format!("Connected to {}. Detecting target...", self.probes[index].name());
-                    
+
                     // Detect target first - consumes probe, returns (info, session)
                     match self.probe_manager.detect_target(probe, "any", false) {
                         Ok((target, session)) => {
@@ -339,7 +339,7 @@ impl AetherApp {
                                      self.event_receiver = Some(handle.subscribe());
                                      self.session_handle = Some(handle.clone());
                                      self.connection_status = ConnectionStatus::Connected;
-                                     
+
                                      // Spawn Agent API Server
                                      let server_handle = handle.clone();
                                      std::thread::spawn(move || {
@@ -347,7 +347,7 @@ impl AetherApp {
                                              .enable_all()
                                              .build()
                                              .unwrap();
-                                         
+
                                          rt.block_on(async {
                                              if let Err(e) = aether_agent_api::run_server(server_handle, "0.0.0.0", 50051).await {
                                                  log::error!("Agent API Server Error: {}", e);
@@ -400,23 +400,23 @@ impl AetherApp {
             self.status_message = "Connect to a probe first!".to_string();
             return;
         }
-        
+
         // NOTE: Flashing currently re-opens the probe in a separate thread.
         // This conflicts with SessionHandle which OWNS the probe.
         // For Milestone 3, we should ideally integrate flashing into SessionHandle,
         // OR drop SessionHandle temporarily.
         // For now, let's warn user or implement dropping.
-        
+
         // Drop existing session to release probe
         self.session_handle = None;
         self.connection_status = ConnectionStatus::Disconnected; // Will reconnect after?
-        
+
         // ... Flashing Logic (Same as before but we lost connection) ...
         // Real implementation would pass Session to FlashManager.
         // But FlashManager takes `&mut Session`. SessionHandle runs in thread.
         // Complex. For now, let's keep the existing "Re-open" logic but we MUST ensure the probe is free.
         // Dropping session_handle frees the probe (thread finishes).
-        
+
         // Wait a bit for thread to backend drop?
         // Let's just proceed with existing flashing logic, but user has to reconnect.
 
@@ -431,7 +431,7 @@ impl AetherApp {
         std::thread::spawn(move || {
             // Need a slight delay to ensure previous session dropped?
             std::thread::sleep(std::time::Duration::from_millis(100));
-            
+
             let probe_manager = aether_core::ProbeManager::new();
             match probe_manager.open_probe(probe_index) {
                 Ok(probe) => {
@@ -516,7 +516,7 @@ impl AetherApp {
             self.progress_receiver = None;
         }
     }
-    
+
     fn process_debug_events(&mut self) {
         let handle = if let Some(h) = &self.session_handle {
             h.clone()
@@ -628,7 +628,7 @@ impl AetherApp {
                                 event.end_time = Some(timestamp);
                             }
                         }
-                        
+
                         // 2. Open new task
                         let name = self.tasks.iter().find(|t| t.handle == to).map(|t| t.name.clone()).unwrap_or_else(|| format!("0x{:08X}", to));
                         self.timeline_events.push(TimelineEvent {
@@ -637,7 +637,7 @@ impl AetherApp {
                             start_time: timestamp,
                             end_time: None,
                         });
-                        
+
                         // Prune history (keep last 500 events for performance)
                         if self.timeline_events.len() > 500 {
                             self.timeline_events.remove(0);
@@ -708,7 +708,7 @@ impl AetherApp {
     pub(crate) fn draw_agent_view(&mut self, ui: &mut egui::Ui) {
         ui.heading("🤖 Agent Interface");
         ui.add_space(8.0);
-        
+
         // 1. Status Section
         ui.group(|ui| {
             ui.horizontal(|ui| {
@@ -735,7 +735,7 @@ impl AetherApp {
                       ui.label(egui::RichText::new(format!("Error: {}", req)).color(egui::Color32::RED));
                  }
              });
-             
+
              ui.add_space(8.0);
              ui.heading("Quick Connect (Python)");
              let code = r#"import grpc
@@ -761,7 +761,7 @@ stub.Resume(aether_pb2.Empty())
         ui.horizontal(|ui| {
              ui.label("Name/Addr:");
              ui.text_edit_singleline(&mut self.new_plot_name);
-             
+
              egui::ComboBox::from_label("Type")
                  .selected_text(format!("{:?}", self.new_plot_type))
                  .show_ui(ui, |ui| {
@@ -771,7 +771,7 @@ stub.Resume(aether_pb2.Empty())
                       ui.selectable_value(&mut self.new_plot_type, VarType::U8, "U8");
                       ui.selectable_value(&mut self.new_plot_type, VarType::F64, "F64");
                  });
-                 
+
              if ui.button("Add Plot").clicked() {
                   if !self.new_plot_name.is_empty() {
                        if let Some(handle) = &self.session_handle {
@@ -785,12 +785,12 @@ stub.Resume(aether_pb2.Empty())
         });
 
         ui.separator();
-        
+
         // Use fully qualified names to avoid import issues
         let plot = egui_plot::Plot::new("live_plot")
             .legend(egui_plot::Legend::default())
             .height(400.0);
-            
+
         plot.show(ui, |plot_ui| {
              for name in &self.plot_names {
                   if let Some(data) = self.plots.get(name) {
@@ -799,10 +799,10 @@ stub.Resume(aether_pb2.Empty())
                   }
              }
         });
-        
+
         ui.separator();
         ui.label("Active Plots:");
-        
+
         let mut to_remove = Vec::new();
         for name in &self.plot_names {
              ui.horizontal(|ui| {
@@ -815,7 +815,7 @@ stub.Resume(aether_pb2.Empty())
                   }
              });
         }
-        
+
         for name in to_remove {
              self.plots.remove(&name);
              if let Some(idx) = self.plot_names.iter().position(|x| *x == name) {
@@ -834,7 +834,7 @@ stub.Resume(aether_pb2.Empty())
                 }
             }
         });
-        
+
         ui.separator();
 
         // Calculate CPU usage percentages for the last 1 second
@@ -842,11 +842,11 @@ stub.Resume(aether_pb2.Empty())
         let now = self.timeline_events.iter().map(|e| e.end_time.unwrap_or(e.start_time)).fold(0.0, f64::max);
         let window = 1.0; // 1 second window
         let start_window = (now - window).max(0.0);
-        
+
         for event in &self.timeline_events {
             let start = event.start_time.max(start_window);
             let end = event.end_time.unwrap_or(now).max(start_window);
-            
+
             if end > start {
                 let duration = end - start;
                 *cpu_stats.entry(event.task_handle).or_insert(0.0) += duration;
@@ -854,7 +854,7 @@ stub.Resume(aether_pb2.Empty())
         }
 
         egui::ScrollArea::vertical().show(ui, |ui| {
-            
+
             egui::Grid::new("tasks_grid")
                 .striped(true)
                 .num_columns(7)
@@ -877,7 +877,7 @@ stub.Resume(aether_pb2.Empty())
                         ui.label(type_icon);
 
                         ui.label(&task.name);
-                        
+
                         let state_text = ui_logic::get_task_state_display(task.state);
                         let state_color = match task.state {
                              aether_core::TaskState::Running => egui::Color32::from_rgb(0, 255, 0),
@@ -885,22 +885,22 @@ stub.Resume(aether_pb2.Empty())
                              _ => egui::Color32::GRAY,
                         };
                         ui.label(egui::RichText::new(state_text).color(state_color));
-                        
+
                         ui.label(task.priority.to_string());
-                        
+
                         // CPU Usage %
                         let cpu_usage = cpu_stats.get(&task.handle).cloned().unwrap_or(0.0) / window * 100.0;
                         ui.label(format!("{:.1}%", cpu_usage.min(100.0)));
-                        
+
                         ui.monospace(format!("0x{:08X}", task.handle));
-                        
+
                         // Stack Usage Bar
                         let stack_fraction = if task.stack_size > 0 {
                             task.stack_usage as f32 / task.stack_size as f32
                         } else {
                             0.0
                         };
-                        
+
                         ui.horizontal(|ui| {
                             let bar_color = if stack_fraction > 0.9 {
                                 egui::Color32::RED
@@ -909,17 +909,17 @@ stub.Resume(aether_pb2.Empty())
                             } else {
                                 egui::Color32::from_rgb(0, 255, 150)
                             };
-                            
+
                             ui.add(egui::ProgressBar::new(stack_fraction)
                                 .text(format!("{} / {}", task.stack_usage, task.stack_size))
                                 .fill(bar_color)
                                 .desired_width(120.0));
                         });
-                        
+
                         ui.end_row();
                     }
                 });
-            
+
             if self.tasks.is_empty() {
                 ui.add_space(20.0);
                 ui.label(egui::RichText::new("No RTOS tasks detected.").italics().color(egui::Color32::GRAY));
@@ -936,7 +936,7 @@ stub.Resume(aether_pb2.Empty())
                 self.timeline_events.clear();
             }
         });
-        
+
         ui.separator();
 
         // Prepare task mappings for labels and coloring
@@ -989,7 +989,7 @@ stub.Resume(aether_pb2.Empty())
                         [start, slot + 0.35],
                         [start, slot - 0.35],
                     ]);
-                    
+
                     let color = egui::Color32::from_rgb(
                         ((event.task_handle >> 16) & 0xFF) as u8,
                         ((event.task_handle >> 8) & 0xFF) as u8,
@@ -1010,14 +1010,14 @@ stub.Resume(aether_pb2.Empty())
 
     pub(crate) fn draw_stack_view(&mut self, ui: &mut egui::Ui) {
         ui.heading("Call Stack");
-        
+
         if ui.button("🔄 Refresh Stack").clicked() {
             if let Some(h) = &self.session_handle {
                 let _ = h.send(aether_core::DebugCommand::GetStack);
             }
         }
         ui.separator();
-        
+
         egui::ScrollArea::vertical().show(ui, |ui| {
              egui::Grid::new("stack_grid").striped(true).show(ui, |ui| {
                  ui.label("#");
@@ -1025,13 +1025,13 @@ stub.Resume(aether_pb2.Empty())
                  ui.label("Location");
                  ui.label("PC");
                  ui.end_row();
-                 
+
                  for (i, frame) in self.stack_frames.iter().enumerate() {
                      ui.label(format!("{}", i));
                      ui.label(&frame.function_name);
-                     
+
                      let loc_text = ui_logic::get_display_location(frame.source_file.as_deref(), frame.line);
-                     
+
                      if ui.link(loc_text).clicked() {
                          if let (Some(file), Some(line)) = (&frame.source_file, frame.line) {
                              let info = aether_core::SourceInfo {
@@ -1040,7 +1040,7 @@ stub.Resume(aether_pb2.Empty())
                                  function: Some(frame.function_name.clone()),
                                  column: Some(0),
                              };
-                             
+
                              if !self.source_cache.contains_key(&info.file) {
                                 if let Ok(content) = std::fs::read_to_string(&info.file) {
                                     let lines: Vec<String> = content.lines().map(|s| s.to_string()).collect();
@@ -1053,7 +1053,7 @@ stub.Resume(aether_pb2.Empty())
                         // if let Some(dock_state) = &mut self.dock_state { ... }
                          }
                      }
-                     
+
                      ui.monospace(format!("0x{:08X}", frame.pc));
                      ui.end_row();
                  }
@@ -1065,7 +1065,7 @@ stub.Resume(aether_pb2.Empty())
     pub(crate) fn draw_memory_view(&mut self, ui: &mut egui::Ui) {
         egui::ScrollArea::both().id_source("mem_view_scroll").show(ui, |ui| {
             ui.heading("Memory View");
-            
+
             ui.horizontal(|ui| {
                  ui.label("Addr:");
                  if ui.text_edit_singleline(&mut self.memory_address_input).lost_focus() {
@@ -1078,7 +1078,7 @@ stub.Resume(aether_pb2.Empty())
                      }
                  }
             });
-             
+
              if ui.button("Read").clicked() {
                  let addr_str = self.memory_address_input.trim_start_matches("0x");
                  if let Ok(addr) = u64::from_str_radix(addr_str, 16) {
@@ -1089,15 +1089,15 @@ stub.Resume(aether_pb2.Empty())
                  }
              }
         });
-        
+
         egui::ScrollArea::vertical().id_source("mem_hex").show(ui, |ui| {
              ui.monospace("Address    00 01 02 03 04 05 06 07  08 09 0A 0B 0C 0D 0E 0F  ASCII");
              ui.separator();
-             
+
              let bytes_per_line = 16;
              for (i, chunk) in self.memory_data.chunks(bytes_per_line).enumerate() {
                  let addr = self.memory_base_address + (i * bytes_per_line) as u64;
-                 
+
                  let (addr_str, hex_part, ascii_part) = ui_logic::format_memory_line(addr, chunk);
                  ui.monospace(format!("{}   {} {}", addr_str, hex_part, ascii_part));
              }
@@ -1106,7 +1106,7 @@ stub.Resume(aether_pb2.Empty())
     pub(crate) fn draw_disassembly_view(&mut self, ui: &mut egui::Ui) {
         egui::ScrollArea::both().id_source("disasm_view_scroll").show(ui, |ui| {
             ui.heading("Disassembly");
-            
+
             egui::Grid::new("disasm_grid")
                 .striped(true)
                 .num_columns(5)
@@ -1123,10 +1123,10 @@ stub.Resume(aether_pb2.Empty())
                     for insn in &self.disassembly {
                         let is_pc = insn.address == pc;
                         let is_bp = self.breakpoints.contains(&insn.address);
-                        
+
                         let bp_marker = if is_bp { "●" } else { "○" };
                         let marker_color = if is_bp { egui::Color32::RED } else { egui::Color32::GRAY };
-                        
+
                         if ui.colored_label(marker_color, bp_marker).clicked() {
                              if let Some(handle) = &self.session_handle {
                                  if is_bp {
@@ -1138,11 +1138,11 @@ stub.Resume(aether_pb2.Empty())
                         }
 
                         let text_color = if is_pc { egui::Color32::YELLOW } else { egui::Color32::WHITE };
-                        
+
                         ui.colored_label(text_color, format!("0x{:08X}", insn.address));
                         ui.colored_label(text_color, &insn.mnemonic);
                         ui.colored_label(text_color, &insn.op_str);
-                        
+
                         if ui.button(">>").on_hover_text("Run to here").clicked() {
                             if let Some(handle) = &self.session_handle {
                                 let _ = handle.send(aether_core::DebugCommand::SetBreakpoint(insn.address));
@@ -1157,7 +1157,7 @@ stub.Resume(aether_pb2.Empty())
 
     pub(crate) fn draw_breakpoints_view(&mut self, ui: &mut egui::Ui) {
         ui.heading("Breakpoints");
-        
+
         ui.horizontal(|ui| {
             ui.label("Addr:");
             ui.text_edit_singleline(&mut self.breakpoint_address_input);
@@ -1170,15 +1170,15 @@ stub.Resume(aether_pb2.Empty())
                 }
             }
         });
-        
+
         ui.separator();
-        
+
         egui::ScrollArea::vertical().id_source("bps").max_height(200.0).show(ui, |ui| {
             egui::Grid::new("bp_grid").striped(true).show(ui, |ui| {
                 ui.label("Address");
                 ui.label("Action");
                 ui.end_row();
-                
+
                 for &addr in &self.breakpoints {
                     ui.label(format!("0x{:08X}", addr));
                     if ui.button("Remove").clicked() {
@@ -1194,12 +1194,12 @@ stub.Resume(aether_pb2.Empty())
 
     pub(crate) fn draw_peripherals_view(&mut self, ui: &mut egui::Ui) {
         ui.heading("Peripherals (SVD)");
-        
+
         ui.horizontal(|ui| {
              if ui.button("📂 Load SVD").clicked() {
                   if let Some(path) = rfd::FileDialog::new()
                       .add_filter("SVD", &["svd"])
-                      .pick_file() 
+                      .pick_file()
                   {
                       if let Some(handle) = &self.session_handle {
                           let _ = handle.send(aether_core::DebugCommand::LoadSvd(path));
@@ -1244,7 +1244,7 @@ stub.Resume(aether_pb2.Empty())
              egui::ScrollArea::vertical().id_source("reg_scroll").show(ui, |ui| {
                   for reg in &self.peripheral_registers {
                        let is_expanded = self.expanded_registers.contains(&reg.name);
-                       
+
                        ui.horizontal(|ui| {
                             let marker = if is_expanded { "▼" } else { "▶" };
                             if ui.button(marker).clicked() {
@@ -1255,7 +1255,7 @@ stub.Resume(aether_pb2.Empty())
                                  }
                             }
                             ui.label(format!("{}: +0x{:04X}", reg.name, reg.address_offset));
-                            
+
                             if let Some(val) = reg.value {
                                  ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                                      ui.monospace(format!("0x{:08X}", val));
@@ -1267,11 +1267,11 @@ stub.Resume(aether_pb2.Empty())
                             ui.indent("fields", |ui| {
                                  for field in &reg.fields {
                                       ui.horizontal(|ui| {
-                                           ui.label(format!("{}: [{}..{}]", 
-                                               field.name, 
-                                               field.bit_offset, 
+                                           ui.label(format!("{}: [{}..{}]",
+                                               field.name,
+                                               field.bit_offset,
                                                field.bit_offset + field.bit_width - 1));
-                                           
+
                                            if let Some(val) = reg.value {
                                                 let mut field_val = field.decode(val);
                                                 let field_max = (1u64 << field.bit_width) - 1;
@@ -1323,8 +1323,8 @@ stub.Resume(aether_pb2.Empty())
                 let response = ui.add(egui::TextEdit::singleline(&mut self.variable_input)
                     .hint_text("name (e.g. status_flag)")
                     .desired_width(150.0));
-                
-                if (response.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter))) || 
+
+                if (response.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter))) ||
                    ui.button(egui::RichText::new("➕ Add").strong()).clicked() {
                      if let Some(handle) = &self.session_handle {
                           let _ = handle.send(aether_core::DebugCommand::WatchVariable(self.variable_input.clone()));
@@ -1343,7 +1343,7 @@ stub.Resume(aether_pb2.Empty())
                     ui.push_id(idx, |ui| {
                         self.render_type_info_tree(ui, var);
                     });
-                    
+
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                         if ui.button(egui::RichText::new("🗑").color(egui::Color32::GRAY)).on_hover_text("Remove from watch").clicked() {
                             to_remove = Some(idx);
@@ -1386,13 +1386,13 @@ stub.Resume(aether_pb2.Empty())
                 ui.label(egui::RichText::new(icon).small());
                 ui.label(egui::RichText::new(&info.name).color(egui::Color32::from_rgb(0, 255, 255)));
                 ui.label(egui::RichText::new("=").color(egui::Color32::GRAY));
-                
+
                 let val_color = if info.value_formatted_string == "Error Reading" {
                     egui::Color32::RED
                 } else {
                     egui::Color32::from_rgb(0, 255, 150)
                 };
-                
+
                 ui.label(egui::RichText::new(&info.value_formatted_string)
                     .monospace()
                     .color(val_color));
@@ -1439,7 +1439,7 @@ stub.Resume(aether_pb2.Empty())
 
         if let Some(chan_num) = self.rtt_selected_channel {
             let mode = *self.rtt_display_modes.get(&chan_num).unwrap_or(&RttDisplayMode::Text);
-            
+
             egui::ScrollArea::vertical()
                 .id_source("rtt_scroll")
                 .stick_to_bottom(true)
@@ -1492,7 +1492,7 @@ stub.Resume(aether_pb2.Empty())
     fn highlight_file(&self, file_path: &Path, content: &str) -> Vec<egui::text::LayoutJob> {
         let syntax = self.syntax_set.find_syntax_for_file(file_path).unwrap_or(None)
             .unwrap_or_else(|| self.syntax_set.find_syntax_plain_text());
-        
+
         // Use a dark theme that usually comes with syntect defaults
         let theme = &self.theme_set.themes.get("base16-ocean.dark")
             .or_else(|| self.theme_set.themes.get("base16-eighties.dark"))
@@ -1501,12 +1501,12 @@ stub.Resume(aether_pb2.Empty())
             .unwrap();
 
         let mut highlighter = HighlightLines::new(syntax, theme);
-        
+
         content.lines().map(|line| {
             let mut job = egui::text::LayoutJob::default();
             // Syntect doesn't handle newlines in highlight_line, so we process the line content
             let ranges = highlighter.highlight_line(line, &self.syntax_set).unwrap_or_default();
-            
+
             for (style, text) in ranges {
                 let fg = style.foreground;
                 let color = egui::Color32::from_rgb(fg.r, fg.g, fg.b);
@@ -1531,12 +1531,12 @@ stub.Resume(aether_pb2.Empty())
 
     pub(crate) fn draw_source_view(&mut self, ui: &mut egui::Ui) {
         ui.heading("Source Code");
-        
+
         ui.horizontal(|ui| {
              if ui.button("📂 Load Symbols (ELF)").clicked() {
                   if let Some(path) = rfd::FileDialog::new()
                       .add_filter("ELF", &["elf", "bin", "out"])
-                      .pick_file() 
+                      .pick_file()
                   {
                       if let Some(handle) = &self.session_handle {
                           let _ = handle.send(aether_core::DebugCommand::LoadSymbols(path));
@@ -1556,9 +1556,9 @@ stub.Resume(aether_pb2.Empty())
                 ui.separator();
                 ui.label(egui::RichText::new(format!("Function: {}", info.function.as_deref().unwrap_or("unknown"))).italics());
             });
-            
+
             ui.separator();
-            
+
             if let Some((_, highlighted)) = self.source_cache.get(&info.file) {
                 egui::ScrollArea::vertical()
                     .id_source("source_scroll")
@@ -1570,15 +1570,15 @@ stub.Resume(aether_pb2.Empty())
                                 for (i, job) in highlighted.iter().enumerate() {
                                     let line_num = i + 1;
                                     let is_current_line = line_num as u32 == info.line;
-                                    
+
                                     // Check if line has a breakpoint
-                                    let has_breakpoint = self.breakpoint_locations.iter().any(|bp| 
+                                    let has_breakpoint = self.breakpoint_locations.iter().any(|bp|
                                         bp.file == info.file && bp.line == line_num as u32
                                     );
 
                                     ui.horizontal(|ui| {
                                         ui.style_mut().visuals.override_text_color = Some(egui::Color32::GRAY);
-                                        
+
                                         let mut label_text = egui::RichText::new(format!("{:4}", line_num));
                                         if has_breakpoint {
                                             label_text = label_text.color(egui::Color32::RED).strong();
@@ -1589,12 +1589,12 @@ stub.Resume(aether_pb2.Empty())
                                                 let _ = handle.send(aether_core::DebugCommand::ToggleBreakpointAtSource(info.file.clone(), line_num as u32));
                                             }
                                         }
-                                        
+
                                         if has_breakpoint {
                                             ui.colored_label(egui::Color32::RED, "●");
                                         }
                                     });
-                                    
+
                                     let mut line_job = job.clone();
                                     if is_current_line {
                                         let bg = egui::Color32::from_rgba_premultiplied(255, 255, 0, 50);
@@ -1602,7 +1602,7 @@ stub.Resume(aether_pb2.Empty())
                                             section.format.background = bg;
                                         }
                                     }
-                                    
+
                                     ui.add(egui::Label::new(line_job));
                                     ui.end_row();
                                 }
@@ -1618,18 +1618,18 @@ stub.Resume(aether_pb2.Empty())
 
     fn apply_midnight_theme(&self, ctx: &egui::Context) {
         let mut visuals = egui::Visuals::dark();
-        
+
         // Deep midnight colors
         visuals.panel_fill = egui::Color32::from_rgb(10, 12, 18);
         visuals.window_fill = egui::Color32::from_rgb(15, 18, 26);
         visuals.widgets.inactive.bg_fill = egui::Color32::from_rgb(25, 30, 45);
         visuals.widgets.hovered.bg_fill = egui::Color32::from_rgb(35, 45, 65);
         visuals.widgets.active.bg_fill = egui::Color32::from_rgb(45, 60, 90);
-        
+
         // Neon accents
         visuals.selection.bg_fill = egui::Color32::from_rgb(0, 150, 255);
         visuals.widgets.active.fg_stroke = egui::Stroke::new(2.0, egui::Color32::from_rgb(0, 255, 255));
-        
+
         ctx.set_visuals(visuals);
 
         let mut style: egui::Style = (*ctx.style()).clone();
@@ -1655,7 +1655,7 @@ stub.Resume(aether_pb2.Empty())
                         self.connect_probe();
                     }
                 });
-                
+
                 egui::ScrollArea::vertical().id_source("probes").max_height(100.0).show(ui, |ui| {
                     for (i, probe) in self.probes.iter().enumerate() {
                         let is_selected = self.selected_probe == Some(i);
@@ -1682,13 +1682,13 @@ stub.Resume(aether_pb2.Empty())
         });
 
         ui.add_space(8.0);
-        
+
         // Core Control Section
         ui.group(|ui| {
             ui.heading("🎮 Core Control");
             ui.horizontal_wrapped(|ui| {
                 let btn_size = egui::vec2(70.0, 30.0);
-                
+
                 ui.add_enabled_ui(self.session_handle.is_some(), |ui| {
                         if ui.add(egui::Button::new("|| Halt").min_size(btn_size)).clicked() {
                             let _ = self.session_handle.as_ref().unwrap().send(aether_core::DebugCommand::Halt);
@@ -1713,7 +1713,7 @@ stub.Resume(aether_pb2.Empty())
         });
 
         ui.add_space(8.0);
-        
+
         // Registers Section
         ui.collapsing("⌗ Registers", |ui| {
             egui::ScrollArea::vertical().id_source("regs").show(ui, |ui| {
@@ -1737,9 +1737,9 @@ stub.Resume(aether_pb2.Empty())
         ui.collapsing("⛔ Breakpoints", |ui| {
             self.draw_breakpoints_view(ui);
         });
-        
+
         ui.add_space(8.0);
-        
+
         // Flashing Section
         ui.collapsing("🚀 Flash Programming", |ui| {
             ui.horizontal(|ui| {
@@ -1774,7 +1774,7 @@ stub.Resume(aether_pb2.Empty())
                   ui.label(egui::RichText::new(format!("Error: {}", req)).color(egui::Color32::RED));
              }
          });
-         
+
          ui.add_space(8.0);
          ui.heading("Quick Connect (Python)");
          let code = r#"import grpc
@@ -1806,9 +1806,9 @@ impl eframe::App for AetherApp {
             ui.horizontal(|ui| {
                 ui.heading(egui::RichText::new("ÆTHER").strong().color(egui::Color32::from_rgb(0, 255, 255)));
                 ui.label(egui::RichText::new("v0.1.0").small().color(egui::Color32::GRAY));
-                
+
                 ui.add_space(12.0);
-                
+
                 // Window Menu for tab recovery
                 if let Some(mut dock_state) = self.dock_state.take() {
                     ui.menu_button("⛶ Window", |ui| {
@@ -1834,7 +1834,7 @@ impl eframe::App for AetherApp {
                                 if !is_open {
                                     dock_state.main_surface_mut().push_to_first_leaf(tab);
                                 } else {
-                                    // Focus it? 
+                                    // Focus it?
                                     if let Some(node_tab) = dock_state.find_tab(&tab) {
                                         dock_state.set_active_tab(node_tab);
                                     }
@@ -1853,7 +1853,7 @@ impl eframe::App for AetherApp {
                         ConnectionStatus::Connected => egui::Color32::GREEN,
                         ConnectionStatus::Error => egui::Color32::RED,
                     };
-                    
+
                     let status_dot = if self.connection_status == ConnectionStatus::Connecting { "◌" } else { "●" };
                     ui.label(egui::RichText::new(status_dot).color(status_color).strong());
                     ui.label(match self.connection_status {

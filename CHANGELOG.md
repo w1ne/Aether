@@ -4,7 +4,7 @@
 - **Semihosting & ITM/SWV**: Full gRPC and CLI support for ARM Semihosting and ITM/SWV protocol streams.
 - **Headless Mode**: `aether-daemon` for background execution and `aether-cli` for terminal-based control.
 - **Improved HIL Testing**: New regression tests for real-hardware verification and automated flash programming checks.
-- **UI Enhancements**: 
+- **UI Enhancements**:
   - Overhauled view icons with high-unicode symbols (`⫘`, `✍`, `📈`, `⛃`, `🔎`, `🖴`, `☷`).
   - Improved font fallback for Linux environments.
   - Tab recovery mechanism for closed views.
