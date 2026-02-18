@@ -18,13 +18,13 @@ impl Drop for DaemonHandle {
 
 fn wait_for_port(port: u16) -> bool {
     let addr = format!("127.0.0.1:{port}");
-    // Wait up to 15 seconds (150 * 100ms)
-    for i in 0..150 {
+    // Wait up to 30 seconds (300 * 100ms)
+    for i in 0..300 {
         if std::net::TcpStream::connect(&addr).is_ok() {
             return true;
         }
         if i % 20 == 0 {
-            println!("Waiting for port {}... ({}s)", port, i / 10);
+            println!("Waiting for port {port}... ({}s)", i / 10);
         }
         thread::sleep(Duration::from_millis(100));
     }
@@ -48,17 +48,29 @@ fn test_cli_daemon_integration() {
     let port = 50059; // Use a distinct port for this test
 
     // 1. Start Daemon in MOCK mode
-    let daemon_child = Command::new("cargo")
-        .args(["run", "--bin", "aether-daemon", "--", "--mock", "--port", &port.to_string()])
+    let daemon_exe = env!("CARGO_BIN_EXE_aether-daemon");
+    let daemon_child = Command::new(daemon_exe)
+        .args(["--mock", "--port", &port.to_string()])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
         .expect("Failed to start daemon");
 
-    let _daemon = DaemonHandle { child: daemon_child };
+    // Wait for daemon to start with a longer timeout (30s)
+    if !wait_for_port(port) {
+        // If it failed, try to get some diagnostics
+        let output = daemon_child.wait_with_output().ok();
+        if let Some(out) = output {
+            eprintln!("Daemon failed to start. Port: {port}");
+            eprintln!("Stdout: {}", String::from_utf8_lossy(&out.stdout));
+            eprintln!("Stderr: {}", String::from_utf8_lossy(&out.stderr));
+        } else {
+            eprintln!("Daemon failed to start and could not capture output.");
+        }
+        panic!("Daemon did not start on port {port} after 30s");
+    }
 
-    // Wait for daemon to start
-    assert!(wait_for_port(port), "Daemon did not start on port {port}");
+    let _daemon = DaemonHandle { child: daemon_child };
 
     let url = format!("http://127.0.0.1:{port}");
 

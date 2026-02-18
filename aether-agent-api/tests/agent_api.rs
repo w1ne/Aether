@@ -26,9 +26,9 @@ async fn test_agent_api_basic_ops() {
         }
     });
 
-    // Wait for server to start robustly
+    // Wait for server to start robustly (30s timeout)
     let mut started = false;
-    for _ in 0..50 {
+    for _ in 0..300 {
         if std::net::TcpStream::connect(format!("127.0.0.1:{port}")).is_ok() {
             started = true;
             break;

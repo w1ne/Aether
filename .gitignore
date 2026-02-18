@@ -1,8 +1,8 @@
 /target/
 **/*.rs.bk
 Cargo.lock
-**/debug/
-**/release/
+/debug/
+/release/
 .DS_Store
 .idea/
 .vscode/
