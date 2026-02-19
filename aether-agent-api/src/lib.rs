@@ -261,9 +261,13 @@ impl AetherDebug for AetherDebugService {
 
     async fn watch_variable(
         &self,
-        _request: Request<WatchVariableRequest>,
+        request: Request<WatchVariableRequest>,
     ) -> Result<Response<Empty>, Status> {
-        Err(Status::unimplemented("WatchVariable not implemented"))
+        let req = request.into_inner();
+        self.session
+            .send(DebugCommand::WatchVariable(req.name))
+            .map_err(|e| Status::internal(e.to_string()))?;
+        Ok(Response::new(Empty {}))
     }
 
     async fn rtt_write(
@@ -278,7 +282,28 @@ impl AetherDebug for AetherDebugService {
     }
 
     async fn get_stack(&self, _request: Request<Empty>) -> Result<Response<StackResponse>, Status> {
-        Err(Status::unimplemented("GetStack not implemented"))
+        let mut rx = self.session.subscribe();
+        self.session
+            .send(DebugCommand::GetStack)
+            .map_err(|e| Status::internal(e.to_string()))?;
+
+        let event =
+            self.wait_for_match(&mut rx, |e| matches!(e, CoreDebugEvent::Stack(_))).await?;
+
+        if let CoreDebugEvent::Stack(frames) = event {
+            let proto_frames = frames
+                .into_iter()
+                .map(|f| proto::StackFrame {
+                    pc: f.pc as u64,
+                    function_name: Some(f.function_name),
+                    file: f.source_file,
+                    line: f.line.map(|l| l as u32),
+                })
+                .collect();
+            Ok(Response::new(StackResponse { frames: proto_frames }))
+        } else {
+            Err(Status::internal("Unexpected event"))
+        }
     }
 
     async fn load_symbols(&self, request: Request<FileRequest>) -> Result<Response<Empty>, Status> {
@@ -555,6 +580,9 @@ pub fn map_core_event_to_proto(event: CoreDebugEvent) -> Option<DebugEvent> {
                 architecture: info.architecture,
             })),
         }),
+        CoreDebugEvent::VariableResolved(info) => Some(DebugEvent {
+            event: Some(proto::debug_event::Event::Variable(map_type_info_to_proto(&info))),
+        }),
         CoreDebugEvent::Status(s) => Some(DebugEvent {
             event: Some(proto::debug_event::Event::Status(proto::StatusResponse {
                 halted: s.is_halted(),
@@ -563,6 +591,21 @@ pub fn map_core_event_to_proto(event: CoreDebugEvent) -> Option<DebugEvent> {
             })),
         }),
         _ => None,
+    }
+}
+
+/// Helper to map `aether_core::symbols::TypeInfo` into `proto::VariableEvent`
+fn map_type_info_to_proto(info: &aether_core::symbols::TypeInfo) -> proto::VariableEvent {
+    proto::VariableEvent {
+        name: info.name.clone(),
+        value: info.value_formatted_string.clone(),
+        r#type: info.kind.clone(),
+        members: info
+            .members
+            .as_ref()
+            .map(|m| m.iter().map(map_type_info_to_proto).collect())
+            .unwrap_or_default(),
+        address: info.address,
     }
 }
 
@@ -668,6 +711,32 @@ mod tests {
         }
     }
 
+    // Adding this just as an example since GetStack maps directly without `map_core_event_to_proto`
+    // but we can test the general struct initialization.
+    #[test]
+    fn test_stack_frame_mapping() {
+        let core_frame = aether_core::StackFrame {
+            id: 1,
+            function_name: "main".to_string(),
+            source_file: Some("src/main.rs".to_string()),
+            line: Some(42),
+            pc: 0x0800_1234,
+            sp: 0x2000_1000,
+        };
+
+        let proto_frame = proto::StackFrame {
+            pc: core_frame.pc as u64,
+            function_name: Some(core_frame.function_name),
+            file: core_frame.source_file,
+            line: core_frame.line.map(|l| l as u32),
+        };
+
+        assert_eq!(proto_frame.pc, 0x0800_1234);
+        assert_eq!(proto_frame.function_name.unwrap(), "main");
+        assert_eq!(proto_frame.file.unwrap(), "src/main.rs");
+        assert_eq!(proto_frame.line.unwrap(), 42);
+    }
+
     #[test]
     fn test_event_mapping_resumed() {
         let core_event = CoreDebugEvent::Resumed;
@@ -682,6 +751,30 @@ mod tests {
         if let Some(proto::debug_event::Event::Memory(m)) = proto_event.event {
             assert_eq!(m.address, 0x2000);
             assert_eq!(m.data, vec![1, 2, 3]);
+        } else {
+            panic!("Wrong event type");
+        }
+    }
+
+    #[test]
+    fn test_variable_mapping() {
+        let type_info = aether_core::symbols::TypeInfo {
+            name: "my_var".to_string(),
+            value_formatted_string: "0x1234".to_string(),
+            kind: "Primitive".to_string(),
+            members: None,
+            address: Some(0x2000_0000),
+        };
+
+        let core_event = CoreDebugEvent::VariableResolved(type_info);
+        let proto_event = map_core_event_to_proto(core_event).unwrap();
+
+        if let Some(proto::debug_event::Event::Variable(v)) = proto_event.event {
+            assert_eq!(v.name, "my_var");
+            assert_eq!(v.value, "0x1234");
+            assert_eq!(v.r#type, "Primitive");
+            assert!(v.members.is_empty());
+            assert_eq!(v.address.unwrap(), 0x2000_0000);
         } else {
             panic!("Wrong event type");
         }

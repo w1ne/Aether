@@ -144,6 +144,8 @@ message VariableEvent {
     string name = 1;
     string value = 2;
     string type = 3;
+    repeated VariableEvent members = 4;
+    optional uint64 address = 5;
 }
 
 message FlashProgress {

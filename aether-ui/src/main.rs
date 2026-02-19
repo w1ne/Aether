@@ -142,7 +142,58 @@ enum ConnectionStatus {
     Error,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SessionExport {
+    pub rtt_buffers: std::collections::HashMap<usize, String>,
+    pub tasks: Vec<aether_core::TaskInfo>,
+    pub timeline_events: Vec<TimelineEvent>,
+    pub stack_frames: Vec<aether_core::StackFrame>,
+    pub watched_variables: Vec<aether_core::symbols::TypeInfo>,
+    pub plots: std::collections::HashMap<String, std::collections::VecDeque<[f64; 2]>>,
+}
+
 impl AetherApp {
+    fn export_session(&self) {
+        if let Some(path) = rfd::FileDialog::new()
+            .add_filter("Aether Session", &["json"])
+            .save_file()
+        {
+            let export = SessionExport {
+                rtt_buffers: self.rtt_buffers.clone(),
+                tasks: self.tasks.clone(),
+                timeline_events: self.timeline_events.clone(),
+                stack_frames: self.stack_frames.clone(),
+                watched_variables: self.watched_variables.clone(),
+                plots: self.plots.clone(),
+            };
+            if let Ok(json) = serde_json::to_string_pretty(&export) {
+                let _ = std::fs::write(path, json);
+            }
+        }
+    }
+
+    fn import_session(&mut self) {
+        if let Some(path) = rfd::FileDialog::new()
+            .add_filter("Aether Session", &["json"])
+            .pick_file()
+        {
+            if let Ok(json) = std::fs::read_to_string(path) {
+                if let Ok(export) = serde_json::from_str::<SessionExport>(&json) {
+                    self.rtt_buffers = export.rtt_buffers;
+                    self.tasks = export.tasks;
+                    self.timeline_events = export.timeline_events;
+                    self.stack_frames = export.stack_frames;
+                    self.watched_variables = export.watched_variables;
+                    self.plots = export.plots;
+                    self.status_message = "Session Imported Successfully".to_string();
+                    self.connection_status = ConnectionStatus::Disconnected; // Disconnect current
+                } else {
+                    self.status_message = "Failed to parse session file".to_string();
+                }
+            }
+        }
+    }
+
     fn setup_fonts(ctx: &egui::Context) {
         let mut fonts = egui::FontDefinitions::default();
 
@@ -1972,6 +2023,15 @@ impl eframe::App for AetherApp {
                 );
                 ui.label(egui::RichText::new("v0.1.0").small().color(egui::Color32::GRAY));
 
+                ui.add_space(12.0);
+
+                if ui.button("💾 Export").clicked() {
+                    self.export_session();
+                }
+                if ui.button("📂 Import").clicked() {
+                    self.import_session();
+                }
+                
                 ui.add_space(12.0);
 
                 // Window Menu for tab recovery
