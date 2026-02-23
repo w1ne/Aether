@@ -13,6 +13,7 @@ pub struct ProbeInfo {
     pub vendor_id: u16,
     pub product_id: u16,
     pub serial_number: Option<String>,
+    pub identifier: String,
     pub probe_type: ProbeType,
 }
 
@@ -38,6 +39,7 @@ impl From<&DebugProbeInfo> for ProbeInfo {
             vendor_id: info.vendor_id,
             product_id: info.product_id,
             serial_number: info.serial_number.clone(),
+            identifier: info.identifier.clone(),
             probe_type,
         }
     }
@@ -46,16 +48,37 @@ impl From<&DebugProbeInfo> for ProbeInfo {
 impl ProbeInfo {
     /// Get a human-readable name for this probe.
     pub fn name(&self) -> String {
-        match self.probe_type {
-            ProbeType::StLink => {
-                format!("ST-Link ({:04X}:{:04X})", self.vendor_id, self.product_id)
+        let base_name = if self.identifier.is_empty() {
+            match self.probe_type {
+                ProbeType::StLink => "ST-Link".to_string(),
+                ProbeType::JLink => "J-Link".to_string(),
+                ProbeType::CmsisDap => "CMSIS-DAP".to_string(),
+                ProbeType::Other => "Unknown".to_string(),
             }
-            ProbeType::JLink => format!("J-Link ({:04X}:{:04X})", self.vendor_id, self.product_id),
-            ProbeType::CmsisDap => {
-                format!("CMSIS-DAP ({:04X}:{:04X})", self.vendor_id, self.product_id)
-            }
-            ProbeType::Other => format!("Unknown ({:04X}:{:04X})", self.vendor_id, self.product_id),
-        }
+        } else {
+            self.identifier.clone()
+        };
+
+        format!("{base_name} ({:04X}:{:04X})", self.vendor_id, self.product_id)
+    }
+}
+
+/// Maps probe-rs and low-level errors to human-friendly messages for common hardware states.
+pub fn map_probe_error(err: &anyhow::Error) -> String {
+    let err_str = err.to_string();
+
+    if err_str.contains("Interface is busy") || err_str.contains("errno 16") {
+        "Interface is busy. Another process (like OpenOCD or another Aether instance) might be using the probe.".to_string()
+    } else if err_str.contains("Chip is locked") || err_str.contains("Readout Protection") {
+        "Target chip is locked or Readout Protection (RDP) is enabled. You may need to perform a mass erase.".to_string()
+    } else if err_str.contains("SWD Disabled") {
+        "SWD interface appears to be disabled. Check your boot pins or if the chip is in low-power mode.".to_string()
+    } else if err_str.contains("Timeout waiting for debug event") {
+        "Timeout waiting for debug event. The target might be in a very low-power state or the debug pins are repurposed. Try connecting 'under reset'.".to_string()
+    } else if err_str.contains("Permission denied") {
+        "Permission denied. Check your udev rules (Linux) or USB driver (Windows).".to_string()
+    } else {
+        err_str
     }
 }
 
@@ -312,10 +335,27 @@ mod tests {
         ];
 
         for (pt, vid, pid, expected_name) in cases {
-            let info =
-                ProbeInfo { vendor_id: vid, product_id: pid, serial_number: None, probe_type: pt };
+            let info = ProbeInfo {
+                vendor_id: vid,
+                product_id: pid,
+                serial_number: None,
+                identifier: String::new(),
+                probe_type: pt,
+            };
             assert_eq!(info.name(), expected_name);
         }
+    }
+
+    #[test]
+    fn test_probe_info_with_identifier() {
+        let info = ProbeInfo {
+            vendor_id: 0x0483,
+            product_id: 0x3748,
+            serial_number: None,
+            identifier: "ST-Link V3".to_string(),
+            probe_type: ProbeType::StLink,
+        };
+        assert_eq!(info.name(), "ST-Link V3 (0483:3748)");
     }
 
     #[test]
@@ -324,6 +364,7 @@ mod tests {
             vendor_id: 0x0483,
             product_id: 0x3748,
             serial_number: Some("ABC123".to_string()),
+            identifier: String::new(),
             probe_type: ProbeType::StLink,
         };
         // The current name() implementation doesn't include serial, but we verify it's stored

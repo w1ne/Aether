@@ -481,6 +481,65 @@ impl AetherDebug for AetherDebugService {
         Ok(Response::new(Empty {}))
     }
 
+    async fn attach_sub_session(
+        &self,
+        request: Request<proto::SubSessionAttachRequest>,
+    ) -> Result<Response<Empty>, Status> {
+        let req = request.into_inner();
+        let attr = req.request.ok_or_else(|| Status::invalid_argument("Missing attach request"))?;
+        let mut rx = self.session.subscribe();
+
+        let protocol = match attr.protocol.as_deref() {
+            Some("swd") => Some(aether_core::WireProtocol::Swd),
+            Some("jtag") => Some(aether_core::WireProtocol::Jtag),
+            _ => None,
+        };
+
+        self.session
+            .send(DebugCommand::AttachSubSession {
+                name: req.name.clone(),
+                probe_index: attr.probe_index as usize,
+                chip: attr.chip,
+                protocol,
+                under_reset: attr.under_reset,
+            })
+            .map_err(|e| Status::internal(e.to_string()))?;
+
+        let name_clone = req.name;
+        let _ = self
+            .wait_for_match(&mut rx, move |e| {
+                if let CoreDebugEvent::SubSessionAttached(n, _) = e {
+                    n == &name_clone
+                } else {
+                    false
+                }
+            })
+            .await?;
+        Ok(Response::new(Empty {}))
+    }
+
+    async fn set_active_target(
+        &self,
+        request: Request<proto::TargetName>,
+    ) -> Result<Response<Empty>, Status> {
+        let req = request.into_inner();
+        self.session
+            .send(DebugCommand::SetActiveTarget(req.name))
+            .map_err(|e| Status::internal(e.to_string()))?;
+        Ok(Response::new(Empty {}))
+    }
+
+    async fn shadow_sync(
+        &self,
+        request: Request<proto::ShadowSyncRequest>,
+    ) -> Result<Response<Empty>, Status> {
+        let req = request.into_inner();
+        self.session
+            .send(DebugCommand::ShadowSync { master: req.master, slave: req.slave })
+            .map_err(|e| Status::internal(e.to_string()))?;
+        Ok(Response::new(Empty {}))
+    }
+
     // --- Events ---
 
     async fn subscribe_events(
@@ -590,6 +649,25 @@ pub fn map_core_event_to_proto(event: CoreDebugEvent) -> Option<DebugEvent> {
                 core_status: format!("{s:?}"),
             })),
         }),
+        CoreDebugEvent::SubSessionAttached(name, info) => Some(DebugEvent {
+            event: Some(proto::debug_event::Event::SubSessionAttached(proto::SubSessionAttachedEvent {
+                name,
+                info: Some(proto::TargetInfo {
+                    name: info.name,
+                    flash_size: info.flash_size,
+                    ram_size: info.ram_size,
+                    architecture: info.architecture,
+                }),
+            })),
+        }),
+        CoreDebugEvent::ParityDiverged { location, master_val, slave_val, info } => Some(DebugEvent {
+            event: Some(proto::debug_event::Event::ParityDiverged(proto::ParityDivergedEvent {
+                location,
+                master_val,
+                slave_val,
+                info,
+            })),
+        }),
         _ => None,
     }
 }
@@ -652,7 +730,9 @@ pub fn map_proto_event_to_core(event: DebugEvent) -> Option<CoreDebugEvent> {
         }
         proto::debug_event::Event::Breakpoint(_)
         | proto::debug_event::Event::Variable(_)
-        | proto::debug_event::Event::Status(_) => None,
+        | proto::debug_event::Event::Status(_)
+        | proto::debug_event::Event::SubSessionAttached(_)
+        | proto::debug_event::Event::ParityDiverged(_) => None,
         proto::debug_event::Event::Semihosting(s) => {
             Some(CoreDebugEvent::SemihostingOutput(s.output))
         }
@@ -663,7 +743,8 @@ pub fn map_proto_event_to_core(event: DebugEvent) -> Option<CoreDebugEvent> {
                 .map(|pi| aether_core::ProbeInfo {
                     vendor_id: 0,
                     product_id: 0,
-                    serial_number: if pi.serial.is_empty() { None } else { Some(pi.serial) },
+                    serial_number: if pi.serial.is_empty() { None } else { Some(pi.serial.clone()) },
+                    identifier: pi.name.clone(),
                     probe_type: aether_core::ProbeType::Other,
                 })
                 .collect(),

@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
-members = ["aether-agent-api","aether-core", "aether-ui", "aether-demo-fw"]
+members = ["aether-agent-api","aether-core", "aether-ui"]
+exclude = ["aether-demo-fw"]
 
 [workspace.package]
 version = "0.1.0"
