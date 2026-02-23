@@ -56,6 +56,11 @@ enum Commands {
     // Legacy support for common top-level commands (optional, but keep it clean)
     /// Quick Status
     Status,
+    /// Shadow Engine commands
+    Shadow {
+        #[command(subcommand)]
+        cmd: ShadowCommands,
+    },
 }
 
 #[derive(Subcommand)]
@@ -171,6 +176,28 @@ pub enum ProbeCommands {
         #[arg(long)]
         under_reset: bool,
     },
+}
+
+#[derive(Subcommand)]
+pub enum ShadowCommands {
+    /// Attach a new sub-session
+    Attach {
+        name: String,
+        #[arg(short, long, default_value_t = 0)]
+        probe_index: usize,
+        #[arg(short, long, default_value = "auto")]
+        chip: String,
+        #[arg(long)]
+        protocol: Option<String>,
+        #[arg(long)]
+        under_reset: bool,
+    },
+    /// Set active target for single-target commands
+    Target { name: String },
+    /// Enable shadow synchronization between master and slave
+    Sync { master: String, slave: String },
+    /// Perform a synchronized step on both targets
+    Step,
 }
 
 fn parse_hex(s: &str) -> Result<u64, std::num::ParseIntError> {
@@ -392,6 +419,39 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     })
                     .await?;
                 println!("Successfully attached.");
+            }
+        },
+        Commands::Shadow { cmd } => match cmd {
+            ShadowCommands::Attach { name, probe_index, chip, protocol, under_reset } => {
+                println!("Attaching sub-session '{}' to {}...", name, chip);
+                client
+                    .attach_sub_session(aether_agent_api::proto::SubSessionAttachRequest {
+                        name,
+                        request: Some(AttachRequest {
+                            probe_index: u32::try_from(probe_index).unwrap_or(0),
+                            chip,
+                            protocol,
+                            under_reset,
+                        }),
+                    })
+                    .await?;
+                println!("Sub-session attached successfully.");
+            }
+            ShadowCommands::Target { name } => {
+                client
+                    .set_active_target(aether_agent_api::proto::TargetName { name: name.clone() })
+                    .await?;
+                println!("Active target set to '{}'.", name);
+            }
+            ShadowCommands::Sync { master, slave } => {
+                client
+                    .shadow_sync(aether_agent_api::proto::ShadowSyncRequest { master, slave })
+                    .await?;
+                println!("Shadow synchronization enabled.");
+            }
+            ShadowCommands::Step => {
+                client.shadow_step(Empty {}).await?;
+                println!("Shadow step performed.");
             }
         },
     }

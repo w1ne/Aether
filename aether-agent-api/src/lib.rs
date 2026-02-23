@@ -540,6 +540,13 @@ impl AetherDebug for AetherDebugService {
         Ok(Response::new(Empty {}))
     }
 
+    async fn shadow_step(&self, _request: Request<Empty>) -> Result<Response<Empty>, Status> {
+        self.session
+            .send(DebugCommand::ShadowStep)
+            .map_err(|e| Status::internal(e.to_string()))?;
+        Ok(Response::new(Empty {}))
+    }
+
     // --- Events ---
 
     async fn subscribe_events(

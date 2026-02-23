@@ -80,10 +80,8 @@ pub enum DebugCommand {
         under_reset: bool,
     },
     SetActiveTarget(String),
-    ShadowSync {
-        master: String,
-        slave: String,
-    },
+    ShadowSync { master: String, slave: String },
+    ShadowStep,
 }
 
 struct PlotConfig {
@@ -382,7 +380,7 @@ impl SessionHandle {
                         // Core commands
                         core_cmd => {
                             let target_names = if let Some((ref m, ref s)) = shadow_sync {
-                                if matches!(core_cmd, DebugCommand::Halt | DebugCommand::Resume | DebugCommand::Step | DebugCommand::StepOver | DebugCommand::StepInto | DebugCommand::StepOut | DebugCommand::Reset) {
+                                if matches!(core_cmd, DebugCommand::Halt | DebugCommand::Resume | DebugCommand::Step | DebugCommand::StepOver | DebugCommand::StepInto | DebugCommand::StepOut | DebugCommand::Reset | DebugCommand::ShadowStep) {
                                     vec![m.clone(), s.clone()]
                                 } else {
                                     vec![active_target.clone()]
@@ -427,7 +425,7 @@ impl SessionHandle {
                                             let _ = evt_tx.send(DebugEvent::Error(format!("Failed to resume {}: {}", name, e)));
                                         }
                                     },
-                                    DebugCommand::Step => match debug_manager.step(&mut core) {
+                                    DebugCommand::Step | DebugCommand::ShadowStep => match debug_manager.step(&mut core) {
                                         Ok(info) => {
                                             halt_pcs.push((name.clone(), info.pc));
                                             let _ = evt_tx.send(DebugEvent::Halted { pc: info.pc });
@@ -609,32 +607,47 @@ impl SessionHandle {
                                             info: "Program Counter Divergence".to_string(),
                                         });
                                     } else {
-                                        // Sequential diff to avoid multiple mutable borrows
-                                        let mut r0_m_val = None;
-                                        if let Some(s_m) = sessions.get_mut(m_name) {
-                                            if let Ok(mut c_m) = s_m.core(0) {
-                                                if let Ok(r0_m) = c_m.read_core_reg(0) {
-                                                    r0_m_val = Some(match r0_m { probe_rs::RegisterValue::U32(v) => v as u64, probe_rs::RegisterValue::U64(v) => v, _ => 0 });
+                                        // 2. Register Check (Exhaustive)
+                                        let mut diverged = false;
+                                        
+                                        // Check R0-R12, SP, LR, PC (register indices 0-15)
+                                        for reg_idx in 0..16 {
+                                            let mut m_val = None;
+                                            if let Some(s_m) = sessions.get_mut(m_name) {
+                                                if let Ok(mut c_m) = s_m.core(0) {
+                                                    if let Ok(v) = c_m.read_core_reg(reg_idx) {
+                                                        m_val = Some(match v {
+                                                            probe_rs::RegisterValue::U32(v) => v as u64,
+                                                            probe_rs::RegisterValue::U64(v) => v,
+                                                            _ => 0
+                                                        });
+                                                    }
                                                 }
                                             }
-                                        }
 
-                                        if let Some(m_v) = r0_m_val {
-                                            if let Some(s_s) = sessions.get_mut(s_name) {
-                                                if let Ok(mut c_s) = s_s.core(0) {
-                                                    if let Ok(r0_s) = c_s.read_core_reg(0) {
-                                                        let s_v = match r0_s { probe_rs::RegisterValue::U32(v) => v as u64, probe_rs::RegisterValue::U64(v) => v, _ => 0 };
-                                                        if m_v != s_v {
-                                                            let _ = evt_tx.send(DebugEvent::ParityDiverged {
-                                                                location: m_pc,
-                                                                master_val: m_v,
-                                                                slave_val: s_v,
-                                                                info: "Register R0 Divergence".to_string(),
-                                                            });
+                                            if let Some(mv) = m_val {
+                                                if let Some(s_s) = sessions.get_mut(s_name) {
+                                                    if let Ok(mut c_s) = s_s.core(0) {
+                                                        if let Ok(v) = c_s.read_core_reg(reg_idx) {
+                                                            let sv = match v {
+                                                                probe_rs::RegisterValue::U32(v) => v as u64,
+                                                                probe_rs::RegisterValue::U64(v) => v,
+                                                                _ => 0
+                                                            };
+                                                            if mv != sv {
+                                                                let _ = evt_tx.send(DebugEvent::ParityDiverged {
+                                                                    location: m_pc,
+                                                                    master_val: mv,
+                                                                    slave_val: sv,
+                                                                    info: format!("Register R{} Divergence", reg_idx),
+                                                                });
+                                                                diverged = true;
+                                                            }
                                                         }
                                                     }
                                                 }
                                             }
+                                            if diverged { break; }
                                         }
                                     }
                                 }

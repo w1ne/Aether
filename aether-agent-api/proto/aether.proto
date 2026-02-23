@@ -25,6 +25,7 @@ service AetherDebug {
     rpc AttachSubSession (SubSessionAttachRequest) returns (Empty);
     rpc SetActiveTarget (TargetName) returns (Empty);
     rpc ShadowSync (ShadowSyncRequest) returns (Empty);
+    rpc ShadowStep (Empty) returns (Empty);
 
     // Symbols & Debug info
     rpc LoadSymbols (FileRequest) returns (Empty);

@@ -781,7 +781,10 @@ impl AetherApp {
                 aether_core::DebugEvent::ItmPacket(_) => {
                     // ITM Visualization pending
                 }
-                aether_core::DebugEvent::Probes(_) | aether_core::DebugEvent::Attached(_) => {}
+                aether_core::DebugEvent::Probes(_)
+                | aether_core::DebugEvent::Attached(_)
+                | aether_core::DebugEvent::SubSessionAttached(_, _)
+                | aether_core::DebugEvent::ParityDiverged { .. } => {}
             }
         }
     }

@@ -19,6 +19,7 @@ fn test_probe_info_integrity() {
         vendor_id: 0x0483,
         product_id: 0x374B,
         serial_number: Some("123456".to_string()),
+        identifier: "ST-Link V2".to_string(),
         probe_type: ProbeType::StLink,
     };
 
