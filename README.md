@@ -25,10 +25,28 @@ Open-source embedded debugger with gRPC API for programmatic hardware control.
 - Windows: May need [Zadig](https://zadig.akeo.ie/) for USB driver setup
 
 ### Build & Run
+
+Aether is a workspace with several components. You can build them individually:
+
+#### GUI Debugger (Recommended for manual use)
 ```bash
-git clone https://github.com/aether-debugger/aether.git
-cd aether
 cargo run --package aether-ui
+```
+
+#### gRPC Agent (For CI/CD and automation)
+```bash
+# Start the daemon
+cargo run --package aether-agent-api --bin aether-daemon
+
+# Use the CLI to interact
+cargo run --package aether-agent-api --bin aether-cli -- probe list
+```
+
+#### Firmware (Requires cross-compilation toolchain)
+The firmware is excluded from the default workspace build to speed up environment setup.
+```bash
+cd aether-demo-fw
+cargo build
 ```
 
 The UI will auto-detect connected debug probes.

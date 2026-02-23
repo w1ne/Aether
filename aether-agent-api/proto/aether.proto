@@ -22,6 +22,9 @@ service AetherDebug {
     // Discovery & Connection
     rpc ListProbes (Empty) returns (ProbeList);
     rpc Attach (AttachRequest) returns (Empty);
+    rpc AttachSubSession (SubSessionAttachRequest) returns (Empty);
+    rpc SetActiveTarget (TargetName) returns (Empty);
+    rpc ShadowSync (ShadowSyncRequest) returns (Empty);
 
     // Symbols & Debug info
     rpc LoadSymbols (FileRequest) returns (Empty);
@@ -214,6 +217,8 @@ message DebugEvent {
         ProbeList probes = 13;
         TargetInfo attached = 14;
         StatusResponse status = 15;
+        SubSessionAttachedEvent sub_session_attached = 16;
+        ParityDivergedEvent parity_diverged = 17;
     }
 }
 
@@ -267,6 +272,32 @@ message HaltedEvent {
 }
 
 message ResumedEvent {}
+
+message SubSessionAttachRequest {
+    string name = 1;
+    AttachRequest request = 2;
+}
+
+message TargetName {
+    string name = 1;
+}
+
+message ShadowSyncRequest {
+    string master = 1;
+    string slave = 2;
+}
+
+message SubSessionAttachedEvent {
+    string name = 1;
+    TargetInfo info = 2;
+}
+
+message ParityDivergedEvent {
+    uint64 location = 1;
+    uint64 master_val = 2;
+    uint64 slave_val = 3;
+    string info = 4;
+}
 
 message MemoryEvent {
     uint64 address = 1;
