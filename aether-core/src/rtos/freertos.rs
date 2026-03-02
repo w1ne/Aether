@@ -2,7 +2,10 @@ use super::RtosAware;
 use crate::symbols::SymbolManager;
 use crate::{TaskInfo, TaskState};
 use anyhow::Result;
+#[cfg(feature = "hardware")]
 use probe_rs::MemoryInterface;
+#[cfg(not(feature = "hardware"))]
+use crate::probe_rs::MemoryInterface;
 
 pub struct FreeRtos;
 
@@ -215,6 +218,7 @@ mod tests {
         }
     }
 
+    #[cfg(feature = "hardware")]
     impl MemoryInterface for MockMemory {
         fn read_word_8(&mut self, address: u64) -> Result<u8, probe_rs::Error> {
             let mut b = [0u8; 1];
@@ -296,14 +300,29 @@ mod tests {
             }
             Ok(())
         }
-        fn flush(&mut self) -> Result<(), probe_rs::Error> {
+        fn flush(&mut self) -> Result<(), probe_rs::Error> { Ok(()) }
+        fn supports_native_64bit_access(&mut self) -> bool { false }
+        fn supports_8bit_transfers(&self) -> Result<bool, probe_rs::Error> { Ok(true) }
+    }
+
+    #[cfg(not(feature = "hardware"))]
+    impl crate::MemoryInterface for MockMemory {
+        fn read_word_32(&mut self, address: u64) -> anyhow::Result<u32> {
+            let mut b = [0u8; 4];
+            self.read_8(address, &mut b)?;
+            Ok(u32::from_le_bytes(b))
+        }
+        fn read(&mut self, address: u64, data: &mut [u8]) -> anyhow::Result<()> {
+            for (i, byte) in data.iter_mut().enumerate() {
+                *byte = *self.data.get(&(address + i as u64)).unwrap_or(&0);
+            }
             Ok(())
         }
-        fn supports_native_64bit_access(&mut self) -> bool {
-            false
-        }
-        fn supports_8bit_transfers(&self) -> Result<bool, probe_rs::Error> {
-            Ok(true)
+        fn write_8(&mut self, address: u64, data: &[u8]) -> anyhow::Result<()> {
+            for (i, &byte) in data.iter().enumerate() {
+                self.data.insert(address + i as u64, byte);
+            }
+            Ok(())
         }
     }
 

@@ -7,7 +7,10 @@ pub mod breakpoint;
 pub use breakpoint::BreakpointManager;
 
 use anyhow::{Context, Result};
+#[cfg(feature = "hardware")]
 use probe_rs::{Core, CoreInformation, CoreStatus};
+#[cfg(not(feature = "hardware"))]
+use crate::probe_rs::{Core, CoreInformation, CoreStatus};
 use std::time::Duration;
 
 /// Manager for debug operations.
@@ -40,12 +43,35 @@ impl DebugManager {
 
     /// Read a core register.
     pub fn read_core_reg(&self, core: &mut Core, address: u16) -> Result<u64> {
-        core.read_core_reg(address).context("Failed to read core register")
+        #[cfg(feature = "hardware")]
+        let val = core.read_core_reg(address).context("Failed to read core register")?;
+        #[cfg(not(feature = "hardware"))]
+        let val = core.read_core_reg(u32::from(address)).context("Failed to read core register")?;
+        #[cfg(feature = "hardware")]
+        return Ok(match val {
+            probe_rs::RegisterValue::U32(v) => v as u64,
+            probe_rs::RegisterValue::U64(v) => v,
+            probe_rs::RegisterValue::U128(v) => v as u64,
+        });
+        #[cfg(not(feature = "hardware"))]
+        return Ok(match val {
+            crate::probe_rs::RegisterValue::U32(v) => v as u64,
+            crate::probe_rs::RegisterValue::U64(v) => v,
+            crate::probe_rs::RegisterValue::U128(v) => v as u64,
+        });
     }
 
     /// Write a core register.
     pub fn write_core_reg(&self, core: &mut Core, address: u16, value: u64) -> Result<()> {
-        core.write_core_reg(address, value).context("Failed to write core register")
+        #[cfg(feature = "hardware")]
+        let reg_val = probe_rs::RegisterValue::U64(value);
+        #[cfg(not(feature = "hardware"))]
+        let reg_val = crate::probe_rs::RegisterValue::U64(value);
+
+        #[cfg(feature = "hardware")]
+        return core.write_core_reg(address, reg_val).context("Failed to write core register");
+        #[cfg(not(feature = "hardware"))]
+        return core.write_core_reg(u32::from(address), reg_val).context("Failed to write core register");
     }
 }
 

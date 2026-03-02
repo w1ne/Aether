@@ -1,5 +1,8 @@
 use anyhow::Result;
+#[cfg(feature = "hardware")]
 use probe_rs::Session;
+#[cfg(not(feature = "hardware"))]
+use crate::probe_rs::Session;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]

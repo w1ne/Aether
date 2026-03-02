@@ -1,7 +1,10 @@
 use anyhow::Result;
 use gimli::{Abbreviations, AttributeValue, DebugStr, EndianSlice, RunTimeEndian, UnitOffset};
 use object::{Object, ObjectSection, ObjectSymbol};
+#[cfg(feature = "hardware")]
 use probe_rs_debug::DebugInfo;
+#[cfg(not(feature = "hardware"))]
+use crate::probe_rs_debug::DebugInfo;
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 use std::path::{Path, PathBuf};
@@ -62,8 +65,14 @@ impl SymbolManager {
             file,
             line: location.line.map(|l| l as u32).unwrap_or(0),
             column: location.column.map(|c| match c {
+                #[cfg(feature = "hardware")]
                 probe_rs_debug::ColumnType::Column(val) => val as u32,
+                #[cfg(not(feature = "hardware"))]
+                crate::probe_rs_debug::ColumnType::Column(val) => val as u32,
+                #[cfg(feature = "hardware")]
                 probe_rs_debug::ColumnType::LeftEdge => 0,
+                #[cfg(not(feature = "hardware"))]
+                crate::probe_rs_debug::ColumnType::LeftEdge => 0,
             }),
             function: None, // Function name not easily accessible without unwinding
         })
@@ -186,10 +195,12 @@ impl SymbolManager {
         None
     }
 
-    /// Resolve a raw value into a high-level TypeInfo using DWARF.
     pub fn resolve_variable(
         &self,
+        #[cfg(feature = "hardware")]
         core: &mut dyn probe_rs::MemoryInterface,
+        #[cfg(not(feature = "hardware"))]
+        core: &mut dyn crate::probe_rs::MemoryInterface,
         name: &str,
         base_address: u64,
     ) -> Option<TypeInfo> {
@@ -264,7 +275,10 @@ impl SymbolManager {
     #[allow(clippy::too_many_arguments)]
     fn resolve_type_from_offset(
         &self,
+        #[cfg(feature = "hardware")]
         core: &mut dyn probe_rs::MemoryInterface,
+        #[cfg(not(feature = "hardware"))]
+        core: &mut dyn crate::probe_rs::MemoryInterface,
         header: &gimli::UnitHeader<EndianSlice<RunTimeEndian>>,
         abbrev: &Abbreviations,
         debug_str: &DebugStr<EndianSlice<RunTimeEndian>>,

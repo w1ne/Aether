@@ -14,9 +14,12 @@ use probe_rs::{MemoryInterface, Session};
 #[cfg(feature = "hardware")]
 use probe_rs_debug::SteppingMode;
 use crate::CoreStatus;
+#[cfg(feature = "hardware")]
 use std::collections::HashMap;
 use std::thread;
-use std::time::{Duration, Instant};
+#[cfg(feature = "hardware")]
+use std::time::Instant;
+use std::time::Duration;
 
 #[derive(Debug)]
 pub enum DebugCommand {
@@ -120,12 +123,18 @@ pub enum DebugEvent {
         timestamp: f64,
         value: f64,
     },
+    #[cfg(feature = "hardware")]
+    Tasks(Vec<crate::TaskInfo>),
+    #[cfg(not(feature = "hardware"))]
     Tasks(Vec<crate::TaskInfo>),
     TaskSwitch {
         from: Option<u32>,
         to: u32,
         timestamp: f64,
     },
+    #[cfg(feature = "hardware")]
+    Stack(Vec<crate::stack::StackFrame>),
+    #[cfg(not(feature = "hardware"))]
     Stack(Vec<crate::stack::StackFrame>),
     TraceData(Vec<u8>),
     Status(CoreStatus),
@@ -136,8 +145,17 @@ pub enum DebugEvent {
     VariableResolved(crate::symbols::TypeInfo),
     SemihostingOutput(String),
     ItmPacket(Vec<u8>),
+    #[cfg(feature = "hardware")]
     Probes(Vec<crate::probe::ProbeInfo>),
+    #[cfg(not(feature = "hardware"))]
+    Probes(Vec<crate::probe::ProbeInfo>),
+    #[cfg(feature = "hardware")]
     Attached(crate::probe::TargetInfo),
+    #[cfg(not(feature = "hardware"))]
+    Attached(crate::probe::TargetInfo),
+    #[cfg(feature = "hardware")]
+    SubSessionAttached(String, crate::probe::TargetInfo),
+    #[cfg(not(feature = "hardware"))]
     SubSessionAttached(String, crate::probe::TargetInfo),
     ParityDiverged {
         location: u64,

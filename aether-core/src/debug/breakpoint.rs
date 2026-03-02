@@ -1,7 +1,10 @@
 //! Breakpoint management module.
 
 use anyhow::{Context, Result};
+#[cfg(feature = "hardware")]
 use probe_rs::Core;
+#[cfg(not(feature = "hardware"))]
+use crate::probe_rs::Core;
 use std::collections::HashSet;
 
 /// Manager for core breakpoints.

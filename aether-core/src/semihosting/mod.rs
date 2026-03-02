@@ -1,5 +1,8 @@
 use anyhow::Result;
+#[cfg(feature = "hardware")]
 use probe_rs::{Core, MemoryInterface, RegisterValue};
+#[cfg(not(feature = "hardware"))]
+use crate::probe_rs::{Core, MemoryInterface, RegisterValue};
 
 pub struct SemihostingManager {
     _enabled: bool,
@@ -119,7 +122,10 @@ impl SemihostingManager {
 
         // Resume execution: Advance PC
         let new_pc = pc + inst_size;
+        #[cfg(feature = "hardware")]
         core.write_core_reg(core.program_counter(), new_pc)?;
+        #[cfg(not(feature = "hardware"))]
+        core.write_core_reg(core.program_counter(), crate::RegisterValue::U64(new_pc))?;
 
         // Resume
         core.run()?;

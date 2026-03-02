@@ -1,6 +1,12 @@
 use anyhow::Result;
+#[cfg(feature = "hardware")]
 use probe_rs::architecture::arm::component::TraceSink;
+#[cfg(not(feature = "hardware"))]
+use crate::probe_rs::TraceSink;
+#[cfg(feature = "hardware")]
 use probe_rs::Session;
+#[cfg(not(feature = "hardware"))]
+use crate::probe_rs::Session;
 
 pub struct ItmManager {
     enabled: bool,
@@ -13,7 +19,12 @@ impl ItmManager {
 
     /// Configure ITM/SWO
     pub fn configure(&mut self, session: &mut Session, _baud_rate: u32) -> Result<()> {
-        if session.target().architecture() != probe_rs::Architecture::Arm {
+        #[cfg(feature = "hardware")]
+        let is_arm = session.target().architecture() == probe_rs::Architecture::Arm;
+        #[cfg(not(feature = "hardware"))]
+        let is_arm = session.target().architecture() == crate::probe_rs::Architecture::Arm;
+
+        if !is_arm {
             return Err(anyhow::anyhow!("ITM is only supported on ARM targets"));
         }
 
@@ -22,7 +33,10 @@ impl ItmManager {
         // Limitations: We can't easily set baud rate without finding where SwoConfig goes.
         // But setup_tracing is the entry point.
 
+        #[cfg(feature = "hardware")]
         session.setup_tracing(0, TraceSink::TraceMemory)?;
+        #[cfg(not(feature = "hardware"))]
+        let _ = session;
 
         self.enabled = true;
         Ok(())
@@ -39,9 +53,15 @@ impl ItmManager {
         // Let's rely on standard method names.
         // If read_swv is gone, and read_swo is gone.
         // check `read_trace_data`.
+        #[cfg(feature = "hardware")]
         match session.read_trace_data() {
             Ok(bytes) => Ok(bytes),
             Err(e) => Err(anyhow::anyhow!("Failed to read trace data: {}", e)),
+        }
+        #[cfg(not(feature = "hardware"))]
+        {
+            let _ = session;
+            Ok(Vec::new())
         }
     }
 }

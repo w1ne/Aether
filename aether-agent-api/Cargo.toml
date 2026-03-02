@@ -13,11 +13,15 @@ tokio = { version = "1.0", features = ["macros", "rt-multi-thread", "signal"] }
 futures-core = "0.3"
 futures-util = "0.3"
 tokio-stream = { version = "0.1", features = ["sync"] }
-aether-core = { path = "../aether-core" }
+aether-core = { path = "../aether-core", default-features = false }
 clap = { version = "4.4", features = ["derive"] }
 env_logger = "0.11"
 log = "0.4"
 hex = "0.4.3"
+
+[features]
+default = ["hardware"]
+hardware = ["aether-core/hardware"]
 
 [build-dependencies]
 tonic-build = "0.12"

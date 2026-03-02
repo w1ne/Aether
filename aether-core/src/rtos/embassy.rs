@@ -2,7 +2,10 @@ use super::RtosAware;
 use crate::symbols::SymbolManager;
 use crate::{TaskInfo, TaskState};
 use anyhow::Result;
+#[cfg(feature = "hardware")]
 use probe_rs::MemoryInterface;
+#[cfg(not(feature = "hardware"))]
+use crate::probe_rs::MemoryInterface;
 
 pub struct Embassy;
 

@@ -8,7 +8,7 @@ repository.workspace = true
 
 [dependencies]
 aether-core = { path = "../aether-core", default-features = false }
-aether-agent-api = { path = "../aether-agent-api" }
+aether-agent-api = { path = "../aether-agent-api", default-features = false }
 eframe.workspace = true
 egui.workspace = true
 egui_plot.workspace = true
@@ -27,4 +27,4 @@ serde_json = "1.0"
 
 [features]
 default = ["hardware"]
-hardware = ["aether-core/hardware", "probe-rs"]
+hardware = ["aether-core/hardware", "aether-agent-api/hardware", "probe-rs"]

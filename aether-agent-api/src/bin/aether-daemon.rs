@@ -129,10 +129,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                             let regs = vec![aether_core::svd::RegisterInfo {
                                 name: "CR".to_string(),
                                 address_offset: 0x0,
+                                description: Some("Control Register".to_string()),
                                 size: 32,
                                 value: Some(0x1),
                                 fields: vec![],
-                                description: Some("Control Register".to_string()),
                             }];
                             let _ = event_tx.send(DebugEvent::Registers(regs));
                         }

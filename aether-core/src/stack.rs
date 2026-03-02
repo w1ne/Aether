@@ -1,8 +1,18 @@
 use crate::symbols::SymbolManager;
 use gimli::{BaseAddresses, DebugFrame, RunTimeEndian, UnwindContext, UnwindSection};
 use object::{Object, ObjectSection};
+#[cfg(feature = "hardware")]
 use probe_rs::{Core, MemoryInterface};
+#[cfg(not(feature = "hardware"))]
+use crate::probe_rs::{Core, MemoryInterface};
+#[cfg(feature = "hardware")]
 use probe_rs_debug::StackFrame as ProbeStackFrame;
+#[cfg(not(feature = "hardware"))]
+pub struct ProbeStackFrame {
+    pub function_name: String,
+    pub source_location: Option<crate::probe_rs_debug::SourceLocation>,
+    pub pc: u64,
+}
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 
@@ -40,10 +50,40 @@ pub fn unwind_stack(
     let mut frames = Vec::new();
 
     // Get current registers
-    let pc_val: u64 = core.read_core_reg(core.program_counter()).map_err(|e| e.to_string())?;
-    let sp_val: u64 = core.read_core_reg(core.stack_pointer()).map_err(|e| e.to_string())?;
+    let pc_val: u64 = match core.read_core_reg(core.program_counter()).map_err(|e| e.to_string())? {
+        #[cfg(feature = "hardware")]
+        probe_rs::RegisterValue::U32(v) => v as u64,
+        #[cfg(feature = "hardware")]
+        probe_rs::RegisterValue::U64(v) => v,
+        #[cfg(not(feature = "hardware"))]
+        crate::RegisterValue::U32(v) => v as u64,
+        #[cfg(not(feature = "hardware"))]
+        crate::RegisterValue::U64(v) => v,
+        _ => 0,
+    };
+    let sp_val: u64 = match core.read_core_reg(core.stack_pointer()).map_err(|e| e.to_string())? {
+        #[cfg(feature = "hardware")]
+        probe_rs::RegisterValue::U32(v) => v as u64,
+        #[cfg(feature = "hardware")]
+        probe_rs::RegisterValue::U64(v) => v,
+        #[cfg(not(feature = "hardware"))]
+        crate::RegisterValue::U32(v) => v as u64,
+        #[cfg(not(feature = "hardware"))]
+        crate::RegisterValue::U64(v) => v,
+        _ => 0,
+    };
     // We might need LR for leaf functions or if DWARF is missing
-    let lr_val: u64 = core.read_core_reg(core.return_address()).map_err(|e| e.to_string())?;
+    let lr_val: u64 = match core.read_core_reg(core.return_address()).map_err(|e| e.to_string())? {
+        #[cfg(feature = "hardware")]
+        probe_rs::RegisterValue::U32(v) => v as u64,
+        #[cfg(feature = "hardware")]
+        probe_rs::RegisterValue::U64(v) => v,
+        #[cfg(not(feature = "hardware"))]
+        crate::RegisterValue::U32(v) => v as u64,
+        #[cfg(not(feature = "hardware"))]
+        crate::RegisterValue::U64(v) => v,
+        _ => 0,
+    };
 
     // Current frame (Top of Stack)
     // Try to resolve function name for PC
