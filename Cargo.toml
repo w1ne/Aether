@@ -4,7 +4,7 @@ members = ["aether-agent-api","aether-core", "aether-ui"]
 exclude = ["aether-demo-fw"]
 
 [workspace.package]
-version = "0.2.3"
+version = "0.2.4"
 edition = "2021"
 authors = ["Aether Contributors"]
 license = "MIT OR Apache-2.0"
@@ -24,10 +24,10 @@ capstone = "0.12"
 gimli = "0.31"
 
 # UI dependencies
-eframe = { version = "0.28", features = ["glow"] }
-egui = "0.28"
-egui_plot = "0.28"
-egui_dock = "0.13"
+eframe = { version = "0.33", default-features = false, features = ["accesskit", "default_fonts", "wgpu", "wayland", "x11"] }
+egui = "0.33"
+egui_plot = "0.34"
+egui_dock = "0.18"
 crossbeam-channel = "0.5"
 rfd = "0.14"
 

@@ -221,7 +221,10 @@ impl AetherApp {
         for path in font_paths {
             if let Ok(font_data) = std::fs::read(path) {
                 let font_name = path.split('/').next_back().unwrap_or("fallback_font").to_string();
-                fonts.font_data.insert(font_name.clone(), egui::FontData::from_owned(font_data));
+                fonts.font_data.insert(
+                    font_name.clone(),
+                    std::sync::Arc::new(egui::FontData::from_owned(font_data)),
+                );
 
                 // Add to standard families as fallbacks
                 if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Proportional) {
@@ -904,7 +907,7 @@ stub.Resume(aether_pb2.Empty())
             for name in &self.plot_names {
                 if let Some(data) = self.plots.get(name) {
                     let points: egui_plot::PlotPoints = data.iter().copied().collect();
-                    plot_ui.line(egui_plot::Line::new(points).name(name));
+                    plot_ui.line(egui_plot::Line::new(name, points));
                 }
             }
         });
@@ -1124,11 +1127,17 @@ stub.Resume(aether_pb2.Empty())
                     )
                     .gamma_multiply(0.8);
 
-                    plot_ui.polygon(egui_plot::Polygon::new(rect).fill_color(color).name(format!(
-                        "{} (Duration: {:.1}ms)",
-                        event.task_name,
-                        (end - start) * 1000.0
-                    )));
+                    plot_ui.polygon(
+                        egui_plot::Polygon::new(
+                            format!(
+                                "{} (Duration: {:.1}ms)",
+                                event.task_name,
+                                (end - start) * 1000.0
+                            ),
+                            rect,
+                        )
+                        .fill_color(color),
+                    );
                 }
             }
         });
@@ -1199,7 +1208,7 @@ stub.Resume(aether_pb2.Empty())
     }
 
     pub(crate) fn draw_memory_view(&mut self, ui: &mut egui::Ui) {
-        egui::ScrollArea::both().id_source("mem_view_scroll").show(ui, |ui| {
+        egui::ScrollArea::both().id_salt("mem_view_scroll").show(ui, |ui| {
             ui.heading("Memory View");
 
             ui.horizontal(|ui| {
@@ -1226,7 +1235,7 @@ stub.Resume(aether_pb2.Empty())
             }
         });
 
-        egui::ScrollArea::vertical().id_source("mem_hex").show(ui, |ui| {
+        egui::ScrollArea::vertical().id_salt("mem_hex").show(ui, |ui| {
             ui.monospace("Address    00 01 02 03 04 05 06 07  08 09 0A 0B 0C 0D 0E 0F  ASCII");
             ui.separator();
 
@@ -1240,7 +1249,7 @@ stub.Resume(aether_pb2.Empty())
         });
     }
     pub(crate) fn draw_disassembly_view(&mut self, ui: &mut egui::Ui) {
-        egui::ScrollArea::both().id_source("disasm_view_scroll").show(ui, |ui| {
+        egui::ScrollArea::both().id_salt("disasm_view_scroll").show(ui, |ui| {
             ui.heading("Disassembly");
 
             egui::Grid::new("disasm_grid").striped(true).num_columns(5).show(ui, |ui| {
@@ -1310,7 +1319,7 @@ stub.Resume(aether_pb2.Empty())
 
         ui.separator();
 
-        egui::ScrollArea::vertical().id_source("bps").max_height(200.0).show(ui, |ui| {
+        egui::ScrollArea::vertical().id_salt("bps").max_height(200.0).show(ui, |ui| {
             egui::Grid::new("bp_grid").striped(true).show(ui, |ui| {
                 ui.label("Address");
                 ui.label("Action");
@@ -1353,7 +1362,7 @@ stub.Resume(aether_pb2.Empty())
 
         ui.separator();
 
-        egui::ScrollArea::vertical().id_source("periph_scroll").max_height(200.0).show(ui, |ui| {
+        egui::ScrollArea::vertical().id_salt("periph_scroll").max_height(200.0).show(ui, |ui| {
             for p in &self.peripherals {
                 let is_selected = self.selected_peripheral.as_ref() == Some(&p.name);
                 if ui.selectable_label(is_selected, &p.name).clicked() {
@@ -1378,7 +1387,7 @@ stub.Resume(aether_pb2.Empty())
                     }
                 }
             });
-            egui::ScrollArea::vertical().id_source("reg_scroll").show(ui, |ui| {
+            egui::ScrollArea::vertical().id_salt("reg_scroll").show(ui, |ui| {
                   for reg in &self.peripheral_registers {
                        let is_expanded = self.expanded_registers.contains(&reg.name);
 
@@ -1479,7 +1488,7 @@ stub.Resume(aether_pb2.Empty())
 
         ui.add_space(8.0);
 
-        egui::ScrollArea::vertical().id_source("watch_scroll").show(ui, |ui| {
+        egui::ScrollArea::vertical().id_salt("watch_scroll").show(ui, |ui| {
             let mut to_remove = None;
             for (idx, var) in self.watched_variables.iter().enumerate() {
                 ui.horizontal(|ui| {
@@ -1596,7 +1605,7 @@ stub.Resume(aether_pb2.Empty())
         if let Some(chan_num) = self.rtt_selected_channel {
             let mode = *self.rtt_display_modes.get(&chan_num).unwrap_or(&RttDisplayMode::Text);
 
-            egui::ScrollArea::vertical().id_source("rtt_scroll").stick_to_bottom(true).show(
+            egui::ScrollArea::vertical().id_salt("rtt_scroll").stick_to_bottom(true).show(
                 ui,
                 |ui| match mode {
                     RttDisplayMode::Text => {
@@ -1739,7 +1748,7 @@ stub.Resume(aether_pb2.Empty())
             ui.separator();
 
             if let Some((_, highlighted)) = self.source_cache.get(&info.file) {
-                egui::ScrollArea::vertical().id_source("source_scroll").show(ui, |ui| {
+                egui::ScrollArea::vertical().id_salt("source_scroll").show(ui, |ui| {
                     egui::Grid::new("source_grid").num_columns(2).striped(true).show(ui, |ui| {
                         for (i, job) in highlighted.iter().enumerate() {
                             let line_num = i + 1;
@@ -1819,12 +1828,12 @@ stub.Resume(aether_pb2.Empty())
 
         let mut style: egui::Style = (*ctx.style()).clone();
         style.spacing.item_spacing = egui::vec2(8.0, 8.0);
-        style.spacing.window_margin = egui::Margin::same(12.0);
-        style.visuals.window_rounding = egui::Rounding::same(8.0);
-        style.visuals.widgets.noninteractive.rounding = egui::Rounding::same(4.0);
-        style.visuals.widgets.inactive.rounding = egui::Rounding::same(4.0);
-        style.visuals.widgets.hovered.rounding = egui::Rounding::same(4.0);
-        style.visuals.widgets.active.rounding = egui::Rounding::same(4.0);
+        style.spacing.window_margin = egui::Margin::same(12);
+        style.visuals.window_corner_radius = egui::CornerRadius::same(8);
+        style.visuals.widgets.noninteractive.corner_radius = egui::CornerRadius::same(4);
+        style.visuals.widgets.inactive.corner_radius = egui::CornerRadius::same(4);
+        style.visuals.widgets.hovered.corner_radius = egui::CornerRadius::same(4);
+        style.visuals.widgets.active.corner_radius = egui::CornerRadius::same(4);
         ctx.set_style(style);
     }
     pub(crate) fn draw_control_view(&mut self, ui: &mut egui::Ui) {
@@ -1847,7 +1856,7 @@ stub.Resume(aether_pb2.Empty())
                 }
 
                 #[cfg(feature = "hardware")]
-                egui::ScrollArea::vertical().id_source("probes").max_height(100.0).show(ui, |ui| {
+                egui::ScrollArea::vertical().id_salt("probes").max_height(100.0).show(ui, |ui| {
                     for (i, probe) in self.probes.iter().enumerate() {
                         let is_selected = self.selected_probe == Some(i);
                         if ui.selectable_label(is_selected, format!("▷ {}", probe.name())).clicked()
@@ -1932,7 +1941,7 @@ stub.Resume(aether_pb2.Empty())
 
         // Registers Section
         ui.collapsing("⌗ Registers", |ui| {
-            egui::ScrollArea::vertical().id_source("regs").show(ui, |ui| {
+            egui::ScrollArea::vertical().id_salt("regs").show(ui, |ui| {
                 egui::Grid::new("reg_grid").striped(true).spacing(egui::vec2(20.0, 4.0)).show(
                     ui,
                     |ui| {
@@ -1999,7 +2008,7 @@ stub.Resume(aether_pb2.Empty())
 
     pub(crate) fn draw_logs_view(&mut self, ui: &mut egui::Ui) {
         ui.heading("System Logs");
-        egui::ScrollArea::vertical().id_source("logs_scroll").show(ui, |ui| {
+        egui::ScrollArea::vertical().id_salt("logs_scroll").show(ui, |ui| {
             ui.monospace(&self.status_message);
             for req in &self.failed_requests {
                 ui.label(egui::RichText::new(format!("Error: {}", req)).color(egui::Color32::RED));
@@ -2087,7 +2096,7 @@ impl eframe::App for AetherApp {
                                         dock_state.set_active_tab(node_tab);
                                     }
                                 }
-                                ui.close_menu();
+                                ui.close();
                             }
                         }
                     });

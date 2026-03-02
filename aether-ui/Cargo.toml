@@ -6,14 +6,10 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 
-[lib]
-name = "aether_ui"
-path = "src/main.rs"
-crate-type = ["staticlib", "cdylib", "rlib"]
-
 [dependencies]
 aether-core = { path = "../aether-core", default-features = false }
 aether-agent-api = { path = "../aether-agent-api", default-features = false }
+eframe.workspace = true
 egui.workspace = true
 egui_plot.workspace = true
 egui_dock.workspace = true
@@ -29,11 +25,9 @@ tokio-stream = "0.1"
 serde_json = "1.0"
 
 [target.'cfg(not(target_os = "ios"))'.dependencies]
-eframe = { workspace = true }
+# Desktop gets glow (OpenGL) + wgpu for full render backend support
+eframe = { workspace = true, features = ["glow"] }
 rfd = { workspace = true }
-
-[target.'cfg(target_os = "ios")'.dependencies]
-eframe = { version = "0.28.1", default-features = false, features = ["accesskit", "default_fonts", "wgpu", "wayland", "x11"] }
 
 [features]
 default = ["hardware"]

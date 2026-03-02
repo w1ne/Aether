@@ -1,3 +1,8 @@
+## [0.2.4] - 2026-03-02
+
+### Changed
+- **egui 0.33 upgrade**: Updated `eframe`/`egui` from `0.28` to `0.33`, `egui_plot` to `0.34`, and `egui_dock` to `0.18`. This resolves a hardcoded upstream bug that blocked the iOS native build (`ViewportId::ROOT` missing import in `eframe 0.28`). iOS static library is built via the `wgpu` backend with OpenGL/glutin disabled.
+
 ## [0.2.3] - 2026-03-02
 
 ### Fixed
