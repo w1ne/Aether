@@ -1,12 +1,8 @@
-## [0.2.4] - 2026-03-02
-
-### Fixed
-- **iOS CI Cross-Compilation**: Fixed a linker error during CI where `aether-ui` was attempting to build as an iOS executable rather than a static library by adding a explicit `[lib]` crate type. Disabled `onig_sys` compilation in `syntect` by switching to the pure-Rust `fancy-regex` to prevent Xcode SDK conflicts on the GitHub Actions macOS runner.
-
 ## [0.2.3] - 2026-03-02
 
 ### Fixed
-- **iOS Build Consistency**: Implemented comprehensive hardware modularization across `aether-core`, `aether-agent-api`, and `aether-ui`. The stack now builds successfully for iOS by disabling hardware-specific dependencies (`probe-rs`, `hidapi`) which were causing compilation failures on unsupported target OS.
+- **iOS CI Cross-Compilation & Hardware Modularization**: Fully decoupled hardware-specific dependencies (`probe-rs`, `hidapi`) behind a `hardware` feature across all workspace crates. Fixed CI cross-compilation by correctly configuring `aether-ui` as a static library for iOS and migrating `syntect` to a pure-Rust regex engine (`fancy-regex`) to prevent macOS SDK compilation conflicts.
+
 
 ## [0.2.2] - 2026-03-02
 

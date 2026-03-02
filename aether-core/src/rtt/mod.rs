@@ -1,10 +1,10 @@
+#[cfg(not(feature = "hardware"))]
+use crate::probe_rs::Core;
 use anyhow::{Context as _, Result};
 #[cfg(feature = "hardware")]
 use probe_rs::rtt::Rtt;
 #[cfg(feature = "hardware")]
 use probe_rs::Core;
-#[cfg(not(feature = "hardware"))]
-use crate::probe_rs::Core;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

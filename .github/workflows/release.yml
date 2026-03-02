@@ -63,26 +63,9 @@ jobs:
           name: aether-macos
           path: target/release/aether-macos-x64
 
-  build-ios:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-apple-ios
-      - name: Install Protoc
-        run: brew install protobuf
-      - name: Build Static Library
-        run: cargo build --release --package aether-ui --target aarch64-apple-ios --no-default-features
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: aether-ios-lib
-          path: target/aarch64-apple-ios/release/libaether_ui.a
 
   create-release:
-    needs: [build-linux, build-windows, build-macos, build-ios]
+    needs: [build-linux, build-windows, build-macos]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

@@ -6,11 +6,11 @@ pub mod breakpoint;
 
 pub use breakpoint::BreakpointManager;
 
+#[cfg(not(feature = "hardware"))]
+use crate::probe_rs::{Core, CoreInformation, CoreStatus};
 use anyhow::{Context, Result};
 #[cfg(feature = "hardware")]
 use probe_rs::{Core, CoreInformation, CoreStatus};
-#[cfg(not(feature = "hardware"))]
-use crate::probe_rs::{Core, CoreInformation, CoreStatus};
 use std::time::Duration;
 
 /// Manager for debug operations.
@@ -71,7 +71,9 @@ impl DebugManager {
         #[cfg(feature = "hardware")]
         return core.write_core_reg(address, reg_val).context("Failed to write core register");
         #[cfg(not(feature = "hardware"))]
-        return core.write_core_reg(u32::from(address), reg_val).context("Failed to write core register");
+        return core
+            .write_core_reg(u32::from(address), reg_val)
+            .context("Failed to write core register");
     }
 }
 

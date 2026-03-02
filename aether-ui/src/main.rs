@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 mod ui_logic;
 use aether_core::VarType;
 use crossbeam_channel::{unbounded, Receiver};
@@ -15,6 +16,24 @@ use tokio_stream::StreamExt;
 
 mod ui_tabs;
 use ui_tabs::{AetherTabViewer, DebugTab};
+
+#[cfg(not(target_os = "ios"))]
+fn safe_pick_file(title: &str, extensions: &[&str]) -> Option<PathBuf> {
+    rfd::FileDialog::new().add_filter(title, extensions).pick_file()
+}
+#[cfg(target_os = "ios")]
+fn safe_pick_file(_title: &str, _extensions: &[&str]) -> Option<PathBuf> {
+    None
+}
+
+#[cfg(not(target_os = "ios"))]
+fn safe_save_file(title: &str, extensions: &[&str]) -> Option<PathBuf> {
+    rfd::FileDialog::new().add_filter(title, extensions).save_file()
+}
+#[cfg(target_os = "ios")]
+fn safe_save_file(_title: &str, _extensions: &[&str]) -> Option<PathBuf> {
+    None
+}
 
 fn main() -> eframe::Result<()> {
     env_logger::init();
@@ -154,9 +173,7 @@ pub struct SessionExport {
 
 impl AetherApp {
     fn export_session(&self) {
-        if let Some(path) =
-            rfd::FileDialog::new().add_filter("Aether Session", &["json"]).save_file()
-        {
+        if let Some(path) = safe_save_file("Aether Session", &["json"]) {
             let export = SessionExport {
                 rtt_buffers: self.rtt_buffers.clone(),
                 tasks: self.tasks.clone(),
@@ -172,9 +189,7 @@ impl AetherApp {
     }
 
     fn import_session(&mut self) {
-        if let Some(path) =
-            rfd::FileDialog::new().add_filter("Aether Session", &["json"]).pick_file()
-        {
+        if let Some(path) = safe_pick_file("Aether Session", &["json"]) {
             if let Ok(json) = std::fs::read_to_string(path) {
                 if let Ok(export) = serde_json::from_str::<SessionExport>(&json) {
                     self.rtt_buffers = export.rtt_buffers;
@@ -1319,7 +1334,7 @@ stub.Resume(aether_pb2.Empty())
 
         ui.horizontal(|ui| {
             if ui.button("📂 Load SVD").clicked() {
-                if let Some(path) = rfd::FileDialog::new().add_filter("SVD", &["svd"]).pick_file() {
+                if let Some(path) = safe_pick_file("SVD", &["svd"]) {
                     if let Some(handle) = &self.session_handle {
                         let _ = handle.send(aether_core::DebugCommand::LoadSvd(path));
                     }
@@ -1695,9 +1710,7 @@ stub.Resume(aether_pb2.Empty())
 
         ui.horizontal(|ui| {
             if ui.button("📂 Load Symbols (ELF)").clicked() {
-                if let Some(path) =
-                    rfd::FileDialog::new().add_filter("ELF", &["elf", "bin", "out"]).pick_file()
-                {
+                if let Some(path) = safe_pick_file("ELF", &["elf", "bin", "out"]) {
                     if let Some(handle) = &self.session_handle {
                         let _ = handle.send(aether_core::DebugCommand::LoadSymbols(path));
                     }
@@ -1955,10 +1968,7 @@ stub.Resume(aether_pb2.Empty())
         ui.collapsing("🚀 Flash Programming", |ui| {
             ui.horizontal(|ui| {
                 if ui.button("📁 File").clicked() {
-                    if let Some(path) = rfd::FileDialog::new()
-                        .add_filter("Binaries", &["bin", "elf", "hex"])
-                        .pick_file()
-                    {
+                    if let Some(path) = safe_pick_file("Binaries", &["bin", "elf", "hex"]) {
                         self.selected_file = Some(path);
                     }
                 }

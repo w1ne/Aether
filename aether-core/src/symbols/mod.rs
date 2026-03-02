@@ -1,10 +1,10 @@
+#[cfg(not(feature = "hardware"))]
+use crate::probe_rs_debug::DebugInfo;
 use anyhow::Result;
 use gimli::{Abbreviations, AttributeValue, DebugStr, EndianSlice, RunTimeEndian, UnitOffset};
 use object::{Object, ObjectSection, ObjectSymbol};
 #[cfg(feature = "hardware")]
 use probe_rs_debug::DebugInfo;
-#[cfg(not(feature = "hardware"))]
-use crate::probe_rs_debug::DebugInfo;
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 use std::path::{Path, PathBuf};
@@ -197,10 +197,8 @@ impl SymbolManager {
 
     pub fn resolve_variable(
         &self,
-        #[cfg(feature = "hardware")]
-        core: &mut dyn probe_rs::MemoryInterface,
-        #[cfg(not(feature = "hardware"))]
-        core: &mut dyn crate::probe_rs::MemoryInterface,
+        #[cfg(feature = "hardware")] core: &mut dyn probe_rs::MemoryInterface,
+        #[cfg(not(feature = "hardware"))] core: &mut dyn crate::probe_rs::MemoryInterface,
         name: &str,
         base_address: u64,
     ) -> Option<TypeInfo> {
@@ -275,10 +273,8 @@ impl SymbolManager {
     #[allow(clippy::too_many_arguments)]
     fn resolve_type_from_offset(
         &self,
-        #[cfg(feature = "hardware")]
-        core: &mut dyn probe_rs::MemoryInterface,
-        #[cfg(not(feature = "hardware"))]
-        core: &mut dyn crate::probe_rs::MemoryInterface,
+        #[cfg(feature = "hardware")] core: &mut dyn probe_rs::MemoryInterface,
+        #[cfg(not(feature = "hardware"))] core: &mut dyn crate::probe_rs::MemoryInterface,
         header: &gimli::UnitHeader<EndianSlice<RunTimeEndian>>,
         abbrev: &Abbreviations,
         debug_str: &DebugStr<EndianSlice<RunTimeEndian>>,

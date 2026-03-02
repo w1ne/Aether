@@ -1,10 +1,10 @@
+#[cfg(not(feature = "hardware"))]
+use crate::probe_rs::{Core, MemoryInterface};
 use crate::symbols::SymbolManager;
 use gimli::{BaseAddresses, DebugFrame, RunTimeEndian, UnwindContext, UnwindSection};
 use object::{Object, ObjectSection};
 #[cfg(feature = "hardware")]
 use probe_rs::{Core, MemoryInterface};
-#[cfg(not(feature = "hardware"))]
-use crate::probe_rs::{Core, MemoryInterface};
 #[cfg(feature = "hardware")]
 use probe_rs_debug::StackFrame as ProbeStackFrame;
 #[cfg(not(feature = "hardware"))]

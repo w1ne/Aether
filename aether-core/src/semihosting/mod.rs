@@ -1,8 +1,8 @@
+#[cfg(not(feature = "hardware"))]
+use crate::probe_rs::{Core, MemoryInterface, RegisterValue};
 use anyhow::Result;
 #[cfg(feature = "hardware")]
 use probe_rs::{Core, MemoryInterface, RegisterValue};
-#[cfg(not(feature = "hardware"))]
-use crate::probe_rs::{Core, MemoryInterface, RegisterValue};
 
 pub struct SemihostingManager {
     _enabled: bool,

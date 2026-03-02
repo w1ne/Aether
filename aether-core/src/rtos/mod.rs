@@ -1,13 +1,13 @@
 pub mod embassy;
 pub mod freertos;
 
+#[cfg(not(feature = "hardware"))]
+use crate::probe_rs::MemoryInterface;
 use crate::symbols::SymbolManager;
 use crate::TaskInfo;
 use anyhow::Result;
 #[cfg(feature = "hardware")]
 use probe_rs::MemoryInterface;
-#[cfg(not(feature = "hardware"))]
-use crate::probe_rs::MemoryInterface;
 
 pub trait RtosAware: Send {
     fn name(&self) -> &str;

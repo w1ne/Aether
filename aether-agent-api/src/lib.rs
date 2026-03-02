@@ -283,12 +283,9 @@ impl AetherDebug for AetherDebugService {
 
     async fn get_stack(&self, _request: Request<Empty>) -> Result<Response<StackResponse>, Status> {
         let mut rx = self.session.subscribe();
-        self.session
-            .send(DebugCommand::GetStack)
-            .map_err(|e| Status::internal(e.to_string()))?;
+        self.session.send(DebugCommand::GetStack).map_err(|e| Status::internal(e.to_string()))?;
 
-        let event =
-            self.wait_for_match(&mut rx, |e| matches!(e, CoreDebugEvent::Stack(_))).await?;
+        let event = self.wait_for_match(&mut rx, |e| matches!(e, CoreDebugEvent::Stack(_))).await?;
 
         if let CoreDebugEvent::Stack(frames) = event {
             let proto_frames = frames
@@ -510,9 +507,10 @@ impl AetherDebug for AetherDebugService {
 
         let name_clone = req.name;
         let _ = self
-            .wait_for_match(&mut rx, move |e| {
-                matches!(e, CoreDebugEvent::SubSessionAttached(n, _) if n == &name_clone)
-            })
+            .wait_for_match(
+                &mut rx,
+                move |e| matches!(e, CoreDebugEvent::SubSessionAttached(n, _) if n == &name_clone),
+            )
             .await?;
         Ok(Response::new(Empty {}))
     }
@@ -540,9 +538,7 @@ impl AetherDebug for AetherDebugService {
     }
 
     async fn shadow_step(&self, _request: Request<Empty>) -> Result<Response<Empty>, Status> {
-        self.session
-            .send(DebugCommand::ShadowStep)
-            .map_err(|e| Status::internal(e.to_string()))?;
+        self.session.send(DebugCommand::ShadowStep).map_err(|e| Status::internal(e.to_string()))?;
         Ok(Response::new(Empty {}))
     }
 
@@ -657,24 +653,25 @@ pub fn map_core_event_to_proto(event: CoreDebugEvent) -> Option<DebugEvent> {
             })),
         }),
         CoreDebugEvent::SubSessionAttached(name, info) => Some(DebugEvent {
-            event: Some(proto::debug_event::Event::SubSessionAttached(proto::SubSessionAttachedEvent {
-                name,
-                info: Some(proto::TargetInfo {
-                    name: info.name,
-                    flash_size: info.flash_size,
-                    ram_size: info.ram_size,
-                    architecture: info.architecture,
-                }),
-            })),
+            event: Some(proto::debug_event::Event::SubSessionAttached(
+                proto::SubSessionAttachedEvent {
+                    name,
+                    info: Some(proto::TargetInfo {
+                        name: info.name,
+                        flash_size: info.flash_size,
+                        ram_size: info.ram_size,
+                        architecture: info.architecture,
+                    }),
+                },
+            )),
         }),
-        CoreDebugEvent::ParityDiverged { location, master_val, slave_val, info } => Some(DebugEvent {
-            event: Some(proto::debug_event::Event::ParityDiverged(proto::ParityDivergedEvent {
-                location,
-                master_val,
-                slave_val,
-                info,
-            })),
-        }),
+        CoreDebugEvent::ParityDiverged { location, master_val, slave_val, info } => {
+            Some(DebugEvent {
+                event: Some(proto::debug_event::Event::ParityDiverged(
+                    proto::ParityDivergedEvent { location, master_val, slave_val, info },
+                )),
+            })
+        }
         _ => None,
     }
 }

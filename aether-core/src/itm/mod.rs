@@ -1,12 +1,12 @@
+#[cfg(not(feature = "hardware"))]
+use crate::probe_rs::Session;
+#[cfg(not(feature = "hardware"))]
+use crate::probe_rs::TraceSink;
 use anyhow::Result;
 #[cfg(feature = "hardware")]
 use probe_rs::architecture::arm::component::TraceSink;
-#[cfg(not(feature = "hardware"))]
-use crate::probe_rs::TraceSink;
 #[cfg(feature = "hardware")]
 use probe_rs::Session;
-#[cfg(not(feature = "hardware"))]
-use crate::probe_rs::Session;
 
 pub struct ItmManager {
     enabled: bool,

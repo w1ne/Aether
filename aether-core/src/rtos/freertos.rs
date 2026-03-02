@@ -1,11 +1,11 @@
 use super::RtosAware;
+#[cfg(not(feature = "hardware"))]
+use crate::probe_rs::MemoryInterface;
 use crate::symbols::SymbolManager;
 use crate::{TaskInfo, TaskState};
 use anyhow::Result;
 #[cfg(feature = "hardware")]
 use probe_rs::MemoryInterface;
-#[cfg(not(feature = "hardware"))]
-use crate::probe_rs::MemoryInterface;
 
 pub struct FreeRtos;
 
@@ -300,9 +300,15 @@ mod tests {
             }
             Ok(())
         }
-        fn flush(&mut self) -> Result<(), probe_rs::Error> { Ok(()) }
-        fn supports_native_64bit_access(&mut self) -> bool { false }
-        fn supports_8bit_transfers(&self) -> Result<bool, probe_rs::Error> { Ok(true) }
+        fn flush(&mut self) -> Result<(), probe_rs::Error> {
+            Ok(())
+        }
+        fn supports_native_64bit_access(&mut self) -> bool {
+            false
+        }
+        fn supports_8bit_transfers(&self) -> Result<bool, probe_rs::Error> {
+            Ok(true)
+        }
     }
 
     #[cfg(not(feature = "hardware"))]

@@ -1,0 +1,1455 @@
+build-ios	Build Static Library	﻿2026-03-02T20:48:06.3914560Z ##[group]Run cargo build --release --package aether-ui --target aarch64-apple-ios --no-default-features
+build-ios	Build Static Library	2026-03-02T20:48:06.3915280Z [36;1mcargo build --release --package aether-ui --target aarch64-apple-ios --no-default-features[0m
+build-ios	Build Static Library	2026-03-02T20:48:06.3946760Z shell: /bin/bash -e {0}
+build-ios	Build Static Library	2026-03-02T20:48:06.3946970Z env:
+build-ios	Build Static Library	2026-03-02T20:48:06.3947130Z   CARGO_HOME: /Users/runner/.cargo
+build-ios	Build Static Library	2026-03-02T20:48:06.3947410Z   CARGO_INCREMENTAL: 0
+build-ios	Build Static Library	2026-03-02T20:48:06.3947630Z   CARGO_TERM_COLOR: always
+build-ios	Build Static Library	2026-03-02T20:48:06.3947780Z ##[endgroup]
+build-ios	Build Static Library	2026-03-02T20:48:06.5946970Z [1m[33mwarning[0m: /Users/runner/work/Aether/Aether/aether-ui/Cargo.toml: file `/Users/runner/work/Aether/Aether/aether-ui/src/main.rs` found to be present in multiple build targets:
+build-ios	Build Static Library	2026-03-02T20:48:06.5948230Z   * `lib` target `aether_ui`
+build-ios	Build Static Library	2026-03-02T20:48:06.5948500Z   * `bin` target `aether-ui`
+build-ios	Build Static Library	2026-03-02T20:48:06.8345780Z [1m[92m    Updating[0m crates.io index
+build-ios	Build Static Library	2026-03-02T20:48:09.0088560Z [1m[92m     Locking[0m 662 packages to latest compatible versions
+build-ios	Build Static Library	2026-03-02T20:48:09.0139090Z [1m[92m      Adding[0m block-sys v0.1.0-beta.1 [1m[33m(available: v0.1.0-beta.2)[0m
+build-ios	Build Static Library	2026-03-02T20:48:09.0141080Z [1m[92m      Adding[0m block2 v0.2.0-alpha.6 [1m[33m(available: v0.2.0)[0m
+build-ios	Build Static Library	2026-03-02T20:48:09.0142050Z [1m[92m      Adding[0m capstone v0.12.0 [1m[33m(available: v0.14.0)[0m
+build-ios	Build Static Library	2026-03-02T20:48:09.0215740Z [1m[92m      Adding[0m criterion v0.5.1 [1m[33m(available: v0.8.2)[0m
+build-ios	Build Static Library	2026-03-02T20:48:09.0265040Z [1m[92m      Adding[0m eframe v0.28.1 [1m[33m(available: v0.33.3)[0m
+build-ios	Build Static Library	2026-03-02T20:48:09.0275030Z [1m[92m      Adding[0m egui v0.28.1 [1m[33m(available: v0.33.3)[0m
+build-ios	Build Static Library	2026-03-02T20:48:09.0275490Z [1m[92m      Adding[0m egui_dock v0.13.0 [1m[33m(available: v0.18.0)[0m
+build-ios	Build Static Library	2026-03-02T20:48:09.0276060Z [1m[92m      Adding[0m egui_plot v0.28.1 [1m[33m(available: v0.34.1)[0m
+build-ios	Build Static Library	2026-03-02T20:48:09.0276520Z [1m[92m      Adding[0m generic-array v0.14.7 [1m[33m(available: v0.14.9)[0m
+build-ios	Build Static Library	2026-03-02T20:48:09.0277010Z [1m[92m      Adding[0m gimli v0.31.1 [1m[33m(available: v0.33.0)[0m
+build-ios	Build Static Library	2026-03-02T20:48:09.0329170Z [1m[92m      Adding[0m objc-sys v0.2.0-beta.2 [1m[33m(available: v0.2.0-beta.3)[0m
+build-ios	Build Static Library	2026-03-02T20:48:09.0329970Z [1m[92m      Adding[0m objc2 v0.3.0-beta.3.patch-leaks.3 [1m[33m(available: v0.3.0-beta.5)[0m
+build-ios	Build Static Library	2026-03-02T20:48:09.0330800Z [1m[92m      Adding[0m objc2-encode v2.0.0-pre.2 [1m[33m(available: v2.0.0)[0m
+build-ios	Build Static Library	2026-03-02T20:48:09.0332600Z [1m[92m      Adding[0m object v0.36.7 [1m[33m(available: v0.38.1)[0m
+build-ios	Build Static Library	2026-03-02T20:48:09.0357520Z [1m[92m      Adding[0m prost v0.13.5 [1m[33m(available: v0.14.3)[0m
+build-ios	Build Static Library	2026-03-02T20:48:09.0372130Z [1m[92m      Adding[0m rfd v0.14.1 [1m[33m(available: v0.17.2)[0m
+build-ios	Build Static Library	2026-03-02T20:48:09.0440550Z [1m[92m      Adding[0m serialport v4.7.3 [1m[33m(available: v4.8.1)[0m
+build-ios	Build Static Library	2026-03-02T20:48:09.0464640Z [1m[92m      Adding[0m thiserror v1.0.69 [1m[33m(available: v2.0.18)[0m
+build-ios	Build Static Library	2026-03-02T20:48:09.0489810Z [1m[92m      Adding[0m tonic v0.12.3 [1m[33m(available: v0.14.5)[0m
+build-ios	Build Static Library	2026-03-02T20:48:09.0491090Z [1m[92m      Adding[0m tonic-build v0.12.3 [1m[33m(available: v0.14.5)[0m
+build-ios	Build Static Library	2026-03-02T20:48:09.0603970Z [1m[92m      Adding[0m zvariant_utils v1.0.1 [1m[33m(available: v1.1.1)[0m
+build-ios	Build Static Library	2026-03-02T20:48:09.0756870Z [1m[92m Downloading[0m crates ...
+build-ios	Build Static Library	2026-03-02T20:48:09.1632400Z [1m[92m  Downloaded[0m cfg_aliases v0.1.1
+build-ios	Build Static Library	2026-03-02T20:48:09.1686770Z [1m[92m  Downloaded[0m accesskit_macos v0.10.1
+build-ios	Build Static Library	2026-03-02T20:48:09.1728890Z [1m[92m  Downloaded[0m arboard v3.6.1
+build-ios	Build Static Library	2026-03-02T20:48:09.1836410Z [1m[92m  Downloaded[0m futures-sink v0.3.32
+build-ios	Build Static Library	2026-03-02T20:48:09.1936130Z [1m[92m  Downloaded[0m clap_lex v1.0.0
+build-ios	Build Static Library	2026-03-02T20:48:09.1991820Z [1m[92m  Downloaded[0m bitflags v1.3.2
+build-ios	Build Static Library	2026-03-02T20:48:09.1992980Z [1m[92m  Downloaded[0m pin-utils v0.1.0
+build-ios	Build Static Library	2026-03-02T20:48:09.1993440Z [1m[92m  Downloaded[0m atomic-waker v1.1.2
+build-ios	Build Static Library	2026-03-02T20:48:09.1993880Z [1m[92m  Downloaded[0m ab_glyph_rasterizer v0.1.10
+build-ios	Build Static Library	2026-03-02T20:48:09.1994450Z [1m[92m  Downloaded[0m byteorder-lite v0.1.0
+build-ios	Build Static Library	2026-03-02T20:48:09.2027690Z [1m[92m  Downloaded[0m fnv v1.0.7
+build-ios	Build Static Library	2026-03-02T20:48:09.2169750Z [1m[92m  Downloaded[0m powerfmt v0.2.0
+build-ios	Build Static Library	2026-03-02T20:48:09.2170630Z [1m[92m  Downloaded[0m potential_utf v0.1.4
+build-ios	Build Static Library	2026-03-02T20:48:09.2174910Z [1m[92m  Downloaded[0m futures-macro v0.3.32
+build-ios	Build Static Library	2026-03-02T20:48:09.2251380Z [1m[92m  Downloaded[0m version_check v0.9.5
+build-ios	Build Static Library	2026-03-02T20:48:09.2307090Z [1m[92m  Downloaded[0m http-body v1.0.1
+build-ios	Build Static Library	2026-03-02T20:48:09.2433070Z [1m[92m  Downloaded[0m parking_lot v0.12.5
+build-ios	Build Static Library	2026-03-02T20:48:09.2646890Z [1m[92m  Downloaded[0m memoffset v0.9.1
+build-ios	Build Static Library	2026-03-02T20:48:09.2794990Z [1m[92m  Downloaded[0m objc2-io-surface v0.3.2
+build-ios	Build Static Library	2026-03-02T20:48:09.2939810Z [1m[92m  Downloaded[0m libloading v0.7.4
+build-ios	Build Static Library	2026-03-02T20:48:09.3115540Z [1m[92m  Downloaded[0m num-conv v0.2.0
+build-ios	Build Static Library	2026-03-02T20:48:09.3194460Z [1m[92m  Downloaded[0m objc-foundation v0.1.1
+build-ios	Build Static Library	2026-03-02T20:48:09.3255660Z [1m[92m  Downloaded[0m objc-sys v0.3.5
+build-ios	Build Static Library	2026-03-02T20:48:09.3355420Z [1m[92m  Downloaded[0m webbrowser v1.1.0
+build-ios	Build Static Library	2026-03-02T20:48:09.3486440Z [1m[92m  Downloaded[0m objc2-quartz-core v0.2.2
+build-ios	Build Static Library	2026-03-02T20:48:09.3584130Z [1m[92m  Downloaded[0m objc2 v0.4.1
+build-ios	Build Static Library	2026-03-02T20:48:09.3739930Z [1m[92m  Downloaded[0m objc2 v0.5.2
+build-ios	Build Static Library	2026-03-02T20:48:09.3923040Z [1m[92m  Downloaded[0m petgraph v0.7.1
+build-ios	Build Static Library	2026-03-02T20:48:09.4303680Z [1m[92m  Downloaded[0m objc2 v0.6.4
+build-ios	Build Static Library	2026-03-02T20:48:09.4598840Z [1m[92m  Downloaded[0m wgpu-hal v0.21.1
+build-ios	Build Static Library	2026-03-02T20:48:09.4765110Z [1m[92m  Downloaded[0m naga v0.20.0
+build-ios	Build Static Library	2026-03-02T20:48:09.5393960Z [1m[92m  Downloaded[0m unicode-width v0.1.14
+build-ios	Build Static Library	2026-03-02T20:48:09.5485900Z [1m[92m  Downloaded[0m syn v1.0.109
+build-ios	Build Static Library	2026-03-02T20:48:09.5734820Z [1m[92m  Downloaded[0m getrandom v0.3.4
+build-ios	Build Static Library	2026-03-02T20:48:09.5817910Z [1m[92m  Downloaded[0m gpu-descriptor v0.3.2
+build-ios	Build Static Library	2026-03-02T20:48:09.5850190Z [1m[92m  Downloaded[0m zmij v1.0.21
+build-ios	Build Static Library	2026-03-02T20:48:09.5894550Z [1m[92m  Downloaded[0m glutin-winit v0.4.2
+build-ios	Build Static Library	2026-03-02T20:48:09.5923410Z [1m[92m  Downloaded[0m gpu-alloc v0.6.0
+build-ios	Build Static Library	2026-03-02T20:48:09.5964460Z [1m[92m  Downloaded[0m regex-syntax v0.8.10
+build-ios	Build Static Library	2026-03-02T20:48:09.6098540Z [1m[92m  Downloaded[0m getrandom v0.4.1
+build-ios	Build Static Library	2026-03-02T20:48:09.6183550Z [1m[92m  Downloaded[0m x11rb v0.13.2
+build-ios	Build Static Library	2026-03-02T20:48:09.6332410Z [1m[92m  Downloaded[0m tracing v0.1.44
+build-ios	Build Static Library	2026-03-02T20:48:09.6611260Z [1m[92m  Downloaded[0m glow v0.13.1
+build-ios	Build Static Library	2026-03-02T20:48:09.6701780Z [1m[92m  Downloaded[0m glutin v0.31.3
+build-ios	Build Static Library	2026-03-02T20:48:09.6776880Z [1m[92m  Downloaded[0m rustix v1.1.4
+build-ios	Build Static Library	2026-03-02T20:48:09.7284350Z [1m[92m  Downloaded[0m yaml-rust v0.4.5
+build-ios	Build Static Library	2026-03-02T20:48:09.7327820Z [1m[92m  Downloaded[0m writeable v0.6.2
+build-ios	Build Static Library	2026-03-02T20:48:09.7372590Z [1m[92m  Downloaded[0m gimli v0.31.1
+build-ios	Build Static Library	2026-03-02T20:48:09.7486250Z [1m[92m  Downloaded[0m wgpu-types v0.20.0
+build-ios	Build Static Library	2026-03-02T20:48:09.7518760Z [1m[92m  Downloaded[0m image v0.25.9
+build-ios	Build Static Library	2026-03-02T20:48:09.7695710Z [1m[92m  Downloaded[0m gpu-alloc-types v0.3.0
+build-ios	Build Static Library	2026-03-02T20:48:09.7773240Z [1m[92m  Downloaded[0m regex-automata v0.4.14
+build-ios	Build Static Library	2026-03-02T20:48:09.8366720Z [1m[92m  Downloaded[0m getrandom v0.2.17
+build-ios	Build Static Library	2026-03-02T20:48:09.8474980Z [1m[92m  Downloaded[0m zerovec-derive v0.11.2
+build-ios	Build Static Library	2026-03-02T20:48:09.8577060Z [1m[92m  Downloaded[0m gethostname v1.1.0
+build-ios	Build Static Library	2026-03-02T20:48:09.8678850Z [1m[92m  Downloaded[0m syn v2.0.117
+build-ios	Build Static Library	2026-03-02T20:48:09.8779880Z [1m[92m  Downloaded[0m objc2-app-kit v0.2.2
+build-ios	Build Static Library	2026-03-02T20:48:09.9095350Z [1m[92m  Downloaded[0m icrate v0.0.4
+build-ios	Build Static Library	2026-03-02T20:48:10.1278220Z [1m[92m  Downloaded[0m jiff v0.2.22
+build-ios	Build Static Library	2026-03-02T20:48:10.1541430Z [1m[92m  Downloaded[0m x11rb-protocol v0.13.2
+build-ios	Build Static Library	2026-03-02T20:48:10.1733830Z [1m[92m  Downloaded[0m winit v0.29.15
+build-ios	Build Static Library	2026-03-02T20:48:10.2124350Z [1m[92m  Downloaded[0m syntect v5.3.0
+build-ios	Build Static Library	2026-03-02T20:48:10.2294220Z [1m[92m  Downloaded[0m libc v0.2.182
+build-ios	Build Static Library	2026-03-02T20:48:10.2948090Z [1m[92m  Downloaded[0m tokio v1.49.0
+build-ios	Build Static Library	2026-03-02T20:48:10.3713950Z [1m[92m  Downloaded[0m pxfm v0.1.28
+build-ios	Build Static Library	2026-03-02T20:48:10.4166160Z [1m[92m  Downloaded[0m objc2 v0.3.0-beta.3.patch-leaks.3
+build-ios	Build Static Library	2026-03-02T20:48:10.4285710Z [1m[92m  Downloaded[0m time v0.3.47
+build-ios	Build Static Library	2026-03-02T20:48:10.4525350Z [1m[92m  Downloaded[0m quick-xml v0.38.4
+build-ios	Build Static Library	2026-03-02T20:48:10.4616330Z [1m[92m  Downloaded[0m ttf-parser v0.25.1
+build-ios	Build Static Library	2026-03-02T20:48:10.4809690Z [1m[92m  Downloaded[0m moxcms v0.7.11
+build-ios	Build Static Library	2026-03-02T20:48:10.5005140Z [1m[92m  Downloaded[0m serde_json v1.0.149
+build-ios	Build Static Library	2026-03-02T20:48:10.5131650Z [1m[92m  Downloaded[0m regex v1.12.3
+build-ios	Build Static Library	2026-03-02T20:48:10.5229590Z [1m[92m  Downloaded[0m objc2-app-kit v0.3.2
+build-ios	Build Static Library	2026-03-02T20:48:10.5687810Z [1m[92m  Downloaded[0m tokio-util v0.7.18
+build-ios	Build Static Library	2026-03-02T20:48:10.5829560Z [1m[92m  Downloaded[0m web-time v0.2.4
+build-ios	Build Static Library	2026-03-02T20:48:10.5859580Z [1m[92m  Downloaded[0m objc_id v0.1.1
+build-ios	Build Static Library	2026-03-02T20:48:10.5873680Z [1m[92m  Downloaded[0m mio v1.1.1
+build-ios	Build Static Library	2026-03-02T20:48:10.5978060Z [1m[92m  Downloaded[0m metal v0.28.0
+build-ios	Build Static Library	2026-03-02T20:48:10.6327110Z [1m[92m  Downloaded[0m hashbrown v0.12.3
+build-ios	Build Static Library	2026-03-02T20:48:10.6390990Z [1m[92m  Downloaded[0m h2 v0.4.13
+build-ios	Build Static Library	2026-03-02T20:48:10.6508150Z [1m[92m  Downloaded[0m zerovec v0.11.5
+build-ios	Build Static Library	2026-03-02T20:48:10.6615420Z [1m[92m  Downloaded[0m tower v0.4.13
+build-ios	Build Static Library	2026-03-02T20:48:10.6790820Z [1m[92m  Downloaded[0m png v0.18.1
+build-ios	Build Static Library	2026-03-02T20:48:10.6862310Z [1m[92m  Downloaded[0m objc-sys v0.2.0-beta.2
+build-ios	Build Static Library	2026-03-02T20:48:10.6906590Z [1m[92m  Downloaded[0m hashbrown v0.16.1
+build-ios	Build Static Library	2026-03-02T20:48:10.7000160Z [1m[92m  Downloaded[0m hashbrown v0.15.5
+build-ios	Build Static Library	2026-03-02T20:48:10.7096870Z [1m[92m  Downloaded[0m itertools v0.14.0
+build-ios	Build Static Library	2026-03-02T20:48:10.7212300Z [1m[92m  Downloaded[0m typed-path v0.12.3
+build-ios	Build Static Library	2026-03-02T20:48:10.7340460Z [1m[92m  Downloaded[0m tower v0.5.3
+build-ios	Build Static Library	2026-03-02T20:48:10.7520960Z [1m[92m  Downloaded[0m tonic v0.12.3
+build-ios	Build Static Library	2026-03-02T20:48:10.7633900Z [1m[92m  Downloaded[0m serde v1.0.228
+build-ios	Build Static Library	2026-03-02T20:48:10.7690250Z [1m[92m  Downloaded[0m objc v0.2.7
+build-ios	Build Static Library	2026-03-02T20:48:10.7733190Z [1m[92m  Downloaded[0m num-traits v0.2.19
+build-ios	Build Static Library	2026-03-02T20:48:10.7788300Z [1m[92m  Downloaded[0m nohash-hasher v0.2.0
+build-ios	Build Static Library	2026-03-02T20:48:10.7808550Z [1m[92m  Downloaded[0m multimap v0.10.1
+build-ios	Build Static Library	2026-03-02T20:48:10.7859180Z [1m[92m  Downloaded[0m miniz_oxide v0.8.9
+build-ios	Build Static Library	2026-03-02T20:48:10.7880540Z [1m[92m  Downloaded[0m litemap v0.8.1
+build-ios	Build Static Library	2026-03-02T20:48:10.7924580Z [1m[92m  Downloaded[0m heck v0.5.0
+build-ios	Build Static Library	2026-03-02T20:48:10.7951840Z [1m[92m  Downloaded[0m gpu-descriptor-types v0.2.0
+build-ios	Build Static Library	2026-03-02T20:48:10.7969430Z [1m[92m  Downloaded[0m indexmap v2.13.0
+build-ios	Build Static Library	2026-03-02T20:48:10.8039010Z [1m[92m  Downloaded[0m httparse v1.10.1
+build-ios	Build Static Library	2026-03-02T20:48:10.8082710Z [1m[92m  Downloaded[0m objc2-foundation v0.3.2
+build-ios	Build Static Library	2026-03-02T20:48:10.8439890Z [1m[92m  Downloaded[0m url v2.5.8
+build-ios	Build Static Library	2026-03-02T20:48:10.8497720Z [1m[92m  Downloaded[0m ruzstd v0.7.3
+build-ios	Build Static Library	2026-03-02T20:48:10.8568640Z [1m[92m  Downloaded[0m rand v0.8.5
+build-ios	Build Static Library	2026-03-02T20:48:10.8633550Z [1m[92m  Downloaded[0m futures-util v0.3.32
+build-ios	Build Static Library	2026-03-02T20:48:10.8919700Z [1m[92m  Downloaded[0m epaint v0.28.1
+build-ios	Build Static Library	2026-03-02T20:48:10.9157810Z [1m[92m  Downloaded[0m linked-hash-map v0.5.6
+build-ios	Build Static Library	2026-03-02T20:48:10.9266850Z [1m[92m  Downloaded[0m libloading v0.8.9
+build-ios	Build Static Library	2026-03-02T20:48:10.9305620Z [1m[92m  Downloaded[0m heck v0.4.1
+build-ios	Build Static Library	2026-03-02T20:48:10.9306140Z [1m[92m  Downloaded[0m itoa v1.0.17
+build-ios	Build Static Library	2026-03-02T20:48:10.9306540Z [1m[92m  Downloaded[0m indexmap v1.9.3
+build-ios	Build Static Library	2026-03-02T20:48:10.9306890Z [1m[92m  Downloaded[0m httpdate v1.0.3
+build-ios	Build Static Library	2026-03-02T20:48:10.9307250Z [1m[92m  Downloaded[0m http-body-util v0.1.3
+build-ios	Build Static Library	2026-03-02T20:48:10.9310460Z [1m[92m  Downloaded[0m hexf-parse v0.2.1
+build-ios	Build Static Library	2026-03-02T20:48:10.9324390Z [1m[92m  Downloaded[0m objc2-foundation v0.2.2
+build-ios	Build Static Library	2026-03-02T20:48:10.9642370Z [1m[92m  Downloaded[0m unicode-ident v1.0.24
+build-ios	Build Static Library	2026-03-02T20:48:10.9687080Z [1m[92m  Downloaded[0m tracing-core v0.1.36
+build-ios	Build Static Library	2026-03-02T20:48:10.9733830Z [1m[92m  Downloaded[0m socket2 v0.6.2
+build-ios	Build Static Library	2026-03-02T20:48:10.9767420Z [1m[92m  Downloaded[0m socket2 v0.5.10
+build-ios	Build Static Library	2026-03-02T20:48:10.9800360Z [1m[92m  Downloaded[0m serde_derive v1.0.228
+build-ios	Build Static Library	2026-03-02T20:48:10.9854740Z [1m[92m  Downloaded[0m rfd v0.14.1
+build-ios	Build Static Library	2026-03-02T20:48:10.9945580Z [1m[92m  Downloaded[0m prost-build v0.13.5
+build-ios	Build Static Library	2026-03-02T20:48:11.0015290Z [1m[92m  Downloaded[0m khronos-egl v6.0.0
+build-ios	Build Static Library	2026-03-02T20:48:11.0082110Z [1m[92m  Downloaded[0m is_terminal_polyfill v1.70.2
+build-ios	Build Static Library	2026-03-02T20:48:11.0084550Z [1m[92m  Downloaded[0m hex v0.4.3
+build-ios	Build Static Library	2026-03-02T20:48:11.0098540Z [1m[92m  Downloaded[0m objc2-encode v2.0.0-pre.2
+build-ios	Build Static Library	2026-03-02T20:48:11.0129460Z [1m[92m  Downloaded[0m objc2-core-graphics v0.3.2
+build-ios	Build Static Library	2026-03-02T20:48:11.0231110Z [1m[92m  Downloaded[0m objc2-core-data v0.2.2
+build-ios	Build Static Library	2026-03-02T20:48:11.0310050Z [1m[92m  Downloaded[0m idna v1.1.0
+build-ios	Build Static Library	2026-03-02T20:48:11.0366530Z [1m[92m  Downloaded[0m icu_collections v2.1.1
+build-ios	Build Static Library	2026-03-02T20:48:11.0484520Z [1m[92m  Downloaded[0m hyper-util v0.1.20
+build-ios	Build Static Library	2026-03-02T20:48:11.0589760Z [1m[92m  Downloaded[0m hyper-timeout v0.5.2
+build-ios	Build Static Library	2026-03-02T20:48:11.0616350Z [1m[92m  Downloaded[0m hyper v1.8.1
+build-ios	Build Static Library	2026-03-02T20:48:11.0732620Z [1m[92m  Downloaded[0m walkdir v2.5.0
+build-ios	Build Static Library	2026-03-02T20:48:11.0768730Z [1m[92m  Downloaded[0m pin-project-internal v1.1.11
+build-ios	Build Static Library	2026-03-02T20:48:11.0819350Z [1m[92m  Downloaded[0m object v0.36.7
+build-ios	Build Static Library	2026-03-02T20:48:11.1235940Z [1m[92m  Downloaded[0m tracing-attributes v0.1.31
+build-ios	Build Static Library	2026-03-02T20:48:11.1303560Z [1m[92m  Downloaded[0m tokio-stream v0.1.18
+build-ios	Build Static Library	2026-03-02T20:48:11.1401120Z [1m[92m  Downloaded[0m time-macros v0.2.27
+build-ios	Build Static Library	2026-03-02T20:48:11.1449100Z [1m[92m  Downloaded[0m thiserror-impl v2.0.18
+build-ios	Build Static Library	2026-03-02T20:48:11.1483190Z [1m[92m  Downloaded[0m thiserror v2.0.18
+build-ios	Build Static Library	2026-03-02T20:48:11.1612070Z [1m[92m  Downloaded[0m tempfile v3.26.0
+build-ios	Build Static Library	2026-03-02T20:48:11.1661280Z [1m[92m  Downloaded[0m synstructure v0.13.2
+build-ios	Build Static Library	2026-03-02T20:48:11.1699840Z [1m[92m  Downloaded[0m static_assertions v1.1.0
+build-ios	Build Static Library	2026-03-02T20:48:11.1716850Z [1m[92m  Downloaded[0m smallvec v1.15.1
+build-ios	Build Static Library	2026-03-02T20:48:11.1754040Z [1m[92m  Downloaded[0m rustversion v1.0.22
+build-ios	Build Static Library	2026-03-02T20:48:11.1809000Z [1m[92m  Downloaded[0m protoc-bin-vendored-macos-aarch_64 v3.2.0
+build-ios	Build Static Library	2026-03-02T20:48:11.2143320Z [1m[92m  Downloaded[0m rand_core v0.6.4
+build-ios	Build Static Library	2026-03-02T20:48:11.2168680Z [1m[92m  Downloaded[0m prost v0.13.5
+build-ios	Build Static Library	2026-03-02T20:48:11.2203740Z [1m[92m  Downloaded[0m prettyplease v0.2.37
+build-ios	Build Static Library	2026-03-02T20:48:11.2263010Z [1m[92m  Downloaded[0m objc2-encode v3.0.0
+build-ios	Build Static Library	2026-03-02T20:48:11.2284150Z [1m[92m  Downloaded[0m objc2-core-image v0.2.2
+build-ios	Build Static Library	2026-03-02T20:48:11.2334110Z [1m[92m  Downloaded[0m protoc-bin-vendored-macos-x86_64 v3.2.0
+build-ios	Build Static Library	2026-03-02T20:48:11.2675380Z [1m[92m  Downloaded[0m idna_adapter v1.2.1
+build-ios	Build Static Library	2026-03-02T20:48:11.2697410Z [1m[92m  Downloaded[0m icu_provider v2.1.1
+build-ios	Build Static Library	2026-03-02T20:48:11.2739880Z [1m[92m  Downloaded[0m want v0.3.1
+build-ios	Build Static Library	2026-03-02T20:48:11.2757990Z [1m[92m  Downloaded[0m pin-project-lite v0.2.17
+build-ios	Build Static Library	2026-03-02T20:48:11.2874740Z [1m[92m  Downloaded[0m pin-project v1.1.11
+build-ios	Build Static Library	2026-03-02T20:48:11.3121980Z [1m[92m  Downloaded[0m percent-encoding v2.3.2
+build-ios	Build Static Library	2026-03-02T20:48:11.3152730Z [1m[92m  Downloaded[0m paste v1.0.15
+build-ios	Build Static Library	2026-03-02T20:48:11.3203650Z [1m[92m  Downloaded[0m parking_lot_core v0.9.12
+build-ios	Build Static Library	2026-03-02T20:48:11.3243790Z [1m[92m  Downloaded[0m once_cell v1.21.3
+build-ios	Build Static Library	2026-03-02T20:48:11.3292280Z [1m[92m  Downloaded[0m mime v0.3.17
+build-ios	Build Static Library	2026-03-02T20:48:11.3320710Z [1m[92m  Downloaded[0m memchr v2.8.0
+build-ios	Build Static Library	2026-03-02T20:48:11.3411290Z [1m[92m  Downloaded[0m matchit v0.7.3
+build-ios	Build Static Library	2026-03-02T20:48:11.3451200Z [1m[92m  Downloaded[0m litrs v1.0.0
+build-ios	Build Static Library	2026-03-02T20:48:11.3499440Z [1m[92m  Downloaded[0m icu_properties_data v2.1.2
+build-ios	Build Static Library	2026-03-02T20:48:11.3692830Z [1m[92m  Downloaded[0m zerocopy v0.8.40
+build-ios	Build Static Library	2026-03-02T20:48:11.3854810Z [1m[92m  Downloaded[0m wgpu-core v0.21.1
+build-ios	Build Static Library	2026-03-02T20:48:11.3977370Z [1m[92m  Downloaded[0m utf8parse v0.2.2
+build-ios	Build Static Library	2026-03-02T20:48:11.3992410Z [1m[92m  Downloaded[0m twox-hash v1.6.3
+build-ios	Build Static Library	2026-03-02T20:48:11.4028280Z [1m[92m  Downloaded[0m tonic-build v0.12.3
+build-ios	Build Static Library	2026-03-02T20:48:11.4046440Z [1m[92m  Downloaded[0m tokio-macros v2.6.1
+build-ios	Build Static Library	2026-03-02T20:48:11.4125720Z [1m[92m  Downloaded[0m tinystr v0.8.2
+build-ios	Build Static Library	2026-03-02T20:48:11.4126690Z [1m[92m  Downloaded[0m thiserror-impl v1.0.69
+build-ios	Build Static Library	2026-03-02T20:48:11.4139100Z [1m[92m  Downloaded[0m thiserror v1.0.69
+build-ios	Build Static Library	2026-03-02T20:48:11.4252700Z [1m[92m  Downloaded[0m termcolor v1.4.1
+build-ios	Build Static Library	2026-03-02T20:48:11.4274380Z [1m[92m  Downloaded[0m stable_deref_trait v1.2.1
+build-ios	Build Static Library	2026-03-02T20:48:11.4293770Z [1m[92m  Downloaded[0m spirv v0.3.0+sdk-1.3.268.0
+build-ios	Build Static Library	2026-03-02T20:48:11.4313050Z [1m[92m  Downloaded[0m slab v0.4.12
+build-ios	Build Static Library	2026-03-02T20:48:11.4336300Z [1m[92m  Downloaded[0m simd-adler32 v0.3.8
+build-ios	Build Static Library	2026-03-02T20:48:11.4371190Z [1m[92m  Downloaded[0m signal-hook-registry v1.4.8
+build-ios	Build Static Library	2026-03-02T20:48:11.4394300Z [1m[92m  Downloaded[0m scopeguard v1.2.0
+build-ios	Build Static Library	2026-03-02T20:48:11.4416900Z [1m[92m  Downloaded[0m same-file v1.0.6
+build-ios	Build Static Library	2026-03-02T20:48:11.4443920Z [1m[92m  Downloaded[0m rustc-hash v1.1.0
+build-ios	Build Static Library	2026-03-02T20:48:11.4460920Z [1m[92m  Downloaded[0m raw-window-handle v0.6.2
+build-ios	Build Static Library	2026-03-02T20:48:11.4495740Z [1m[92m  Downloaded[0m raw-window-handle v0.5.2
+build-ios	Build Static Library	2026-03-02T20:48:11.4528890Z [1m[92m  Downloaded[0m rand_chacha v0.3.1
+build-ios	Build Static Library	2026-03-02T20:48:11.4554370Z [1m[92m  Downloaded[0m quote v1.0.44
+build-ios	Build Static Library	2026-03-02T20:48:11.4602780Z [1m[92m  Downloaded[0m protoc-bin-vendored v3.2.0
+build-ios	Build Static Library	2026-03-02T20:48:11.4621000Z [1m[92m  Downloaded[0m prost-derive v0.13.5
+build-ios	Build Static Library	2026-03-02T20:48:11.4660410Z [1m[92m  Downloaded[0m profiling v1.0.17
+build-ios	Build Static Library	2026-03-02T20:48:11.4675940Z [1m[92m  Downloaded[0m proc-macro-error-attr v1.0.4
+build-ios	Build Static Library	2026-03-02T20:48:11.4692290Z [1m[92m  Downloaded[0m proc-macro-error v1.0.4
+build-ios	Build Static Library	2026-03-02T20:48:11.4753120Z [1m[92m  Downloaded[0m egui v0.28.1
+build-ios	Build Static Library	2026-03-02T20:48:11.4940160Z [1m[92m  Downloaded[0m protoc-bin-vendored-linux-x86_64 v3.2.0
+build-ios	Build Static Library	2026-03-02T20:48:11.5373660Z [1m[92m  Downloaded[0m ash v0.37.3+1.3.251
+build-ios	Build Static Library	2026-03-02T20:48:11.5593750Z [1m[92m  Downloaded[0m malloc_buf v0.0.6
+build-ios	Build Static Library	2026-03-02T20:48:11.5610000Z [1m[92m  Downloaded[0m log v0.4.29
+build-ios	Build Static Library	2026-03-02T20:48:11.5652040Z [1m[92m  Downloaded[0m lock_api v0.4.14
+build-ios	Build Static Library	2026-03-02T20:48:11.5681120Z [1m[92m  Downloaded[0m icu_properties v2.1.2
+build-ios	Build Static Library	2026-03-02T20:48:11.5717950Z [1m[92m  Downloaded[0m protoc-bin-vendored-win32 v3.2.0
+build-ios	Build Static Library	2026-03-02T20:48:11.6167880Z [1m[92m  Downloaded[0m protoc-bin-vendored-linux-aarch_64 v3.2.0
+build-ios	Build Static Library	2026-03-02T20:48:11.6621770Z [1m[92m  Downloaded[0m icu_normalizer_data v2.1.1
+build-ios	Build Static Library	2026-03-02T20:48:11.6656350Z [1m[92m  Downloaded[0m icu_normalizer v2.1.1
+build-ios	Build Static Library	2026-03-02T20:48:11.6715660Z [1m[92m  Downloaded[0m icu_locale_core v2.1.1
+build-ios	Build Static Library	2026-03-02T20:48:11.6846110Z [1m[92m  Downloaded[0m http v1.4.0
+build-ios	Build Static Library	2026-03-02T20:48:11.6925750Z [1m[92m  Downloaded[0m zerotrie v0.2.3
+build-ios	Build Static Library	2026-03-02T20:48:11.6971970Z [1m[92m  Downloaded[0m wgpu v0.20.1
+build-ios	Build Static Library	2026-03-02T20:48:11.7183190Z [1m[92m  Downloaded[0m objc2-metal v0.2.2
+build-ios	Build Static Library	2026-03-02T20:48:11.7332140Z [1m[92m  Downloaded[0m objc2-core-foundation v0.3.2
+build-ios	Build Static Library	2026-03-02T20:48:11.7464870Z [1m[92m  Downloaded[0m utf8_iter v1.0.4
+build-ios	Build Static Library	2026-03-02T20:48:11.7486310Z [1m[92m  Downloaded[0m protoc-bin-vendored-linux-x86_32 v3.2.0
+build-ios	Build Static Library	2026-03-02T20:48:11.7988830Z [1m[92m  Downloaded[0m unicode-xid v0.2.6
+build-ios	Build Static Library	2026-03-02T20:48:11.8025880Z [1m[92m  Downloaded[0m type-map v0.5.1
+build-ios	Build Static Library	2026-03-02T20:48:11.8043910Z [1m[92m  Downloaded[0m protoc-bin-vendored-linux-ppcle_64 v3.2.0
+build-ios	Build Static Library	2026-03-02T20:48:11.8538920Z [1m[92m  Downloaded[0m try-lock v0.2.5
+build-ios	Build Static Library	2026-03-02T20:48:11.8582480Z [1m[92m  Downloaded[0m tower-layer v0.3.3
+build-ios	Build Static Library	2026-03-02T20:48:11.8583000Z [1m[92m  Downloaded[0m time-core v0.1.8
+build-ios	Build Static Library	2026-03-02T20:48:11.8585520Z [1m[92m  Downloaded[0m sync_wrapper v1.0.2
+build-ios	Build Static Library	2026-03-02T20:48:11.8598640Z [1m[92m  Downloaded[0m strsim v0.11.1
+build-ios	Build Static Library	2026-03-02T20:48:11.8618840Z [1m[92m  Downloaded[0m smol_str v0.2.2
+build-ios	Build Static Library	2026-03-02T20:48:11.8638340Z [1m[92m  Downloaded[0m serde_core v1.0.228
+build-ios	Build Static Library	2026-03-02T20:48:11.8677500Z [1m[92m  Downloaded[0m renderdoc-sys v1.1.0
+build-ios	Build Static Library	2026-03-02T20:48:11.8695920Z [1m[92m  Downloaded[0m proc-macro2 v1.0.106
+build-ios	Build Static Library	2026-03-02T20:48:11.8740050Z [1m[92m  Downloaded[0m plist v1.8.0
+build-ios	Build Static Library	2026-03-02T20:48:11.8805210Z [1m[92m  Downloaded[0m flate2 v1.1.9
+build-ios	Build Static Library	2026-03-02T20:48:11.8885420Z [1m[92m  Downloaded[0m fancy-regex v0.16.2
+build-ios	Build Static Library	2026-03-02T20:48:11.8949590Z [1m[92m  Downloaded[0m eframe v0.28.1
+build-ios	Build Static Library	2026-03-02T20:48:11.9015970Z [1m[92m  Downloaded[0m dispatch2 v0.3.1
+build-ios	Build Static Library	2026-03-02T20:48:11.9058170Z [1m[92m  Downloaded[0m crossbeam-channel v0.5.15
+build-ios	Build Static Library	2026-03-02T20:48:11.9128930Z [1m[92m  Downloaded[0m clap_builder v4.5.60
+build-ios	Build Static Library	2026-03-02T20:48:11.9241470Z [1m[92m  Downloaded[0m axum v0.7.9
+build-ios	Build Static Library	2026-03-02T20:48:11.9406020Z [1m[92m  Downloaded[0m aho-corasick v1.1.4
+build-ios	Build Static Library	2026-03-02T20:48:11.9507170Z [1m[92m  Downloaded[0m egui_dock v0.13.0
+build-ios	Build Static Library	2026-03-02T20:48:11.9608220Z [1m[92m  Downloaded[0m crossbeam-utils v0.8.21
+build-ios	Build Static Library	2026-03-02T20:48:11.9709470Z [1m[92m  Downloaded[0m clap v4.5.60
+build-ios	Build Static Library	2026-03-02T20:48:11.9788960Z [1m[92m  Downloaded[0m bytes v1.11.1
+build-ios	Build Static Library	2026-03-02T20:48:11.9870850Z [1m[92m  Downloaded[0m bytemuck v1.25.0
+build-ios	Build Static Library	2026-03-02T20:48:11.9934780Z [1m[92m  Downloaded[0m base64 v0.22.1
+build-ios	Build Static Library	2026-03-02T20:48:11.9999100Z [1m[92m  Downloaded[0m anyhow v1.0.102
+build-ios	Build Static Library	2026-03-02T20:48:12.0073230Z [1m[92m  Downloaded[0m zerofrom-derive v0.1.6
+build-ios	Build Static Library	2026-03-02T20:48:12.0087750Z [1m[92m  Downloaded[0m zerofrom v0.1.6
+build-ios	Build Static Library	2026-03-02T20:48:12.0103380Z [1m[92m  Downloaded[0m yoke-derive v0.8.1
+build-ios	Build Static Library	2026-03-02T20:48:12.0118600Z [1m[92m  Downloaded[0m yoke v0.8.1
+build-ios	Build Static Library	2026-03-02T20:48:12.0148870Z [1m[92m  Downloaded[0m prost-types v0.13.5
+build-ios	Build Static Library	2026-03-02T20:48:12.0177470Z [1m[92m  Downloaded[0m futures-channel v0.3.32
+build-ios	Build Static Library	2026-03-02T20:48:12.0209120Z [1m[92m  Downloaded[0m fdeflate v0.3.7
+build-ios	Build Static Library	2026-03-02T20:48:12.0262490Z [1m[92m  Downloaded[0m fallible-iterator v0.3.0
+build-ios	Build Static Library	2026-03-02T20:48:12.0315120Z [1m[92m  Downloaded[0m either v1.15.0
+build-ios	Build Static Library	2026-03-02T20:48:12.0323590Z [1m[92m  Downloaded[0m egui_plot v0.28.1
+build-ios	Build Static Library	2026-03-02T20:48:12.0341460Z [1m[92m  Downloaded[0m egui_glow v0.28.1
+build-ios	Build Static Library	2026-03-02T20:48:12.0369630Z [1m[92m  Downloaded[0m duplicate v1.0.0
+build-ios	Build Static Library	2026-03-02T20:48:12.0494380Z [1m[92m  Downloaded[0m deranged v0.5.8
+build-ios	Build Static Library	2026-03-02T20:48:12.0518140Z [1m[92m  Downloaded[0m crc32fast v1.5.0
+build-ios	Build Static Library	2026-03-02T20:48:12.0548090Z [1m[92m  Downloaded[0m core-graphics v0.23.2
+build-ios	Build Static Library	2026-03-02T20:48:12.0583950Z [1m[92m  Downloaded[0m core-foundation-sys v0.8.7
+build-ios	Build Static Library	2026-03-02T20:48:12.0646000Z [1m[92m  Downloaded[0m core-foundation v0.9.4
+build-ios	Build Static Library	2026-03-02T20:48:12.0682960Z [1m[92m  Downloaded[0m codespan-reporting v0.11.1
+build-ios	Build Static Library	2026-03-02T20:48:12.0835010Z [1m[92m  Downloaded[0m clap_derive v4.5.55
+build-ios	Build Static Library	2026-03-02T20:48:12.0872670Z [1m[92m  Downloaded[0m bitflags v2.11.0
+build-ios	Build Static Library	2026-03-02T20:48:12.0948620Z [1m[92m  Downloaded[0m arrayvec v0.7.6
+build-ios	Build Static Library	2026-03-02T20:48:12.0979740Z [1m[92m  Downloaded[0m protoc-bin-vendored-linux-s390_64 v3.2.0
+build-ios	Build Static Library	2026-03-02T20:48:12.1526170Z [1m[92m  Downloaded[0m ahash v0.8.12
+build-ios	Build Static Library	2026-03-02T20:48:12.1590740Z [1m[92m  Downloaded[0m owned_ttf_parser v0.25.1
+build-ios	Build Static Library	2026-03-02T20:48:12.1612640Z [1m[92m  Downloaded[0m objc2-encode v4.1.0
+build-ios	Build Static Library	2026-03-02T20:48:12.1635780Z [1m[92m  Downloaded[0m tower-service v0.3.3
+build-ios	Build Static Library	2026-03-02T20:48:12.1645740Z [1m[92m  Downloaded[0m rustc-hash v2.1.1
+build-ios	Build Static Library	2026-03-02T20:48:12.1668740Z [1m[92m  Downloaded[0m ppv-lite86 v0.2.21
+build-ios	Build Static Library	2026-03-02T20:48:12.1723970Z [1m[92m  Downloaded[0m fixedbitset v0.5.7
+build-ios	Build Static Library	2026-03-02T20:48:12.1746800Z [1m[92m  Downloaded[0m env_logger v0.11.9
+build-ios	Build Static Library	2026-03-02T20:48:12.1784540Z [1m[92m  Downloaded[0m emath v0.28.1
+build-ios	Build Static Library	2026-03-02T20:48:12.1824200Z [1m[92m  Downloaded[0m egui-winit v0.28.1
+build-ios	Build Static Library	2026-03-02T20:48:12.1840060Z [1m[92m  Downloaded[0m egui-wgpu v0.28.1
+build-ios	Build Static Library	2026-03-02T20:48:12.1866430Z [1m[92m  Downloaded[0m core-foundation v0.10.1
+build-ios	Build Static Library	2026-03-02T20:48:12.1920860Z [1m[92m  Downloaded[0m block2 v0.5.1
+build-ios	Build Static Library	2026-03-02T20:48:12.2015860Z [1m[92m  Downloaded[0m anstyle-parse v0.2.7
+build-ios	Build Static Library	2026-03-02T20:48:12.2016640Z [1m[92m  Downloaded[0m foreign-types-shared v0.3.1
+build-ios	Build Static Library	2026-03-02T20:48:12.2017070Z [1m[92m  Downloaded[0m foreign-types-macros v0.2.3
+build-ios	Build Static Library	2026-03-02T20:48:12.2039260Z [1m[92m  Downloaded[0m foldhash v0.1.5
+build-ios	Build Static Library	2026-03-02T20:48:12.2059490Z [1m[92m  Downloaded[0m equivalent v1.0.2
+build-ios	Build Static Library	2026-03-02T20:48:12.2079830Z [1m[92m  Downloaded[0m ecolor v0.28.1
+build-ios	Build Static Library	2026-03-02T20:48:12.2120000Z [1m[92m  Downloaded[0m as-raw-xcb-connection v1.0.1
+build-ios	Build Static Library	2026-03-02T20:48:12.2132200Z [1m[92m  Downloaded[0m anstyle v1.0.13
+build-ios	Build Static Library	2026-03-02T20:48:12.2155380Z [1m[92m  Downloaded[0m anstream v0.6.21
+build-ios	Build Static Library	2026-03-02T20:48:12.2191760Z [1m[92m  Downloaded[0m adler2 v2.0.1
+build-ios	Build Static Library	2026-03-02T20:48:12.2210970Z [1m[92m  Downloaded[0m futures-io v0.3.32
+build-ios	Build Static Library	2026-03-02T20:48:12.2224200Z [1m[92m  Downloaded[0m form_urlencoded v1.2.2
+build-ios	Build Static Library	2026-03-02T20:48:12.2235830Z [1m[92m  Downloaded[0m fastrand v2.3.0
+build-ios	Build Static Library	2026-03-02T20:48:12.2259470Z [1m[92m  Downloaded[0m cursor-icon v1.2.0
+build-ios	Build Static Library	2026-03-02T20:48:12.2276840Z [1m[92m  Downloaded[0m core-graphics-types v0.1.3
+build-ios	Build Static Library	2026-03-02T20:48:12.2290240Z [1m[92m  Downloaded[0m colorchoice v1.0.4
+build-ios	Build Static Library	2026-03-02T20:48:12.2310460Z [1m[92m  Downloaded[0m bytemuck_derive v1.10.2
+build-ios	Build Static Library	2026-03-02T20:48:12.2330320Z [1m[92m  Downloaded[0m anstyle-query v1.1.5
+build-ios	Build Static Library	2026-03-02T20:48:12.2426880Z [1m[92m  Downloaded[0m pkg-config v0.3.32
+build-ios	Build Static Library	2026-03-02T20:48:12.2427700Z [1m[92m  Downloaded[0m futures-task v0.3.32
+build-ios	Build Static Library	2026-03-02T20:48:12.2428490Z [1m[92m  Downloaded[0m futures-core v0.3.32
+build-ios	Build Static Library	2026-03-02T20:48:12.2428990Z [1m[92m  Downloaded[0m foreign-types v0.5.0
+build-ios	Build Static Library	2026-03-02T20:48:12.2434720Z [1m[92m  Downloaded[0m errno v0.3.14
+build-ios	Build Static Library	2026-03-02T20:48:12.2459710Z [1m[92m  Downloaded[0m env_filter v1.0.0
+build-ios	Build Static Library	2026-03-02T20:48:12.2479430Z [1m[92m  Downloaded[0m dispatch v0.2.0
+build-ios	Build Static Library	2026-03-02T20:48:12.2495060Z [1m[92m  Downloaded[0m cgl v0.3.2
+build-ios	Build Static Library	2026-03-02T20:48:12.2508250Z [1m[92m  Downloaded[0m bincode v1.3.3
+build-ios	Build Static Library	2026-03-02T20:48:12.2540150Z [1m[92m  Downloaded[0m accesskit v0.12.3
+build-ios	Build Static Library	2026-03-02T20:48:12.2556040Z [1m[92m  Downloaded[0m document-features v0.2.12
+build-ios	Build Static Library	2026-03-02T20:48:12.2572870Z [1m[92m  Downloaded[0m cfg-if v1.0.4
+build-ios	Build Static Library	2026-03-02T20:48:12.2592580Z [1m[92m  Downloaded[0m bit-vec v0.8.0
+build-ios	Build Static Library	2026-03-02T20:48:12.2614570Z [1m[92m  Downloaded[0m bit-vec v0.6.3
+build-ios	Build Static Library	2026-03-02T20:48:12.2639280Z [1m[92m  Downloaded[0m bit-set v0.8.0
+build-ios	Build Static Library	2026-03-02T20:48:12.2654880Z [1m[92m  Downloaded[0m axum-core v0.4.5
+build-ios	Build Static Library	2026-03-02T20:48:12.2693630Z [1m[92m  Downloaded[0m autocfg v1.5.0
+build-ios	Build Static Library	2026-03-02T20:48:12.2730350Z [1m[92m  Downloaded[0m async-trait v0.1.89
+build-ios	Build Static Library	2026-03-02T20:48:12.2809780Z [1m[92m  Downloaded[0m block2 v0.3.0
+build-ios	Build Static Library	2026-03-02T20:48:12.2880430Z [1m[92m  Downloaded[0m bit-set v0.5.3
+build-ios	Build Static Library	2026-03-02T20:48:12.2881220Z [1m[92m  Downloaded[0m async-stream v0.3.6
+build-ios	Build Static Library	2026-03-02T20:48:12.2885710Z [1m[92m  Downloaded[0m accesskit_winit v0.16.1
+build-ios	Build Static Library	2026-03-02T20:48:12.2918940Z [1m[92m  Downloaded[0m displaydoc v0.2.5
+build-ios	Build Static Library	2026-03-02T20:48:12.2970400Z [1m[92m  Downloaded[0m block2 v0.2.0-alpha.6
+build-ios	Build Static Library	2026-03-02T20:48:12.2984090Z [1m[92m  Downloaded[0m block-sys v0.2.1
+build-ios	Build Static Library	2026-03-02T20:48:12.2998890Z [1m[92m  Downloaded[0m block-sys v0.1.0-beta.1
+build-ios	Build Static Library	2026-03-02T20:48:12.3015020Z [1m[92m  Downloaded[0m block v0.1.6
+build-ios	Build Static Library	2026-03-02T20:48:12.3025420Z [1m[92m  Downloaded[0m async-stream-impl v0.3.6
+build-ios	Build Static Library	2026-03-02T20:48:12.3068430Z [1m[92m  Downloaded[0m ab_glyph v0.2.32
+build-ios	Build Static Library	2026-03-02T20:48:12.3069650Z [1m[92m  Downloaded[0m accesskit_consumer v0.16.1
+build-ios	Build Static Library	2026-03-02T20:48:12.3997460Z [1m[92m   Compiling[0m proc-macro2 v1.0.106
+build-ios	Build Static Library	2026-03-02T20:48:12.4098080Z [1m[92m   Compiling[0m unicode-ident v1.0.24
+build-ios	Build Static Library	2026-03-02T20:48:12.4210040Z [1m[92m   Compiling[0m quote v1.0.44
+build-ios	Build Static Library	2026-03-02T20:48:12.9543230Z [1m[92m   Compiling[0m libc v0.2.182
+build-ios	Build Static Library	2026-03-02T20:48:14.8740580Z [1m[92m   Compiling[0m cfg-if v1.0.4
+build-ios	Build Static Library	2026-03-02T20:48:14.9714220Z [1m[92m   Compiling[0m once_cell v1.21.3
+build-ios	Build Static Library	2026-03-02T20:48:15.4950910Z [1m[92m   Compiling[0m smallvec v1.15.1
+build-ios	Build Static Library	2026-03-02T20:48:15.6617210Z [1m[92m   Compiling[0m syn v2.0.117
+build-ios	Build Static Library	2026-03-02T20:48:15.6721600Z [1m[92m   Compiling[0m stable_deref_trait v1.2.1
+build-ios	Build Static Library	2026-03-02T20:48:15.6847580Z [1m[92m   Compiling[0m errno v0.3.14
+build-ios	Build Static Library	2026-03-02T20:48:15.7125110Z [1m[92m   Compiling[0m pin-project-lite v0.2.17
+build-ios	Build Static Library	2026-03-02T20:48:15.7465610Z [1m[92m   Compiling[0m bytes v1.11.1
+build-ios	Build Static Library	2026-03-02T20:48:15.7976470Z [1m[92m   Compiling[0m log v0.4.29
+build-ios	Build Static Library	2026-03-02T20:48:16.0041040Z [1m[92m   Compiling[0m version_check v0.9.5
+build-ios	Build Static Library	2026-03-02T20:48:16.1967680Z [1m[92m   Compiling[0m autocfg v1.5.0
+build-ios	Build Static Library	2026-03-02T20:48:16.4754280Z [1m[92m   Compiling[0m zerocopy v0.8.40
+build-ios	Build Static Library	2026-03-02T20:48:16.4983290Z [1m[92m   Compiling[0m itoa v1.0.17
+build-ios	Build Static Library	2026-03-02T20:48:16.6518550Z [1m[92m   Compiling[0m futures-core v0.3.32
+build-ios	Build Static Library	2026-03-02T20:48:16.6893250Z [1m[92m   Compiling[0m memchr v2.8.0
+build-ios	Build Static Library	2026-03-02T20:48:16.7125920Z [1m[92m   Compiling[0m anyhow v1.0.102
+build-ios	Build Static Library	2026-03-02T20:48:17.2430510Z [1m[92m   Compiling[0m bitflags v2.11.0
+build-ios	Build Static Library	2026-03-02T20:48:17.4878780Z [1m[92m   Compiling[0m cfg_aliases v0.1.1
+build-ios	Build Static Library	2026-03-02T20:48:17.5682420Z [1m[92m   Compiling[0m signal-hook-registry v1.4.8
+build-ios	Build Static Library	2026-03-02T20:48:17.9217790Z [1m[92m   Compiling[0m synstructure v0.13.2
+build-ios	Build Static Library	2026-03-02T20:48:18.3191000Z [1m[92m   Compiling[0m socket2 v0.6.2
+build-ios	Build Static Library	2026-03-02T20:48:18.8738250Z [1m[92m   Compiling[0m mio v1.1.1
+build-ios	Build Static Library	2026-03-02T20:48:18.9715450Z [1m[92m   Compiling[0m zerofrom-derive v0.1.6
+build-ios	Build Static Library	2026-03-02T20:48:19.2189910Z [1m[92m   Compiling[0m yoke-derive v0.8.1
+build-ios	Build Static Library	2026-03-02T20:48:19.4610380Z [1m[92m   Compiling[0m zerovec-derive v0.11.2
+build-ios	Build Static Library	2026-03-02T20:48:19.7579100Z [1m[92m   Compiling[0m zerofrom v0.1.6
+build-ios	Build Static Library	2026-03-02T20:48:19.8285000Z [1m[92m   Compiling[0m displaydoc v0.2.5
+build-ios	Build Static Library	2026-03-02T20:48:19.8509610Z [1m[92m   Compiling[0m yoke v0.8.1
+build-ios	Build Static Library	2026-03-02T20:48:19.9569050Z [1m[92m   Compiling[0m tokio-macros v2.6.1
+build-ios	Build Static Library	2026-03-02T20:48:20.1353370Z [1m[92m   Compiling[0m zerovec v0.11.5
+build-ios	Build Static Library	2026-03-02T20:48:20.2164200Z [1m[92m   Compiling[0m bytemuck_derive v1.10.2
+build-ios	Build Static Library	2026-03-02T20:48:20.3586140Z [1m[92m   Compiling[0m hashbrown v0.16.1
+build-ios	Build Static Library	2026-03-02T20:48:20.5425910Z [1m[92m   Compiling[0m either v1.15.0
+build-ios	Build Static Library	2026-03-02T20:48:20.7897820Z [1m[92m   Compiling[0m parking_lot_core v0.9.12
+build-ios	Build Static Library	2026-03-02T20:48:20.8520530Z [1m[92m   Compiling[0m equivalent v1.0.2
+build-ios	Build Static Library	2026-03-02T20:48:20.9201460Z [1m[92m   Compiling[0m serde_core v1.0.228
+build-ios	Build Static Library	2026-03-02T20:48:20.9304270Z [1m[92m   Compiling[0m slab v0.4.12
+build-ios	Build Static Library	2026-03-02T20:48:20.9506330Z [1m[92m   Compiling[0m bytemuck v1.25.0
+build-ios	Build Static Library	2026-03-02T20:48:21.0515680Z [1m[92m   Compiling[0m indexmap v2.13.0
+build-ios	Build Static Library	2026-03-02T20:48:21.1634240Z [1m[92m   Compiling[0m itertools v0.14.0
+build-ios	Build Static Library	2026-03-02T20:48:21.1790410Z [1m[92m   Compiling[0m tinystr v0.8.2
+build-ios	Build Static Library	2026-03-02T20:48:21.3003150Z [1m[92m   Compiling[0m tokio v1.49.0
+build-ios	Build Static Library	2026-03-02T20:48:21.7836600Z [1m[92m   Compiling[0m http v1.4.0
+build-ios	Build Static Library	2026-03-02T20:48:21.9642560Z [1m[92m   Compiling[0m scopeguard v1.2.0
+build-ios	Build Static Library	2026-03-02T20:48:22.0082810Z [1m[92m   Compiling[0m writeable v0.6.2
+build-ios	Build Static Library	2026-03-02T20:48:22.1099370Z [1m[92m   Compiling[0m objc-sys v0.3.5
+build-ios	Build Static Library	2026-03-02T20:48:22.2231370Z [1m[92m   Compiling[0m simd-adler32 v0.3.8
+build-ios	Build Static Library	2026-03-02T20:48:22.2901950Z [1m[92m   Compiling[0m crc32fast v1.5.0
+build-ios	Build Static Library	2026-03-02T20:48:22.4216060Z [1m[92m   Compiling[0m litemap v0.8.1
+build-ios	Build Static Library	2026-03-02T20:48:22.5176400Z [1m[92m   Compiling[0m icu_locale_core v2.1.1
+build-ios	Build Static Library	2026-03-02T20:48:23.1456220Z [1m[92m   Compiling[0m lock_api v0.4.14
+build-ios	Build Static Library	2026-03-02T20:48:23.2896420Z [1m[92m   Compiling[0m prost-derive v0.13.5
+build-ios	Build Static Library	2026-03-02T20:48:25.2890350Z [1m[92m   Compiling[0m potential_utf v0.1.4
+build-ios	Build Static Library	2026-03-02T20:48:25.4035640Z [1m[92m   Compiling[0m zerotrie v0.2.3
+build-ios	Build Static Library	2026-03-02T20:48:25.6851830Z [1m[92m   Compiling[0m futures-macro v0.3.32
+build-ios	Build Static Library	2026-03-02T20:48:26.2311470Z [1m[92m   Compiling[0m ahash v0.8.12
+build-ios	Build Static Library	2026-03-02T20:48:26.4437140Z [1m[92m   Compiling[0m ttf-parser v0.25.1
+build-ios	Build Static Library	2026-03-02T20:48:27.5231110Z [1m[92m   Compiling[0m percent-encoding v2.3.2
+build-ios	Build Static Library	2026-03-02T20:48:27.6739310Z [1m[92m   Compiling[0m futures-task v0.3.32
+build-ios	Build Static Library	2026-03-02T20:48:27.7643220Z [1m[92m   Compiling[0m adler2 v2.0.1
+build-ios	Build Static Library	2026-03-02T20:48:27.8548900Z [1m[92m   Compiling[0m icu_normalizer_data v2.1.1
+build-ios	Build Static Library	2026-03-02T20:48:28.0085580Z [1m[92m   Compiling[0m icu_properties_data v2.1.2
+build-ios	Build Static Library	2026-03-02T20:48:28.1531230Z [1m[92m   Compiling[0m serde v1.0.228
+build-ios	Build Static Library	2026-03-02T20:48:28.3657550Z [1m[92m   Compiling[0m futures-sink v0.3.32
+build-ios	Build Static Library	2026-03-02T20:48:28.4392950Z [1m[92m   Compiling[0m block-sys v0.2.1
+build-ios	Build Static Library	2026-03-02T20:48:28.6325770Z [1m[92m   Compiling[0m tokio-util v0.7.18
+build-ios	Build Static Library	2026-03-02T20:48:29.6344830Z [1m[92m   Compiling[0m owned_ttf_parser v0.25.1
+build-ios	Build Static Library	2026-03-02T20:48:29.8757320Z [1m[92m   Compiling[0m miniz_oxide v0.8.9
+build-ios	Build Static Library	2026-03-02T20:48:31.6200100Z [1m[92m   Compiling[0m futures-util v0.3.32
+build-ios	Build Static Library	2026-03-02T20:48:32.3787420Z [1m[92m   Compiling[0m icu_provider v2.1.1
+build-ios	Build Static Library	2026-03-02T20:48:32.6411780Z [1m[92m   Compiling[0m icu_collections v2.1.1
+build-ios	Build Static Library	2026-03-02T20:48:32.6846270Z [1m[92m   Compiling[0m parking_lot v0.12.5
+build-ios	Build Static Library	2026-03-02T20:48:32.9903560Z [1m[92m   Compiling[0m http-body v1.0.1
+build-ios	Build Static Library	2026-03-02T20:48:33.0678960Z [1m[92m   Compiling[0m emath v0.28.1
+build-ios	Build Static Library	2026-03-02T20:48:33.0952580Z [1m[92m   Compiling[0m tracing-attributes v0.1.31
+build-ios	Build Static Library	2026-03-02T20:48:33.3549680Z [1m[92m   Compiling[0m serde_derive v1.0.228
+build-ios	Build Static Library	2026-03-02T20:48:33.3966100Z [1m[92m   Compiling[0m tracing-core v0.1.36
+build-ios	Build Static Library	2026-03-02T20:48:33.8462900Z [1m[92m   Compiling[0m ab_glyph_rasterizer v0.1.10
+build-ios	Build Static Library	2026-03-02T20:48:33.9598360Z [1m[92m   Compiling[0m rustix v1.1.4
+build-ios	Build Static Library	2026-03-02T20:48:34.1111080Z [1m[92m   Compiling[0m getrandom v0.4.1
+build-ios	Build Static Library	2026-03-02T20:48:34.1715950Z [1m[92m   Compiling[0m objc2-encode v3.0.0
+build-ios	Build Static Library	2026-03-02T20:48:34.2956560Z [1m[92m   Compiling[0m tower-service v0.3.3
+build-ios	Build Static Library	2026-03-02T20:48:34.3394610Z [1m[92m   Compiling[0m objc2 v0.4.1
+build-ios	Build Static Library	2026-03-02T20:48:34.6557580Z [1m[92m   Compiling[0m ab_glyph v0.2.32
+build-ios	Build Static Library	2026-03-02T20:48:35.4266470Z [1m[92m   Compiling[0m tracing v0.1.44
+build-ios	Build Static Library	2026-03-02T20:48:35.5177760Z [1m[92m   Compiling[0m ecolor v0.28.1
+build-ios	Build Static Library	2026-03-02T20:48:35.5986900Z [1m[92m   Compiling[0m flate2 v1.1.9
+build-ios	Build Static Library	2026-03-02T20:48:35.8687840Z [1m[92m   Compiling[0m aho-corasick v1.1.4
+build-ios	Build Static Library	2026-03-02T20:48:35.9641050Z [1m[92m   Compiling[0m fnv v1.0.7
+build-ios	Build Static Library	2026-03-02T20:48:36.1034880Z [1m[92m   Compiling[0m nohash-hasher v0.2.0
+build-ios	Build Static Library	2026-03-02T20:48:36.3440790Z [1m[92m   Compiling[0m accesskit v0.12.3
+build-ios	Build Static Library	2026-03-02T20:48:36.4770920Z [1m[92m   Compiling[0m regex-syntax v0.8.10
+build-ios	Build Static Library	2026-03-02T20:48:38.0631970Z [1m[92m   Compiling[0m heck v0.5.0
+build-ios	Build Static Library	2026-03-02T20:48:38.2118320Z [1m[92m   Compiling[0m httparse v1.10.1
+build-ios	Build Static Library	2026-03-02T20:48:38.4203180Z [1m[92m   Compiling[0m prettyplease v0.2.37
+build-ios	Build Static Library	2026-03-02T20:48:38.9567790Z [1m[92m   Compiling[0m regex-automata v0.4.14
+build-ios	Build Static Library	2026-03-02T20:48:40.8236880Z [1m[92m   Compiling[0m prost v0.13.5
+build-ios	Build Static Library	2026-03-02T20:48:41.0252800Z [1m[92m   Compiling[0m epaint v0.28.1
+build-ios	Build Static Library	2026-03-02T20:48:42.1122520Z [1m[92m   Compiling[0m icu_properties v2.1.2
+build-ios	Build Static Library	2026-03-02T20:48:43.8057760Z [1m[92m   Compiling[0m block2 v0.3.0
+build-ios	Build Static Library	2026-03-02T20:48:43.9364680Z [1m[92m   Compiling[0m icu_normalizer v2.1.1
+build-ios	Build Static Library	2026-03-02T20:48:45.1752850Z [1m[92m   Compiling[0m winit v0.29.15
+build-ios	Build Static Library	2026-03-02T20:48:45.4060960Z [1m[92m   Compiling[0m getrandom v0.2.17
+build-ios	Build Static Library	2026-03-02T20:48:45.5064990Z [1m[92m   Compiling[0m utf8parse v0.2.2
+build-ios	Build Static Library	2026-03-02T20:48:45.5567520Z [1m[92m   Compiling[0m fixedbitset v0.5.7
+build-ios	Build Static Library	2026-03-02T20:48:45.7129940Z [1m[92m   Compiling[0m rustversion v1.0.22
+build-ios	Build Static Library	2026-03-02T20:48:45.9431170Z [1m[92m   Compiling[0m objc2 v0.6.4
+build-ios	Build Static Library	2026-03-02T20:48:46.1651650Z [1m[92m   Compiling[0m try-lock v0.2.5
+build-ios	Build Static Library	2026-03-02T20:48:46.2153120Z [1m[92m   Compiling[0m static_assertions v1.1.0
+build-ios	Build Static Library	2026-03-02T20:48:46.2655990Z [1m[92m   Compiling[0m dispatch v0.2.0
+build-ios	Build Static Library	2026-03-02T20:48:46.3982320Z [1m[92m   Compiling[0m atomic-waker v1.1.2
+build-ios	Build Static Library	2026-03-02T20:48:46.4839080Z [1m[92m   Compiling[0m fastrand v2.3.0
+build-ios	Build Static Library	2026-03-02T20:48:46.6354820Z [1m[92m   Compiling[0m zmij v1.0.21
+build-ios	Build Static Library	2026-03-02T20:48:46.9093060Z [1m[92m   Compiling[0m raw-window-handle v0.6.2
+build-ios	Build Static Library	2026-03-02T20:48:47.0698000Z [1m[92m   Compiling[0m core-foundation-sys v0.8.7
+build-ios	Build Static Library	2026-03-02T20:48:47.1801830Z [1m[92m   Compiling[0m raw-window-handle v0.5.2
+build-ios	Build Static Library	2026-03-02T20:48:47.3230340Z [1m[92m   Compiling[0m tower-layer v0.3.3
+build-ios	Build Static Library	2026-03-02T20:48:47.4913510Z [1m[92m   Compiling[0m core-foundation v0.9.4
+build-ios	Build Static Library	2026-03-02T20:48:47.8040080Z [1m[92m   Compiling[0m tempfile v3.26.0
+build-ios	Build Static Library	2026-03-02T20:48:47.8754810Z [1m[92m   Compiling[0m h2 v0.4.13
+build-ios	Build Static Library	2026-03-02T20:48:48.0356700Z [1m[92m   Compiling[0m icrate v0.0.4
+build-ios	Build Static Library	2026-03-02T20:48:50.2911930Z [1m[92m   Compiling[0m want v0.3.1
+build-ios	Build Static Library	2026-03-02T20:48:50.4261940Z [1m[92m   Compiling[0m petgraph v0.7.1
+build-ios	Build Static Library	2026-03-02T20:48:51.2217230Z [1m[92m   Compiling[0m anstyle-parse v0.2.7
+build-ios	Build Static Library	2026-03-02T20:48:51.3430530Z [1m[92m   Compiling[0m rand_core v0.6.4
+build-ios	Build Static Library	2026-03-02T20:48:51.4810020Z [1m[92m   Compiling[0m idna_adapter v1.2.1
+build-ios	Build Static Library	2026-03-02T20:48:53.6893730Z [1m[92m   Compiling[0m egui v0.28.1
+build-ios	Build Static Library	2026-03-02T20:48:53.8131310Z [1m[92m   Compiling[0m prost-types v0.13.5
+build-ios	Build Static Library	2026-03-02T20:48:54.4825030Z [1m[92m   Compiling[0m regex v1.12.3
+build-ios	Build Static Library	2026-03-02T20:48:55.3879160Z [1m[92m   Compiling[0m ppv-lite86 v0.2.21
+build-ios	Build Static Library	2026-03-02T20:48:55.5036660Z [1m[92m   Compiling[0m futures-channel v0.3.32
+build-ios	Build Static Library	2026-03-02T20:48:55.5424060Z [1m[92m   Compiling[0m indexmap v1.9.3
+build-ios	Build Static Library	2026-03-02T20:48:55.6323550Z [1m[92m   Compiling[0m num-traits v0.2.19
+build-ios	Build Static Library	2026-03-02T20:48:55.6916010Z [1m[92m   Compiling[0m proc-macro-error-attr v1.0.4
+build-ios	Build Static Library	2026-03-02T20:48:55.7762230Z [1m[92m   Compiling[0m cursor-icon v1.2.0
+build-ios	Build Static Library	2026-03-02T20:48:55.8692550Z [1m[92m   Compiling[0m sync_wrapper v1.0.2
+build-ios	Build Static Library	2026-03-02T20:48:55.8814260Z [1m[92m   Compiling[0m smol_str v0.2.2
+build-ios	Build Static Library	2026-03-02T20:48:55.9183660Z [1m[92m   Compiling[0m syn v1.0.109
+build-ios	Build Static Library	2026-03-02T20:48:56.0394950Z [1m[92m   Compiling[0m pin-utils v0.1.0
+build-ios	Build Static Library	2026-03-02T20:48:56.0890680Z [1m[92m   Compiling[0m multimap v0.10.1
+build-ios	Build Static Library	2026-03-02T20:48:56.0992100Z [1m[92m   Compiling[0m crossbeam-utils v0.8.21
+build-ios	Build Static Library	2026-03-02T20:48:56.1595330Z [1m[92m   Compiling[0m utf8_iter v1.0.4
+build-ios	Build Static Library	2026-03-02T20:48:56.2543090Z [1m[92m   Compiling[0m colorchoice v1.0.4
+build-ios	Build Static Library	2026-03-02T20:48:56.2645260Z [1m[92m   Compiling[0m anstyle v1.0.13
+build-ios	Build Static Library	2026-03-02T20:48:56.3036140Z [1m[92m   Compiling[0m anstyle-query v1.1.5
+build-ios	Build Static Library	2026-03-02T20:48:56.3666210Z [1m[92m   Compiling[0m httpdate v1.0.3
+build-ios	Build Static Library	2026-03-02T20:48:56.4107010Z [1m[92m   Compiling[0m is_terminal_polyfill v1.70.2
+build-ios	Build Static Library	2026-03-02T20:48:56.4629690Z [1m[92m   Compiling[0m objc2-encode v4.1.0
+build-ios	Build Static Library	2026-03-02T20:48:56.6092660Z [1m[92m   Compiling[0m serde_json v1.0.149
+build-ios	Build Static Library	2026-03-02T20:48:56.8561070Z [1m[92m   Compiling[0m prost-build v0.13.5
+build-ios	Build Static Library	2026-03-02T20:48:57.5101130Z [1m[92m   Compiling[0m anstream v0.6.21
+build-ios	Build Static Library	2026-03-02T20:48:57.8315860Z [1m[92m   Compiling[0m hyper v1.8.1
+build-ios	Build Static Library	2026-03-02T20:48:58.0292740Z [1m[92m   Compiling[0m idna v1.1.0
+build-ios	Build Static Library	2026-03-02T20:49:01.4007040Z [1m[92m   Compiling[0m rand_chacha v0.3.1
+build-ios	Build Static Library	2026-03-02T20:49:02.7752040Z [1m[92m   Compiling[0m gethostname v1.1.0
+build-ios	Build Static Library	2026-03-02T20:49:03.3877500Z [1m[92m   Compiling[0m twox-hash v1.6.3
+build-ios	Build Static Library	2026-03-02T20:49:03.6085130Z [1m[92m   Compiling[0m http-body-util v0.1.3
+build-ios	Build Static Library	2026-03-02T20:49:04.0156090Z [1m[92m   Compiling[0m form_urlencoded v1.2.2
+build-ios	Build Static Library	2026-03-02T20:49:04.1912320Z [1m[92m   Compiling[0m pin-project-internal v1.1.11
+build-ios	Build Static Library	2026-03-02T20:49:04.7296100Z [1m[92m   Compiling[0m async-trait v0.1.89
+build-ios	Build Static Library	2026-03-02T20:49:05.3395430Z [1m[92m   Compiling[0m glutin v0.31.3
+build-ios	Build Static Library	2026-03-02T20:49:05.5112430Z [1m[92m   Compiling[0m memoffset v0.9.1
+build-ios	Build Static Library	2026-03-02T20:49:05.5729070Z [1m[92m   Compiling[0m proc-macro-error v1.0.4
+build-ios	Build Static Library	2026-03-02T20:49:05.6536210Z [1m[92m   Compiling[0m hashbrown v0.12.3
+build-ios	Build Static Library	2026-03-02T20:49:05.7280280Z [1m[92m   Compiling[0m thiserror v1.0.69
+build-ios	Build Static Library	2026-03-02T20:49:05.9117510Z [1m[92m   Compiling[0m mime v0.3.17
+build-ios	Build Static Library	2026-03-02T20:49:06.2227970Z [1m[92m   Compiling[0m protoc-bin-vendored-win32 v3.2.0
+build-ios	Build Static Library	2026-03-02T20:49:06.2653110Z [1m[92m   Compiling[0m protoc-bin-vendored-linux-ppcle_64 v3.2.0
+build-ios	Build Static Library	2026-03-02T20:49:06.2767930Z [1m[92m   Compiling[0m protoc-bin-vendored-linux-x86_32 v3.2.0
+build-ios	Build Static Library	2026-03-02T20:49:06.3179500Z [1m[92m   Compiling[0m protoc-bin-vendored-linux-aarch_64 v3.2.0
+build-ios	Build Static Library	2026-03-02T20:49:06.3397130Z [1m[92m   Compiling[0m protoc-bin-vendored-macos-x86_64 v3.2.0
+build-ios	Build Static Library	2026-03-02T20:49:06.3713600Z [1m[92m   Compiling[0m protoc-bin-vendored-linux-x86_64 v3.2.0
+build-ios	Build Static Library	2026-03-02T20:49:06.3916310Z [1m[92m   Compiling[0m base64 v0.22.1
+build-ios	Build Static Library	2026-03-02T20:49:06.4132390Z [1m[92m   Compiling[0m x11rb-protocol v0.13.2
+build-ios	Build Static Library	2026-03-02T20:49:06.8064900Z [1m[92m   Compiling[0m object v0.36.7
+build-ios	Build Static Library	2026-03-02T20:49:07.1962530Z [1m[92m   Compiling[0m protoc-bin-vendored-linux-s390_64 v3.2.0
+build-ios	Build Static Library	2026-03-02T20:49:07.2467320Z [1m[92m   Compiling[0m protoc-bin-vendored-macos-aarch_64 v3.2.0
+build-ios	Build Static Library	2026-03-02T20:49:07.2969080Z [1m[92m   Compiling[0m powerfmt v0.2.0
+build-ios	Build Static Library	2026-03-02T20:49:07.4520220Z [1m[92m   Compiling[0m deranged v0.5.8
+build-ios	Build Static Library	2026-03-02T20:49:08.4244320Z [1m[92m   Compiling[0m protoc-bin-vendored v3.2.0
+build-ios	Build Static Library	2026-03-02T20:49:08.8177040Z [1m[92m   Compiling[0m axum-core v0.4.5
+build-ios	Build Static Library	2026-03-02T20:49:10.8745640Z [1m[92m   Compiling[0m x11rb v0.13.2
+build-ios	Build Static Library	2026-03-02T20:49:12.1725590Z [1m[92m   Compiling[0m pin-project v1.1.11
+build-ios	Build Static Library	2026-03-02T20:49:12.2033540Z [1m[92m   Compiling[0m url v2.5.8
+build-ios	Build Static Library	2026-03-02T20:49:14.0474020Z [1m[92m   Compiling[0m ruzstd v0.7.3
+build-ios	Build Static Library	2026-03-02T20:49:15.4861680Z [1m[92m   Compiling[0m rand v0.8.5
+build-ios	Build Static Library	2026-03-02T20:49:16.9146300Z [1m[92m   Compiling[0m hyper-util v0.1.20
+build-ios	Build Static Library	2026-03-02T20:49:17.5708430Z [1m[92m   Compiling[0m objc2-foundation v0.3.2
+build-ios	Build Static Library	2026-03-02T20:49:18.3299460Z [1m[92m   Compiling[0m tonic-build v0.12.3
+build-ios	Build Static Library	2026-03-02T20:49:18.6994800Z [1m[92m   Compiling[0m tower v0.5.3
+build-ios	Build Static Library	2026-03-02T20:49:18.9243630Z [1m[92m   Compiling[0m fdeflate v0.3.7
+build-ios	Build Static Library	2026-03-02T20:49:18.9253830Z [1m[92m   Compiling[0m async-stream-impl v0.3.6
+build-ios	Build Static Library	2026-03-02T20:49:19.2354910Z [1m[92m   Compiling[0m thiserror-impl v1.0.69
+build-ios	Build Static Library	2026-03-02T20:49:19.5989460Z [1m[92m   Compiling[0m glutin-winit v0.4.2
+build-ios	Build Static Library	2026-03-02T20:49:19.8068630Z [1m[92m   Compiling[0m libloading v0.8.9
+build-ios	Build Static Library	2026-03-02T20:49:19.8207310Z [1m[92m   Compiling[0m fallible-iterator v0.3.0
+build-ios	Build Static Library	2026-03-02T20:49:19.9590140Z [1m[92m   Compiling[0m paste v1.0.15
+build-ios	Build Static Library	2026-03-02T20:49:19.9704430Z [1m[92m   Compiling[0m clap_lex v1.0.0
+build-ios	Build Static Library	2026-03-02T20:49:20.0851650Z [1m[92m   Compiling[0m num-conv v0.2.0
+build-ios	Build Static Library	2026-03-02T20:49:20.1603570Z [1m[92m   Compiling[0m bit-vec v0.8.0
+build-ios	Build Static Library	2026-03-02T20:49:20.1707770Z [1m[92m   Compiling[0m thiserror v2.0.18
+build-ios	Build Static Library	2026-03-02T20:49:20.2424130Z [1m[92m   Compiling[0m strsim v0.11.1
+build-ios	Build Static Library	2026-03-02T20:49:20.3986250Z [1m[92m   Compiling[0m pxfm v0.1.28
+build-ios	Build Static Library	2026-03-02T20:49:20.4087450Z [1m[92m   Compiling[0m time-core v0.1.8
+build-ios	Build Static Library	2026-03-02T20:49:20.4892110Z [1m[92m   Compiling[0m matchit v0.7.3
+build-ios	Build Static Library	2026-03-02T20:49:20.8315720Z [1m[92m   Compiling[0m axum v0.7.9
+build-ios	Build Static Library	2026-03-02T20:49:21.1063610Z [1m[92m   Compiling[0m time v0.3.47
+build-ios	Build Static Library	2026-03-02T20:49:23.9512770Z [1m[92m   Compiling[0m moxcms v0.7.11
+build-ios	Build Static Library	2026-03-02T20:49:26.1848140Z [1m[92m   Compiling[0m clap_builder v4.5.60
+build-ios	Build Static Library	2026-03-02T20:49:32.0612550Z [1m[92m   Compiling[0m bit-set v0.8.0
+build-ios	Build Static Library	2026-03-02T20:49:32.1801060Z [1m[92m   Compiling[0m gimli v0.31.1
+build-ios	Build Static Library	2026-03-02T20:49:35.5416330Z [1m[91merror[0m[1m: Please select at least one api backend[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.5417310Z   [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:24:1
+build-ios	Build Static Library	2026-03-02T20:49:35.5417940Z    [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.5420110Z [1m[94m24[0m [1m[94m|[0m compile_error!("Please select at least one api backend");
+build-ios	Build Static Library	2026-03-02T20:49:35.5422820Z    [1m[94m|[0m [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.5449900Z
+build-ios	Build Static Library	2026-03-02T20:49:35.6040790Z [1m[91merror[E0392][0m[1m: type parameter `T` is never used[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.6154670Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/surface.rs:278:18
+build-ios	Build Static Library	2026-03-02T20:49:35.6256320Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.6264060Z [1m[94m278[0m [1m[94m|[0m pub enum Surface<T: SurfaceTypeTrait> {
+build-ios	Build Static Library	2026-03-02T20:49:35.6264580Z     [1m[94m|[0m                  [1m[91m^[0m [1m[91munused type parameter[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.6264940Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.6265520Z     [1m[94m= [0m[1mhelp[0m: consider removing `T`, referring to it in a field, or using a marker such as `PhantomData`
+build-ios	Build Static Library	2026-03-02T20:49:35.6266060Z
+build-ios	Build Static Library	2026-03-02T20:49:35.6387570Z [1m[91merror[E0277][0m[1m: `()` doesn't implement `std::fmt::Display`[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.6407790Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/display.rs:524:57
+build-ios	Build Static Library	2026-03-02T20:49:35.6457160Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.6457960Z [1m[94m524[0m [1m[94m|[0m         f.write_fmt(format_args!("DisplayApiPreference::{api}"))
+build-ios	Build Static Library	2026-03-02T20:49:35.6464670Z     [1m[94m|[0m                                                         [1m[91m^^^^^[0m [1m[91m`()` cannot be formatted with the default formatter[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.6465090Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.6465600Z     [1m[94m= [0m[1mhelp[0m: the trait `std::fmt::Display` is not implemented for `()`
+build-ios	Build Static Library	2026-03-02T20:49:35.6466160Z     [1m[94m= [0m[1mnote[0m: in format strings you may be able to use `{:?}` (or {:#?} for pretty-print) instead
+build-ios	Build Static Library	2026-03-02T20:49:35.6466520Z
+build-ios	Build Static Library	2026-03-02T20:49:35.6678600Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&Config` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.6792040Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:69:19
+build-ios	Build Static Library	2026-03-02T20:49:35.6861420Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.6862520Z  [1m[94m69[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:35.6863350Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.6863780Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.6864510Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/config.rs:451:9
+build-ios	Build Static Library	2026-03-02T20:49:35.6992040Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.7137880Z [1m[94m451[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(config) => config.color_buffer_type())
+build-ios	Build Static Library	2026-03-02T20:49:35.7138850Z     [1m[94m|[0m         [1m[94m------------------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.7141590Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.7141810Z [1m[92mnote[0m: `Config` defined here
+build-ios	Build Static Library	2026-03-02T20:49:35.7142320Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/config.rs:431:10
+build-ios	Build Static Library	2026-03-02T20:49:35.7142770Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.7143010Z [1m[94m431[0m [1m[94m|[0m pub enum Config {
+build-ios	Build Static Library	2026-03-02T20:49:35.7143310Z     [1m[94m|[0m          [1m[92m^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.7143660Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&Config`
+build-ios	Build Static Library	2026-03-02T20:49:35.7144110Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:35.7144730Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:35.7145470Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:35.7145870Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.7146110Z  [1m[94m69[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.7146450Z  [1m[94m70[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.7146740Z  [1m[94m71[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.7147010Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.7147100Z
+build-ios	Build Static Library	2026-03-02T20:49:35.7147350Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&Config` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.7147960Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:69:19
+build-ios	Build Static Library	2026-03-02T20:49:35.7148420Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.7148630Z  [1m[94m69[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:35.7148920Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.7149180Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.7149750Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/config.rs:455:9
+build-ios	Build Static Library	2026-03-02T20:49:35.7150180Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.7150590Z [1m[94m455[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(config) => config.float_pixels())
+build-ios	Build Static Library	2026-03-02T20:49:35.7151200Z     [1m[94m|[0m         [1m[94m-------------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.7151610Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.7151860Z [1m[92mnote[0m: `Config` defined here
+build-ios	Build Static Library	2026-03-02T20:49:35.7152590Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/config.rs:431:10
+build-ios	Build Static Library	2026-03-02T20:49:35.7153010Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.7153230Z [1m[94m431[0m [1m[94m|[0m pub enum Config {
+build-ios	Build Static Library	2026-03-02T20:49:35.7153520Z     [1m[94m|[0m          [1m[92m^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.7153800Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&Config`
+build-ios	Build Static Library	2026-03-02T20:49:35.7154180Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:35.7155000Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:35.7281260Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:35.7401830Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.7503140Z  [1m[94m69[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.7604780Z  [1m[94m70[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.7705760Z  [1m[94m71[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.7807170Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.7907830Z
+build-ios	Build Static Library	2026-03-02T20:49:35.8016860Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&Config` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8118600Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:69:19
+build-ios	Build Static Library	2026-03-02T20:49:35.8209490Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8210000Z  [1m[94m69[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:35.8211640Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8212050Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8212830Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/config.rs:459:9
+build-ios	Build Static Library	2026-03-02T20:49:35.8213800Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8214190Z [1m[94m459[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(config) => config.alpha_size())
+build-ios	Build Static Library	2026-03-02T20:49:35.8214770Z     [1m[94m|[0m         [1m[94m-----------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8215690Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8216010Z [1m[92mnote[0m: `Config` defined here
+build-ios	Build Static Library	2026-03-02T20:49:35.8216590Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/config.rs:431:10
+build-ios	Build Static Library	2026-03-02T20:49:35.8218510Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8218760Z [1m[94m431[0m [1m[94m|[0m pub enum Config {
+build-ios	Build Static Library	2026-03-02T20:49:35.8219040Z     [1m[94m|[0m          [1m[92m^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8219380Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&Config`
+build-ios	Build Static Library	2026-03-02T20:49:35.8219820Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:35.8220470Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:35.8221190Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:35.8221660Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8221880Z  [1m[94m69[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8222260Z  [1m[94m70[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8222540Z  [1m[94m71[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8222800Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8222890Z
+build-ios	Build Static Library	2026-03-02T20:49:35.8223130Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&Config` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8223700Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:69:19
+build-ios	Build Static Library	2026-03-02T20:49:35.8224070Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8224380Z  [1m[94m69[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:35.8225070Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8225320Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8225900Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/config.rs:463:9
+build-ios	Build Static Library	2026-03-02T20:49:35.8226330Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8226670Z [1m[94m463[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(config) => config.depth_size())
+build-ios	Build Static Library	2026-03-02T20:49:35.8227250Z     [1m[94m|[0m         [1m[94m-----------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8227690Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8227910Z [1m[92mnote[0m: `Config` defined here
+build-ios	Build Static Library	2026-03-02T20:49:35.8228390Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/config.rs:431:10
+build-ios	Build Static Library	2026-03-02T20:49:35.8228860Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8229090Z [1m[94m431[0m [1m[94m|[0m pub enum Config {
+build-ios	Build Static Library	2026-03-02T20:49:35.8229380Z     [1m[94m|[0m          [1m[92m^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8229710Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&Config`
+build-ios	Build Static Library	2026-03-02T20:49:35.8230130Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:35.8230740Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:35.8231470Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:35.8232180Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8232420Z  [1m[94m69[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8232750Z  [1m[94m70[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8233070Z  [1m[94m71[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8233300Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8233380Z
+build-ios	Build Static Library	2026-03-02T20:49:35.8233600Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&Config` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8254980Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:69:19
+build-ios	Build Static Library	2026-03-02T20:49:35.8255590Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8255830Z  [1m[94m69[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:35.8256190Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8256430Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8256920Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/config.rs:467:9
+build-ios	Build Static Library	2026-03-02T20:49:35.8257380Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8257690Z [1m[94m467[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(config) => config.stencil_size())
+build-ios	Build Static Library	2026-03-02T20:49:35.8258330Z     [1m[94m|[0m         [1m[94m-------------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8258710Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8258880Z [1m[92mnote[0m: `Config` defined here
+build-ios	Build Static Library	2026-03-02T20:49:35.8259320Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/config.rs:431:10
+build-ios	Build Static Library	2026-03-02T20:49:35.8259700Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8259880Z [1m[94m431[0m [1m[94m|[0m pub enum Config {
+build-ios	Build Static Library	2026-03-02T20:49:35.8260110Z     [1m[94m|[0m          [1m[92m^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8260390Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&Config`
+build-ios	Build Static Library	2026-03-02T20:49:35.8260770Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:35.8261360Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:35.8262120Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:35.8262570Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8263180Z  [1m[94m69[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8263470Z  [1m[94m70[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8263820Z  [1m[94m71[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8264020Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8264180Z
+build-ios	Build Static Library	2026-03-02T20:49:35.8264390Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&Config` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8264930Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:69:19
+build-ios	Build Static Library	2026-03-02T20:49:35.8265360Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8265560Z  [1m[94m69[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:35.8265820Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8266020Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8266430Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/config.rs:471:9
+build-ios	Build Static Library	2026-03-02T20:49:35.8266840Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8267140Z [1m[94m471[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(config) => config.num_samples())
+build-ios	Build Static Library	2026-03-02T20:49:35.8278460Z     [1m[94m|[0m         [1m[94m------------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8278830Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8278990Z [1m[92mnote[0m: `Config` defined here
+build-ios	Build Static Library	2026-03-02T20:49:35.8279470Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/config.rs:431:10
+build-ios	Build Static Library	2026-03-02T20:49:35.8280090Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8280270Z [1m[94m431[0m [1m[94m|[0m pub enum Config {
+build-ios	Build Static Library	2026-03-02T20:49:35.8280580Z     [1m[94m|[0m          [1m[92m^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8280850Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&Config`
+build-ios	Build Static Library	2026-03-02T20:49:35.8281240Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:35.8281930Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:35.8282660Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:35.8283160Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8283370Z  [1m[94m69[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8283710Z  [1m[94m70[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8283970Z  [1m[94m71[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8284220Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8284330Z
+build-ios	Build Static Library	2026-03-02T20:49:35.8284550Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&Config` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8285110Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:69:19
+build-ios	Build Static Library	2026-03-02T20:49:35.8285560Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8285810Z  [1m[94m69[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:35.8286100Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8286320Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8286790Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/config.rs:475:9
+build-ios	Build Static Library	2026-03-02T20:49:35.8287270Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8287570Z [1m[94m475[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(config) => config.srgb_capable())
+build-ios	Build Static Library	2026-03-02T20:49:35.8288100Z     [1m[94m|[0m         [1m[94m-------------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8288460Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8288620Z [1m[92mnote[0m: `Config` defined here
+build-ios	Build Static Library	2026-03-02T20:49:35.8289050Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/config.rs:431:10
+build-ios	Build Static Library	2026-03-02T20:49:35.8289480Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8289920Z [1m[94m431[0m [1m[94m|[0m pub enum Config {
+build-ios	Build Static Library	2026-03-02T20:49:35.8290220Z     [1m[94m|[0m          [1m[92m^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8290510Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&Config`
+build-ios	Build Static Library	2026-03-02T20:49:35.8290900Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:35.8291490Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:35.8292240Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:35.8292630Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8292950Z  [1m[94m69[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8293240Z  [1m[94m70[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8293480Z  [1m[94m71[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8293720Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8293800Z
+build-ios	Build Static Library	2026-03-02T20:49:35.8293990Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&Config` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8313130Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:69:19
+build-ios	Build Static Library	2026-03-02T20:49:35.8313660Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8313870Z  [1m[94m69[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:35.8314140Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8314660Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8315130Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/config.rs:479:9
+build-ios	Build Static Library	2026-03-02T20:49:35.8315510Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8315850Z [1m[94m479[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(config) => config.config_surface_types())
+build-ios	Build Static Library	2026-03-02T20:49:35.8316480Z     [1m[94m|[0m         [1m[94m---------------------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8316950Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8317150Z [1m[92mnote[0m: `Config` defined here
+build-ios	Build Static Library	2026-03-02T20:49:35.8317650Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/config.rs:431:10
+build-ios	Build Static Library	2026-03-02T20:49:35.8318040Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8318320Z [1m[94m431[0m [1m[94m|[0m pub enum Config {
+build-ios	Build Static Library	2026-03-02T20:49:35.8318620Z     [1m[94m|[0m          [1m[92m^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8318900Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&Config`
+build-ios	Build Static Library	2026-03-02T20:49:35.8319350Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:35.8319910Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:35.8320650Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:35.8321130Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8321340Z  [1m[94m69[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8321630Z  [1m[94m70[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8321910Z  [1m[94m71[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8322180Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8322270Z
+build-ios	Build Static Library	2026-03-02T20:49:35.8322490Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&Config` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8323030Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:69:19
+build-ios	Build Static Library	2026-03-02T20:49:35.8323410Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8323630Z  [1m[94m69[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:35.8323950Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8324220Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8324770Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/config.rs:483:9
+build-ios	Build Static Library	2026-03-02T20:49:35.8325410Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8325740Z [1m[94m483[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(config) => config.hardware_accelerated())
+build-ios	Build Static Library	2026-03-02T20:49:35.8326370Z     [1m[94m|[0m         [1m[94m---------------------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8326970Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8327390Z [1m[92mnote[0m: `Config` defined here
+build-ios	Build Static Library	2026-03-02T20:49:35.8327860Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/config.rs:431:10
+build-ios	Build Static Library	2026-03-02T20:49:35.8328330Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8328530Z [1m[94m431[0m [1m[94m|[0m pub enum Config {
+build-ios	Build Static Library	2026-03-02T20:49:35.8328830Z     [1m[94m|[0m          [1m[92m^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8329170Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&Config`
+build-ios	Build Static Library	2026-03-02T20:49:35.8329520Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:35.8330080Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:35.8330760Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:35.8331150Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8331410Z  [1m[94m69[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8331880Z  [1m[94m70[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8332120Z  [1m[94m71[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8332350Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8332470Z
+build-ios	Build Static Library	2026-03-02T20:49:35.8332720Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&Config` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8333280Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:69:19
+build-ios	Build Static Library	2026-03-02T20:49:35.8333660Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8333850Z  [1m[94m69[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:35.8334100Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8334310Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8334810Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/config.rs:487:9
+build-ios	Build Static Library	2026-03-02T20:49:35.8335200Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8335530Z [1m[94m487[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(config) => config.supports_transparency())
+build-ios	Build Static Library	2026-03-02T20:49:35.8336100Z     [1m[94m|[0m         [1m[94m----------------------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8336480Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8336640Z [1m[92mnote[0m: `Config` defined here
+build-ios	Build Static Library	2026-03-02T20:49:35.8337480Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/config.rs:431:10
+build-ios	Build Static Library	2026-03-02T20:49:35.8337950Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8338130Z [1m[94m431[0m [1m[94m|[0m pub enum Config {
+build-ios	Build Static Library	2026-03-02T20:49:35.8338370Z     [1m[94m|[0m          [1m[92m^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8338640Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&Config`
+build-ios	Build Static Library	2026-03-02T20:49:35.8338980Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:35.8339530Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:35.8340230Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:35.8340610Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8340820Z  [1m[94m69[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8341090Z  [1m[94m70[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8341580Z  [1m[94m71[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8341760Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8341840Z
+build-ios	Build Static Library	2026-03-02T20:49:35.8342040Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&Config` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8342570Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:69:19
+build-ios	Build Static Library	2026-03-02T20:49:35.8343000Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8343200Z  [1m[94m69[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:35.8343460Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8343660Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8344070Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/config.rs:491:9
+build-ios	Build Static Library	2026-03-02T20:49:35.8344450Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8344720Z [1m[94m491[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(config) => config.api())
+build-ios	Build Static Library	2026-03-02T20:49:35.8345210Z     [1m[94m|[0m         [1m[94m----------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8345550Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8345710Z [1m[92mnote[0m: `Config` defined here
+build-ios	Build Static Library	2026-03-02T20:49:35.8346140Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/config.rs:431:10
+build-ios	Build Static Library	2026-03-02T20:49:35.8346530Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8346700Z [1m[94m431[0m [1m[94m|[0m pub enum Config {
+build-ios	Build Static Library	2026-03-02T20:49:35.8347050Z     [1m[94m|[0m          [1m[92m^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8347330Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&Config`
+build-ios	Build Static Library	2026-03-02T20:49:35.8347660Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:35.8348220Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:35.8349100Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:35.8398320Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8400430Z  [1m[94m69[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8501440Z  [1m[94m70[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8601680Z  [1m[94m71[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8702360Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.8802410Z
+build-ios	Build Static Library	2026-03-02T20:49:35.8903570Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&Config` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9004790Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:57:19
+build-ios	Build Static Library	2026-03-02T20:49:35.9105620Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9206460Z  [1m[94m57[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:35.9307460Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9408640Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9523300Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/config.rs:499:9
+build-ios	Build Static Library	2026-03-02T20:49:35.9523770Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9524100Z [1m[94m499[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(config) => config.display(); as Display)
+build-ios	Build Static Library	2026-03-02T20:49:35.9524680Z     [1m[94m|[0m         [1m[94m--------------------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9525090Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9525250Z [1m[92mnote[0m: `Config` defined here
+build-ios	Build Static Library	2026-03-02T20:49:35.9525700Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/config.rs:431:10
+build-ios	Build Static Library	2026-03-02T20:49:35.9526090Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9526270Z [1m[94m431[0m [1m[94m|[0m pub enum Config {
+build-ios	Build Static Library	2026-03-02T20:49:35.9526510Z     [1m[94m|[0m          [1m[92m^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9527130Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&Config`
+build-ios	Build Static Library	2026-03-02T20:49:35.9527470Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:35.9528040Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:35.9528740Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:35.9529130Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9529340Z  [1m[94m57[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9529630Z  [1m[94m58[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9529870Z  [1m[94m59[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9530050Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9530130Z
+build-ios	Build Static Library	2026-03-02T20:49:35.9530330Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&Config` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9530880Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:69:19
+build-ios	Build Static Library	2026-03-02T20:49:35.9531260Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9531460Z  [1m[94m69[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:35.9531710Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9531910Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9532320Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/config.rs:534:9
+build-ios	Build Static Library	2026-03-02T20:49:35.9532890Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9533190Z [1m[94m534[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(config) => config.raw_config())
+build-ios	Build Static Library	2026-03-02T20:49:35.9533700Z     [1m[94m|[0m         [1m[94m-----------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9534060Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9534220Z [1m[92mnote[0m: `Config` defined here
+build-ios	Build Static Library	2026-03-02T20:49:35.9534660Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/config.rs:431:10
+build-ios	Build Static Library	2026-03-02T20:49:35.9535050Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9535220Z [1m[94m431[0m [1m[94m|[0m pub enum Config {
+build-ios	Build Static Library	2026-03-02T20:49:35.9535460Z     [1m[94m|[0m          [1m[92m^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9535730Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&Config`
+build-ios	Build Static Library	2026-03-02T20:49:35.9536070Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:35.9536640Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:35.9537320Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:35.9537710Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9537920Z  [1m[94m69[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9538200Z  [1m[94m70[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9538430Z  [1m[94m71[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9538610Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9538690Z
+build-ios	Build Static Library	2026-03-02T20:49:35.9538930Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&NotCurrentContext` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9539500Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:69:19
+build-ios	Build Static Library	2026-03-02T20:49:35.9539880Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9540070Z  [1m[94m69[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:35.9540320Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9540530Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9540930Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/context.rs:443:9
+build-ios	Build Static Library	2026-03-02T20:49:35.9541320Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9541710Z [1m[94m443[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(context) => context.context_api())
+build-ios	Build Static Library	2026-03-02T20:49:35.9663490Z     [1m[94m|[0m         [1m[94m--------------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9765270Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:35.9884340Z [1m[92mnote[0m: `NotCurrentContext` defined here
+build-ios	Build Static Library	2026-03-02T20:49:36.0006510Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/context.rs:363:10
+build-ios	Build Static Library	2026-03-02T20:49:36.0108000Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0213360Z [1m[94m363[0m [1m[94m|[0m pub enum NotCurrentContext {
+build-ios	Build Static Library	2026-03-02T20:49:36.0314940Z     [1m[94m|[0m          [1m[92m^^^^^^^^^^^^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0357830Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&NotCurrentContext`
+build-ios	Build Static Library	2026-03-02T20:49:36.0358440Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:36.0359230Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:36.0360600Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:36.0361280Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0361620Z  [1m[94m69[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0362010Z  [1m[94m70[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0362630Z  [1m[94m71[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0362930Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0363120Z
+build-ios	Build Static Library	2026-03-02T20:49:36.0363480Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&NotCurrentContext` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0364190Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:57:19
+build-ios	Build Static Library	2026-03-02T20:49:36.0364690Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0365000Z  [1m[94m57[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:36.0365370Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0365690Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0366300Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/context.rs:451:9
+build-ios	Build Static Library	2026-03-02T20:49:36.0366800Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0367230Z [1m[94m451[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(context) => context.config(); as Config)
+build-ios	Build Static Library	2026-03-02T20:49:36.0367910Z     [1m[94m|[0m         [1m[94m--------------------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0368400Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0368700Z [1m[92mnote[0m: `NotCurrentContext` defined here
+build-ios	Build Static Library	2026-03-02T20:49:36.0369280Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/context.rs:363:10
+build-ios	Build Static Library	2026-03-02T20:49:36.0369780Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0370110Z [1m[94m363[0m [1m[94m|[0m pub enum NotCurrentContext {
+build-ios	Build Static Library	2026-03-02T20:49:36.0370500Z     [1m[94m|[0m          [1m[92m^^^^^^^^^^^^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0370930Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&NotCurrentContext`
+build-ios	Build Static Library	2026-03-02T20:49:36.0371410Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:36.0372080Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:36.0372880Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:36.0373380Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0373690Z  [1m[94m57[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0374080Z  [1m[94m58[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0374420Z  [1m[94m59[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0374850Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0375040Z
+build-ios	Build Static Library	2026-03-02T20:49:36.0375390Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&NotCurrentContext` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0376070Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:57:19
+build-ios	Build Static Library	2026-03-02T20:49:36.0376560Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0376850Z  [1m[94m57[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:36.0377220Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0377530Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0378040Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/context.rs:459:9
+build-ios	Build Static Library	2026-03-02T20:49:36.0378540Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0378970Z [1m[94m459[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(context) => context.display(); as Display)
+build-ios	Build Static Library	2026-03-02T20:49:36.0379650Z     [1m[94m|[0m         [1m[94m----------------------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0380140Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0380430Z [1m[92mnote[0m: `NotCurrentContext` defined here
+build-ios	Build Static Library	2026-03-02T20:49:36.0381010Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/context.rs:363:10
+build-ios	Build Static Library	2026-03-02T20:49:36.0381500Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0381820Z [1m[94m363[0m [1m[94m|[0m pub enum NotCurrentContext {
+build-ios	Build Static Library	2026-03-02T20:49:36.0382330Z     [1m[94m|[0m          [1m[92m^^^^^^^^^^^^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0382830Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&NotCurrentContext`
+build-ios	Build Static Library	2026-03-02T20:49:36.0383310Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:36.0383980Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:36.0384820Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:36.0385320Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0385640Z  [1m[94m57[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0386020Z  [1m[94m58[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0386360Z  [1m[94m59[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0386650Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0386840Z
+build-ios	Build Static Library	2026-03-02T20:49:36.0387190Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&NotCurrentContext` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0387860Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:69:19
+build-ios	Build Static Library	2026-03-02T20:49:36.0388350Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0388650Z  [1m[94m69[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:36.0389020Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0389330Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0389840Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/context.rs:465:9
+build-ios	Build Static Library	2026-03-02T20:49:36.0390330Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0390740Z [1m[94m465[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(context) => context.raw_context())
+build-ios	Build Static Library	2026-03-02T20:49:36.0391460Z     [1m[94m|[0m         [1m[94m--------------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0391970Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0392270Z [1m[92mnote[0m: `NotCurrentContext` defined here
+build-ios	Build Static Library	2026-03-02T20:49:36.0398650Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/context.rs:363:10
+build-ios	Build Static Library	2026-03-02T20:49:36.0399260Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0399580Z [1m[94m363[0m [1m[94m|[0m pub enum NotCurrentContext {
+build-ios	Build Static Library	2026-03-02T20:49:36.0399970Z     [1m[94m|[0m          [1m[92m^^^^^^^^^^^^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0400560Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&NotCurrentContext`
+build-ios	Build Static Library	2026-03-02T20:49:36.0401040Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:36.0401710Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:36.0402510Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:36.0403010Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0403330Z  [1m[94m69[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0403720Z  [1m[94m70[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0404060Z  [1m[94m71[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0404350Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0404530Z
+build-ios	Build Static Library	2026-03-02T20:49:36.0404900Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&PossiblyCurrentContext` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0405590Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:69:19
+build-ios	Build Static Library	2026-03-02T20:49:36.0406280Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0416440Z  [1m[94m69[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:36.0416870Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0417210Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0417780Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/context.rs:511:9
+build-ios	Build Static Library	2026-03-02T20:49:36.0418480Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0418910Z [1m[94m511[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(context) => context.is_current())
+build-ios	Build Static Library	2026-03-02T20:49:36.0419570Z     [1m[94m|[0m         [1m[94m-------------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0420060Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0420410Z [1m[92mnote[0m: `PossiblyCurrentContext` defined here
+build-ios	Build Static Library	2026-03-02T20:49:36.0421020Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/context.rs:488:10
+build-ios	Build Static Library	2026-03-02T20:49:36.0421540Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0421890Z [1m[94m488[0m [1m[94m|[0m pub enum PossiblyCurrentContext {
+build-ios	Build Static Library	2026-03-02T20:49:36.0422320Z     [1m[94m|[0m          [1m[92m^^^^^^^^^^^^^^^^^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0422800Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&PossiblyCurrentContext`
+build-ios	Build Static Library	2026-03-02T20:49:36.0423320Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:36.0424010Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:36.0424820Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:36.0425350Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0425680Z  [1m[94m69[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0426100Z  [1m[94m70[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0426460Z  [1m[94m71[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0426770Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0426980Z
+build-ios	Build Static Library	2026-03-02T20:49:36.0427450Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&PossiblyCurrentContext` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0428170Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:69:19
+build-ios	Build Static Library	2026-03-02T20:49:36.0428680Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0429000Z  [1m[94m69[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:36.0429380Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0429710Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0430250Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/context.rs:563:9
+build-ios	Build Static Library	2026-03-02T20:49:36.0430960Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0431380Z [1m[94m563[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(context) => context.context_api())
+build-ios	Build Static Library	2026-03-02T20:49:36.0432050Z     [1m[94m|[0m         [1m[94m--------------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0432540Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0432870Z [1m[92mnote[0m: `PossiblyCurrentContext` defined here
+build-ios	Build Static Library	2026-03-02T20:49:36.0433490Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/context.rs:488:10
+build-ios	Build Static Library	2026-03-02T20:49:36.0434000Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0434360Z [1m[94m488[0m [1m[94m|[0m pub enum PossiblyCurrentContext {
+build-ios	Build Static Library	2026-03-02T20:49:36.0434780Z     [1m[94m|[0m          [1m[92m^^^^^^^^^^^^^^^^^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0435260Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&PossiblyCurrentContext`
+build-ios	Build Static Library	2026-03-02T20:49:36.0435770Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:36.0436460Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:36.0437270Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:36.0437790Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0438120Z  [1m[94m69[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0438970Z  [1m[94m70[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0439330Z  [1m[94m71[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0439640Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0439840Z
+build-ios	Build Static Library	2026-03-02T20:49:36.0440230Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&PossiblyCurrentContext` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0440940Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:57:19
+build-ios	Build Static Library	2026-03-02T20:49:36.0441450Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0441770Z  [1m[94m57[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:36.0442150Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0442480Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0443010Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/context.rs:571:9
+build-ios	Build Static Library	2026-03-02T20:49:36.0443530Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0443970Z [1m[94m571[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(context) => context.config(); as Config)
+build-ios	Build Static Library	2026-03-02T20:49:36.0444670Z     [1m[94m|[0m         [1m[94m--------------------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0445170Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0445500Z [1m[92mnote[0m: `PossiblyCurrentContext` defined here
+build-ios	Build Static Library	2026-03-02T20:49:36.0446110Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/context.rs:488:10
+build-ios	Build Static Library	2026-03-02T20:49:36.0446630Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0446980Z [1m[94m488[0m [1m[94m|[0m pub enum PossiblyCurrentContext {
+build-ios	Build Static Library	2026-03-02T20:49:36.0447400Z     [1m[94m|[0m          [1m[92m^^^^^^^^^^^^^^^^^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0447880Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&PossiblyCurrentContext`
+build-ios	Build Static Library	2026-03-02T20:49:36.0448390Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:36.0449220Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:36.0450040Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:36.0450550Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0450890Z  [1m[94m57[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0451400Z  [1m[94m58[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0451770Z  [1m[94m59[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0452080Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0452290Z
+build-ios	Build Static Library	2026-03-02T20:49:36.0452670Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&PossiblyCurrentContext` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0453380Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:57:19
+build-ios	Build Static Library	2026-03-02T20:49:36.0453900Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0454270Z  [1m[94m57[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:36.0454650Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0454980Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0455520Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/context.rs:579:9
+build-ios	Build Static Library	2026-03-02T20:49:36.0456030Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0456480Z [1m[94m579[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(context) => context.display(); as Display)
+build-ios	Build Static Library	2026-03-02T20:49:36.0457210Z     [1m[94m|[0m         [1m[94m----------------------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0457720Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0458050Z [1m[92mnote[0m: `PossiblyCurrentContext` defined here
+build-ios	Build Static Library	2026-03-02T20:49:36.0458650Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/context.rs:488:10
+build-ios	Build Static Library	2026-03-02T20:49:36.0459250Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0459600Z [1m[94m488[0m [1m[94m|[0m pub enum PossiblyCurrentContext {
+build-ios	Build Static Library	2026-03-02T20:49:36.0460060Z     [1m[94m|[0m          [1m[92m^^^^^^^^^^^^^^^^^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0460550Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&PossiblyCurrentContext`
+build-ios	Build Static Library	2026-03-02T20:49:36.0461050Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:36.0461740Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:36.0462550Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:36.0463060Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0463400Z  [1m[94m57[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0463810Z  [1m[94m58[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0464180Z  [1m[94m59[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0464490Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0464690Z
+build-ios	Build Static Library	2026-03-02T20:49:36.0465080Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&PossiblyCurrentContext` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0465790Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:69:19
+build-ios	Build Static Library	2026-03-02T20:49:36.0466300Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0466610Z  [1m[94m69[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:36.0467000Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0467330Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0467860Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/context.rs:585:9
+build-ios	Build Static Library	2026-03-02T20:49:36.0468370Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0468800Z [1m[94m585[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(context) => context.raw_context())
+build-ios	Build Static Library	2026-03-02T20:49:36.0469460Z     [1m[94m|[0m         [1m[94m--------------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0469950Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0470290Z [1m[92mnote[0m: `PossiblyCurrentContext` defined here
+build-ios	Build Static Library	2026-03-02T20:49:36.0470890Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/context.rs:488:10
+build-ios	Build Static Library	2026-03-02T20:49:36.0471480Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0471830Z [1m[94m488[0m [1m[94m|[0m pub enum PossiblyCurrentContext {
+build-ios	Build Static Library	2026-03-02T20:49:36.0472260Z     [1m[94m|[0m          [1m[92m^^^^^^^^^^^^^^^^^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0472730Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&PossiblyCurrentContext`
+build-ios	Build Static Library	2026-03-02T20:49:36.0473240Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:36.0473920Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:36.0474740Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:36.0475260Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0475590Z  [1m[94m69[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0476000Z  [1m[94m70[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0476360Z  [1m[94m71[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0476670Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0476870Z
+build-ios	Build Static Library	2026-03-02T20:49:36.0477280Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&display::Display` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0477980Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/display.rs:271:15
+build-ios	Build Static Library	2026-03-02T20:49:36.0478500Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0478820Z [1m[94m271[0m [1m[94m|[0m         match self {
+build-ios	Build Static Library	2026-03-02T20:49:36.0479260Z     [1m[94m|[0m               [1m[91m^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0479590Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0479930Z [1m[92mnote[0m: `display::Display` defined here
+build-ios	Build Static Library	2026-03-02T20:49:36.0480510Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/display.rs:178:10
+build-ios	Build Static Library	2026-03-02T20:49:36.0481030Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0481330Z [1m[94m178[0m [1m[94m|[0m pub enum Display {
+build-ios	Build Static Library	2026-03-02T20:49:36.0481700Z     [1m[94m|[0m          [1m[92m^^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0482160Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&display::Display`
+build-ios	Build Static Library	2026-03-02T20:49:36.0482650Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:36.0483280Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:36.0483800Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0484130Z [1m[94m271[0m [92m~ [0m        match self[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0484520Z [1m[94m272[0m [92m+             _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0484870Z [1m[94m273[0m [92m+         }[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0485180Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0485380Z
+build-ios	Build Static Library	2026-03-02T20:49:36.0485770Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&display::Display` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0486490Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:69:19
+build-ios	Build Static Library	2026-03-02T20:49:36.0487010Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0487320Z  [1m[94m69[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:36.0487710Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0488040Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0489020Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/display.rs:396:9
+build-ios	Build Static Library	2026-03-02T20:49:36.0489700Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0497340Z [1m[94m396[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(display) => display.get_proc_address(addr))
+build-ios	Build Static Library	2026-03-02T20:49:36.0498070Z     [1m[94m|[0m         [1m[94m-----------------------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0498580Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0498930Z [1m[92mnote[0m: `display::Display` defined here
+build-ios	Build Static Library	2026-03-02T20:49:36.0499800Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/display.rs:178:10
+build-ios	Build Static Library	2026-03-02T20:49:36.0500320Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0500630Z [1m[94m178[0m [1m[94m|[0m pub enum Display {
+build-ios	Build Static Library	2026-03-02T20:49:36.0500990Z     [1m[94m|[0m          [1m[92m^^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0501460Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&display::Display`
+build-ios	Build Static Library	2026-03-02T20:49:36.0501960Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:36.0502740Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:36.0503510Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:36.0503990Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0504530Z  [1m[94m69[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0504920Z  [1m[94m70[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0505250Z  [1m[94m71[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0505520Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0505680Z
+build-ios	Build Static Library	2026-03-02T20:49:36.0506040Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&display::Display` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0506690Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:69:19
+build-ios	Build Static Library	2026-03-02T20:49:36.0507260Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0507540Z  [1m[94m69[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:36.0507880Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0509540Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0510130Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/display.rs:400:9
+build-ios	Build Static Library	2026-03-02T20:49:36.0510630Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0511050Z [1m[94m400[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(display) => display.version_string())
+build-ios	Build Static Library	2026-03-02T20:49:36.0511710Z     [1m[94m|[0m         [1m[94m-----------------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0512170Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0512470Z [1m[92mnote[0m: `display::Display` defined here
+build-ios	Build Static Library	2026-03-02T20:49:36.0513040Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/display.rs:178:10
+build-ios	Build Static Library	2026-03-02T20:49:36.0513530Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0513800Z [1m[94m178[0m [1m[94m|[0m pub enum Display {
+build-ios	Build Static Library	2026-03-02T20:49:36.0514120Z     [1m[94m|[0m          [1m[92m^^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0514550Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&display::Display`
+build-ios	Build Static Library	2026-03-02T20:49:36.0515010Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:36.0515660Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:36.0516440Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:36.0516920Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0517220Z  [1m[94m69[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0517580Z  [1m[94m70[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0517910Z  [1m[94m71[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0518180Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0518350Z
+build-ios	Build Static Library	2026-03-02T20:49:36.0518700Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&display::Display` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0519370Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:69:19
+build-ios	Build Static Library	2026-03-02T20:49:36.0519840Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0520120Z  [1m[94m69[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:36.0520680Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0520970Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0521470Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/display.rs:404:9
+build-ios	Build Static Library	2026-03-02T20:49:36.0521940Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0522350Z [1m[94m404[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(display) => display.supported_features())
+build-ios	Build Static Library	2026-03-02T20:49:36.0523010Z     [1m[94m|[0m         [1m[94m---------------------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0523470Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0523830Z [1m[92mnote[0m: `display::Display` defined here
+build-ios	Build Static Library	2026-03-02T20:49:36.0524380Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/display.rs:178:10
+build-ios	Build Static Library	2026-03-02T20:49:36.0524860Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0525130Z [1m[94m178[0m [1m[94m|[0m pub enum Display {
+build-ios	Build Static Library	2026-03-02T20:49:36.0525440Z     [1m[94m|[0m          [1m[92m^^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0525860Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&display::Display`
+build-ios	Build Static Library	2026-03-02T20:49:36.0526310Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:36.0526960Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:36.0527870Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:36.0528350Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0528640Z  [1m[94m69[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0529010Z  [1m[94m70[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0529330Z  [1m[94m71[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0529600Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0529760Z
+build-ios	Build Static Library	2026-03-02T20:49:36.0530120Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&display::Display` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0530780Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:69:19
+build-ios	Build Static Library	2026-03-02T20:49:36.0531250Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0531530Z  [1m[94m69[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:36.0531870Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0532170Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0532660Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/display.rs:410:9
+build-ios	Build Static Library	2026-03-02T20:49:36.0533130Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0533510Z [1m[94m410[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(display) => display.raw_display())
+build-ios	Build Static Library	2026-03-02T20:49:36.0534130Z     [1m[94m|[0m         [1m[94m--------------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0534590Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0534880Z [1m[92mnote[0m: `display::Display` defined here
+build-ios	Build Static Library	2026-03-02T20:49:36.0535430Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/display.rs:178:10
+build-ios	Build Static Library	2026-03-02T20:49:36.0537220Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0537570Z [1m[94m178[0m [1m[94m|[0m pub enum Display {
+build-ios	Build Static Library	2026-03-02T20:49:36.0537920Z     [1m[94m|[0m          [1m[92m^^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0538580Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&display::Display`
+build-ios	Build Static Library	2026-03-02T20:49:36.0539090Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:36.0544230Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:36.0545020Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:36.0545830Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0546130Z  [1m[94m69[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0546500Z  [1m[94m70[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0546830Z  [1m[94m71[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0547100Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0547270Z
+build-ios	Build Static Library	2026-03-02T20:49:36.0547580Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&Surface<T>` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0548240Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:69:19
+build-ios	Build Static Library	2026-03-02T20:49:36.0548720Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0549000Z  [1m[94m69[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:36.0549350Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0549650Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0550160Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/surface.rs:301:9
+build-ios	Build Static Library	2026-03-02T20:49:36.0550640Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0551030Z [1m[94m301[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(surface) => surface.buffer_age())
+build-ios	Build Static Library	2026-03-02T20:49:36.0551650Z     [1m[94m|[0m         [1m[94m-------------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0552100Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0552370Z [1m[92mnote[0m: `Surface<T>` defined here
+build-ios	Build Static Library	2026-03-02T20:49:36.0553020Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/surface.rs:278:10
+build-ios	Build Static Library	2026-03-02T20:49:36.0553500Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0553820Z [1m[94m278[0m [1m[94m|[0m pub enum Surface<T: SurfaceTypeTrait> {
+build-ios	Build Static Library	2026-03-02T20:49:36.0554200Z     [1m[94m|[0m          [1m[92m^^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0554580Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&Surface<T>`
+build-ios	Build Static Library	2026-03-02T20:49:36.0555020Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:36.0555780Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:36.0556610Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:36.0557100Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0557400Z  [1m[94m69[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0557770Z  [1m[94m70[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0558090Z  [1m[94m71[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0558370Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0558540Z
+build-ios	Build Static Library	2026-03-02T20:49:36.0558840Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&Surface<T>` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0559490Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:69:19
+build-ios	Build Static Library	2026-03-02T20:49:36.0559950Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0560230Z  [1m[94m69[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:36.0560580Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0560950Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0561470Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/surface.rs:305:9
+build-ios	Build Static Library	2026-03-02T20:49:36.0568070Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0568560Z [1m[94m305[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(surface) => surface.width())
+build-ios	Build Static Library	2026-03-02T20:49:36.0569150Z     [1m[94m|[0m         [1m[94m--------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0569590Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0569850Z [1m[92mnote[0m: `Surface<T>` defined here
+build-ios	Build Static Library	2026-03-02T20:49:36.0570390Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/surface.rs:278:10
+build-ios	Build Static Library	2026-03-02T20:49:36.0571010Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0571340Z [1m[94m278[0m [1m[94m|[0m pub enum Surface<T: SurfaceTypeTrait> {
+build-ios	Build Static Library	2026-03-02T20:49:36.0571710Z     [1m[94m|[0m          [1m[92m^^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0572100Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&Surface<T>`
+build-ios	Build Static Library	2026-03-02T20:49:36.0572540Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:36.0573200Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:36.0573970Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:36.0574450Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0574740Z  [1m[94m69[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0575110Z  [1m[94m70[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0575440Z  [1m[94m71[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0575710Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0575870Z
+build-ios	Build Static Library	2026-03-02T20:49:36.0576170Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&Surface<T>` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0576810Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:69:19
+build-ios	Build Static Library	2026-03-02T20:49:36.0577280Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0577670Z  [1m[94m69[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:36.0578020Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0578310Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0578910Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/surface.rs:309:9
+build-ios	Build Static Library	2026-03-02T20:49:36.0579410Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0615590Z [1m[94m309[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(surface) => surface.height())
+build-ios	Build Static Library	2026-03-02T20:49:36.0616410Z     [1m[94m|[0m         [1m[94m---------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0616880Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0617150Z [1m[92mnote[0m: `Surface<T>` defined here
+build-ios	Build Static Library	2026-03-02T20:49:36.0617710Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/surface.rs:278:10
+build-ios	Build Static Library	2026-03-02T20:49:36.0618200Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0618540Z [1m[94m278[0m [1m[94m|[0m pub enum Surface<T: SurfaceTypeTrait> {
+build-ios	Build Static Library	2026-03-02T20:49:36.0618920Z     [1m[94m|[0m          [1m[92m^^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0619310Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&Surface<T>`
+build-ios	Build Static Library	2026-03-02T20:49:36.0619760Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:36.0620410Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:36.0621190Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:36.0621670Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0621970Z  [1m[94m69[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0622350Z  [1m[94m70[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0622680Z  [1m[94m71[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0622960Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0623120Z
+build-ios	Build Static Library	2026-03-02T20:49:36.0623430Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&Surface<T>` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0624080Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:69:19
+build-ios	Build Static Library	2026-03-02T20:49:36.0624550Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0624840Z  [1m[94m69[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:36.0625530Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0625830Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0626370Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/surface.rs:313:9
+build-ios	Build Static Library	2026-03-02T20:49:36.0626930Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0627340Z [1m[94m313[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(surface) => surface.is_single_buffered())
+build-ios	Build Static Library	2026-03-02T20:49:36.0628000Z     [1m[94m|[0m         [1m[94m---------------------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0628470Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0628730Z [1m[92mnote[0m: `Surface<T>` defined here
+build-ios	Build Static Library	2026-03-02T20:49:36.0629270Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/surface.rs:278:10
+build-ios	Build Static Library	2026-03-02T20:49:36.0629750Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0630070Z [1m[94m278[0m [1m[94m|[0m pub enum Surface<T: SurfaceTypeTrait> {
+build-ios	Build Static Library	2026-03-02T20:49:36.0630450Z     [1m[94m|[0m          [1m[92m^^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0630830Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&Surface<T>`
+build-ios	Build Static Library	2026-03-02T20:49:36.0631520Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:36.0632170Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:36.0632960Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:36.0633490Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0633700Z  [1m[94m69[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0634080Z  [1m[94m70[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0634320Z  [1m[94m71[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0634500Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0634590Z
+build-ios	Build Static Library	2026-03-02T20:49:36.0634800Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&Surface<T>` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0635350Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:57:19
+build-ios	Build Static Library	2026-03-02T20:49:36.0635740Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0635930Z  [1m[94m57[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:36.0636180Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0636390Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0636800Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/surface.rs:456:9
+build-ios	Build Static Library	2026-03-02T20:49:36.0637180Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0637500Z [1m[94m456[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(surface) => surface.display(); as Display)
+build-ios	Build Static Library	2026-03-02T20:49:36.0638070Z     [1m[94m|[0m         [1m[94m----------------------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0638450Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0638610Z [1m[92mnote[0m: `Surface<T>` defined here
+build-ios	Build Static Library	2026-03-02T20:49:36.0639060Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/surface.rs:278:10
+build-ios	Build Static Library	2026-03-02T20:49:36.0639450Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0639680Z [1m[94m278[0m [1m[94m|[0m pub enum Surface<T: SurfaceTypeTrait> {
+build-ios	Build Static Library	2026-03-02T20:49:36.0639970Z     [1m[94m|[0m          [1m[92m^^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0640250Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&Surface<T>`
+build-ios	Build Static Library	2026-03-02T20:49:36.0640600Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:36.0641150Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:36.0641830Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:36.0642300Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0642500Z  [1m[94m57[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0642780Z  [1m[94m58[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0643010Z  [1m[94m59[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0643200Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0643270Z
+build-ios	Build Static Library	2026-03-02T20:49:36.0643490Z [1m[91merror[E0004][0m[1m: non-exhaustive patterns: type `&Surface<T>` is non-empty[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0644040Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/lib.rs:69:19
+build-ios	Build Static Library	2026-03-02T20:49:36.0644400Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0644590Z  [1m[94m69[0m [1m[94m|[0m             match $what {
+build-ios	Build Static Library	2026-03-02T20:49:36.0644840Z     [1m[94m|[0m                   [1m[91m^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0645030Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0645410Z    [1m[94m::: [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/surface.rs:462:9
+build-ios	Build Static Library	2026-03-02T20:49:36.0645780Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0646060Z [1m[94m462[0m [1m[94m|[0m         gl_api_dispatch!(self; Self(surface) => surface.raw_surface())
+build-ios	Build Static Library	2026-03-02T20:49:36.0646570Z     [1m[94m|[0m         [1m[94m--------------------------------------------------------------[0m [1m[94min this macro invocation[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0646920Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0647080Z [1m[92mnote[0m: `Surface<T>` defined here
+build-ios	Build Static Library	2026-03-02T20:49:36.0647610Z    [1m[94m--> [0m/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.31.3/src/surface.rs:278:10
+build-ios	Build Static Library	2026-03-02T20:49:36.0647980Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0648200Z [1m[94m278[0m [1m[94m|[0m pub enum Surface<T: SurfaceTypeTrait> {
+build-ios	Build Static Library	2026-03-02T20:49:36.0648480Z     [1m[94m|[0m          [1m[92m^^^^^^^[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0648760Z     [1m[94m= [0m[1mnote[0m: the matched value is of type `&Surface<T>`
+build-ios	Build Static Library	2026-03-02T20:49:36.0649090Z     [1m[94m= [0m[1mnote[0m: references are always considered inhabited
+build-ios	Build Static Library	2026-03-02T20:49:36.0649620Z     [1m[94m= [0m[1mnote[0m: this error originates in the macro `gl_api_dispatch` (in Nightly builds, run with -Z macro-backtrace for more info)
+build-ios	Build Static Library	2026-03-02T20:49:36.0650280Z [1m[96mhelp[0m: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+build-ios	Build Static Library	2026-03-02T20:49:36.0650650Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0650840Z  [1m[94m69[0m [92m~ [0m            match $what[92m {[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0651120Z  [1m[94m70[0m [92m+                 _ => todo!(),[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0651340Z  [1m[94m71[0m [92m+             }[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0651510Z     [1m[94m|[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0651590Z
+build-ios	Build Static Library	2026-03-02T20:49:36.0651750Z [1mSome errors have detailed explanations: E0004, E0277, E0392.[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0652100Z [1mFor more information about an error, try `rustc --explain E0004`.[0m
+build-ios	Build Static Library	2026-03-02T20:49:36.0652480Z [1m[91merror[0m: could not compile `glutin` (lib) due to 36 previous errors
+build-ios	Build Static Library	2026-03-02T20:49:36.0652920Z [1m[33mwarning[0m: build failed, waiting for other jobs to finish...
+build-ios	Build Static Library	2026-03-02T20:49:39.6337030Z ##[error]Process completed with exit code 101.

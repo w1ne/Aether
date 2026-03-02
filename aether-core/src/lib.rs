@@ -85,7 +85,9 @@ pub mod probe_rs {
     #[derive(Clone)]
     pub struct Session;
     impl Session {
-        pub fn target(&self) -> Target { Target }
+        pub fn target(&self) -> Target {
+            Target
+        }
         pub fn core(&mut self, _i: usize) -> anyhow::Result<Core> {
             anyhow::bail!("Hardware support disabled")
         }
@@ -121,9 +123,15 @@ pub mod probe_rs {
         pub fn write_core_reg(&mut self, _addr: u32, _val: RegisterValue) -> anyhow::Result<()> {
             anyhow::bail!("Hardware support disabled")
         }
-        pub fn program_counter(&self) -> u32 { 0 }
-        pub fn stack_pointer(&self) -> u32 { 0 }
-        pub fn return_address(&self) -> u32 { 0 }
+        pub fn program_counter(&self) -> u32 {
+            0
+        }
+        pub fn stack_pointer(&self) -> u32 {
+            0
+        }
+        pub fn return_address(&self) -> u32 {
+            0
+        }
         pub fn run(&mut self) -> anyhow::Result<()> {
             anyhow::bail!("Hardware support disabled")
         }
@@ -153,7 +161,9 @@ pub mod probe_rs {
 
     pub struct Target;
     impl Target {
-        pub fn architecture(&self) -> Architecture { Architecture::Arm }
+        pub fn architecture(&self) -> Architecture {
+            Architecture::Arm
+        }
     }
 
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -257,7 +267,9 @@ pub mod probe {
         pub probe_type: ProbeType,
     }
     impl ProbeInfo {
-        pub fn name(&self) -> String { self.identifier.clone() }
+        pub fn name(&self) -> String {
+            self.identifier.clone()
+        }
     }
 
     #[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
@@ -284,13 +296,25 @@ pub mod probe {
 
     pub struct ProbeManager;
     impl ProbeManager {
-        pub fn new() -> Self { Self }
-        pub fn list_probes(&self) -> anyhow::Result<Vec<ProbeInfo>> { Ok(vec![]) }
-        pub fn connect(&self, _idx: usize, _chip: &str, _proto: Option<WireProtocol>, _reset: bool) -> anyhow::Result<(TargetInfo, crate::probe_rs::Session)> {
+        pub fn new() -> Self {
+            Self
+        }
+        pub fn list_probes(&self) -> anyhow::Result<Vec<ProbeInfo>> {
+            Ok(vec![])
+        }
+        pub fn connect(
+            &self,
+            _idx: usize,
+            _chip: &str,
+            _proto: Option<WireProtocol>,
+            _reset: bool,
+        ) -> anyhow::Result<(TargetInfo, crate::probe_rs::Session)> {
             anyhow::bail!("Hardware support disabled")
         }
     }
-    pub fn map_probe_error(e: &anyhow::Error) -> String { e.to_string() }
+    pub fn map_probe_error(e: &anyhow::Error) -> String {
+        e.to_string()
+    }
 }
 
 #[cfg(not(feature = "hardware"))]
@@ -329,12 +353,18 @@ pub mod svd {
         pub description: Option<String>,
     }
     impl FieldInfo {
-        pub fn decode(&self, _val: u64) -> u64 { 0 }
+        pub fn decode(&self, _val: u64) -> u64 {
+            0
+        }
     }
     pub struct SvdManager;
     impl SvdManager {
-        pub fn new() -> Self { Self }
-        pub fn get_peripherals_info(&self) -> Vec<PeripheralInfo> { vec![] }
+        pub fn new() -> Self {
+            Self
+        }
+        pub fn get_peripherals_info(&self) -> Vec<PeripheralInfo> {
+            vec![]
+        }
     }
 }
 
@@ -349,7 +379,9 @@ pub mod disasm {
     }
     pub struct DisassemblyManager;
     impl DisassemblyManager {
-        pub fn new() -> Self { Self }
+        pub fn new() -> Self {
+            Self
+        }
     }
 }
 
@@ -357,7 +389,9 @@ pub mod disasm {
 pub mod flash {
     pub struct FlashManager;
     impl FlashManager {
-        pub fn new() -> Self { Self }
+        pub fn new() -> Self {
+            Self
+        }
     }
     #[derive(Debug, Clone)]
     pub enum FlashingProgress {
