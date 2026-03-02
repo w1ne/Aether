@@ -19,7 +19,7 @@ jobs:
       - name: Build
         run: cargo build --release --workspace --exclude aether-demo-fw
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: aether-linux
           path: target/release/aether-ui
@@ -35,7 +35,7 @@ jobs:
       - name: Build
         run: cargo build --release --workspace --exclude aether-demo-fw
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: aether-windows
           path: target/release/aether-ui.exe
@@ -53,7 +53,7 @@ jobs:
       - name: Build Static Library
         run: cargo build --release --package aether-ui --target aarch64-apple-ios
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: aether-ios-lib
           path: target/aarch64-apple-ios/release/libaether_ui.a
@@ -64,7 +64,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Download Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
