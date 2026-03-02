@@ -1,4 +1,13 @@
-## [0.2.0] - 2026-03-02
+## [0.2.2] - 2026-03-02
+
+### Added
+- **Enhanced Agent Guidelines**: Updated `AGENTS.md` with strict delivery standards, a visual proof protocol, and comprehensive hardware safety rules.
+- **Improved Release Workflow**:
+  - Added native **macOS Desktop** build support.
+  - Fixed missing Linux hardware dependencies (`libusb`, `libudev`).
+  - Resolved artifact naming collisions in GitHub Releases.
+
+## [0.2.1] - 2026-03-02
 
 ### Added
 - **Semihosting & ITM/SWV**: Full gRPC and CLI support for ARM Semihosting and ITM/SWV protocol streams.
