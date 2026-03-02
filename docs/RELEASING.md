@@ -21,7 +21,7 @@ This document describes the process for creating a new release of AetherDebugger
 
 3.  **Automated CI**:
     - The `release.yml` workflow will trigger automatically on tags matching `v*`.
-    - It will build binaries for Linux, Windows, and iOS.
+    - It will build binaries for Linux, Windows, macOS, and iOS.
     - It will create a GitHub Release draft or update an existing one with the compiled artifacts.
 
 4.  **Finalize Release**:
