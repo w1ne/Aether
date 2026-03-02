@@ -1,4 +1,4 @@
-## [Unreleased]
+## [0.2.0] - 2026-03-02
 
 ### Added
 - **Semihosting & ITM/SWV**: Full gRPC and CLI support for ARM Semihosting and ITM/SWV protocol streams.
@@ -8,6 +8,10 @@
   - Overhauled view icons with high-unicode symbols (`⫘`, `✍`, `📈`, `⛃`, `🔎`, `🖴`, `☷`).
   - Improved font fallback for Linux environments.
   - Tab recovery mechanism for closed views.
+- **Release Strategy**:
+  - Automated CI/CD releases for Linux, Windows, and iOS.
+  - Comprehensive "build from scratch" documentation (`BUILD.md`).
+  - Formal release process for maintainers (`RELEASING.md`).
 
 ### Fixed
 - Non-exhaustive match in agent-api for session handle types.
