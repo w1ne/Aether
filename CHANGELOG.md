@@ -1,3 +1,8 @@
+## [0.2.4] - 2026-03-02
+
+### Fixed
+- **iOS CI Cross-Compilation**: Fixed a linker error during CI where `aether-ui` was attempting to build as an iOS executable rather than a static library by adding a explicit `[lib]` crate type. Disabled `onig_sys` compilation in `syntect` by switching to the pure-Rust `fancy-regex` to prevent Xcode SDK conflicts on the GitHub Actions macOS runner.
+
 ## [0.2.3] - 2026-03-02
 
 ### Fixed

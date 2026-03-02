@@ -6,6 +6,11 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 
+[lib]
+name = "aether_ui"
+path = "src/main.rs"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
 [dependencies]
 aether-core = { path = "../aether-core", default-features = false }
 aether-agent-api = { path = "../aether-agent-api", default-features = false }
@@ -20,7 +25,7 @@ env_logger.workspace = true
 serde.workspace = true
 rfd = { workspace = true }
 probe-rs = { workspace = true, optional = true }
-syntect = "5.2"
+syntect = { version = "5.2", default-features = false, features = ["default-fancy"] }
 tokio = { version = "1.0", features = ["sync", "rt", "net", "time", "macros"] }
 tokio-stream = "0.1"
 serde_json = "1.0"
