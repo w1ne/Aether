@@ -55,6 +55,8 @@ The UI will auto-detect connected debug probes.
 
 See [docs/](docs/) for:
 - [Contributing](docs/CONTRIBUTING.md) - Development guide (Trunk-Based)
+- [Build Instructions](docs/BUILD.md) - Building from source (Linux, Windows, iOS)
+- [Release Process](docs/RELEASING.md) - Maintainer's guide for releases
 - [Testing Strategy](docs/TEST_STRATEGY.md) - Test requirements and HIL plan
 - [Hardware Setup](docs/HARDWARE_SETUP.md) - Physical test rig instructions
 - [CLI Reference](docs/CLI.md) - Full command documentation

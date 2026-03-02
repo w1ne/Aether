@@ -18,6 +18,9 @@ cargo build --release
 
 Binary will be at `target/release/aether-ui`.
 
+> [!TIP]
+> For detailed build instructions on Linux, Windows, and iOS, see [BUILD.md](BUILD.md).
+
 ## 2. Connect Hardware
 
 1. Connect debug probe to your computer via USB
