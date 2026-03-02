@@ -6,6 +6,11 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 
+[lib]
+name = "aether_ui"
+path = "src/main.rs"
+crate-type = ["staticlib"]
+
 [dependencies]
 aether-core = { path = "../aether-core", default-features = false }
 aether-agent-api = { path = "../aether-agent-api", default-features = false }

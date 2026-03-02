@@ -1,3 +1,8 @@
+## [0.2.5] - 2026-03-02
+
+### Fixed
+- **iOS artifact output**: Re-added `[lib]` section with `crate-type = ["staticlib"]` to `aether-ui` so `cargo build --target aarch64-apple-ios` produces `libaether_ui.a` as expected by the release workflow.
+
 ## [0.2.4] - 2026-03-02
 
 ### Changed
