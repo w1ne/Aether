@@ -293,11 +293,14 @@ impl AetherDebug for AetherDebugService {
         if let CoreDebugEvent::Stack(frames) = event {
             let proto_frames = frames
                 .into_iter()
-                .map(|f| proto::StackFrame {
-                    pc: f.pc as u64,
-                    function_name: Some(f.function_name),
-                    file: f.source_file,
-                    line: f.line.map(|l| l as u32),
+                .map(|f| {
+                    #[allow(clippy::cast_possible_truncation)]
+                    proto::StackFrame {
+                        pc: u64::from(f.pc),
+                        function_name: Some(f.function_name),
+                        file: f.source_file,
+                        line: f.line.map(|l| l as u32),
+                    }
                 })
                 .collect();
             Ok(Response::new(StackResponse { frames: proto_frames }))
@@ -508,11 +511,7 @@ impl AetherDebug for AetherDebugService {
         let name_clone = req.name;
         let _ = self
             .wait_for_match(&mut rx, move |e| {
-                if let CoreDebugEvent::SubSessionAttached(n, _) = e {
-                    n == &name_clone
-                } else {
-                    false
-                }
+                matches!(e, CoreDebugEvent::SubSessionAttached(n, _) if n == &name_clone)
             })
             .await?;
         Ok(Response::new(Empty {}))
@@ -566,6 +565,7 @@ impl AetherDebug for AetherDebugService {
 
 /// Maps a core debug event to a protocol buffer debug event.
 #[must_use]
+#[allow(clippy::too_many_lines)]
 pub fn map_core_event_to_proto(event: CoreDebugEvent) -> Option<DebugEvent> {
     match event {
         CoreDebugEvent::Halted { pc } => Some(DebugEvent {
@@ -750,8 +750,8 @@ pub fn map_proto_event_to_core(event: DebugEvent) -> Option<CoreDebugEvent> {
                 .map(|pi| aether_core::ProbeInfo {
                     vendor_id: 0,
                     product_id: 0,
-                    serial_number: if pi.serial.is_empty() { None } else { Some(pi.serial.clone()) },
-                    identifier: pi.name.clone(),
+                    serial_number: if pi.serial.is_empty() { None } else { Some(pi.serial) },
+                    identifier: pi.name,
                     probe_type: aether_core::ProbeType::Other,
                 })
                 .collect(),
@@ -812,8 +812,9 @@ mod tests {
             sp: 0x2000_1000,
         };
 
+        #[allow(clippy::cast_possible_truncation)]
         let proto_frame = proto::StackFrame {
-            pc: core_frame.pc as u64,
+            pc: u64::from(core_frame.pc),
             function_name: Some(core_frame.function_name),
             file: core_frame.source_file,
             line: core_frame.line.map(|l| l as u32),

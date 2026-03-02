@@ -4,15 +4,19 @@
 //! and provides the high-performance backend for the Aether debugger.
 
 pub mod debug;
+#[cfg(feature = "hardware")]
 pub mod disasm;
+#[cfg(feature = "hardware")]
 pub mod flash;
 pub mod itm;
 pub mod memory;
+#[cfg(feature = "hardware")]
 pub mod probe;
 pub mod rtos;
 pub mod rtt;
 pub mod semihosting;
 pub mod session;
+#[cfg(feature = "hardware")]
 pub mod svd;
 pub mod symbols;
 
@@ -21,10 +25,52 @@ pub mod trace;
 
 // Re-export commonly used types
 pub use debug::DebugManager;
+#[cfg(feature = "hardware")]
 pub use disasm::DisassemblyManager;
+#[cfg(feature = "hardware")]
 pub use flash::{FlashManager, FlashingProgress, MpscFlashProgress};
 pub use memory::MemoryManager;
+#[cfg(feature = "hardware")]
 pub use probe_rs::CoreStatus;
+
+#[cfg(not(feature = "hardware"))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub enum CoreStatus {
+    Running,
+    Halted(probe_rs::HaltReason),
+    Unknown,
+    LockedUp,
+    Sleeping,
+}
+
+#[cfg(not(feature = "hardware"))]
+pub mod probe_rs {
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+    pub enum HaltReason {
+        Breakpoint,
+        Step,
+        External,
+        Request,
+        Exception,
+        Other,
+    }
+
+    #[derive(Clone)]
+    pub struct Session;
+    impl Session {
+        pub fn target(&self) -> Target { Target }
+    }
+
+    pub struct Target;
+    impl Target {
+        pub fn architecture(&self) -> Architecture { Architecture }
+    }
+
+    pub enum Architecture {
+        Arm,
+        Riscv,
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
 pub enum VarType {
@@ -67,8 +113,10 @@ pub enum TaskState {
     Pending,
     Unknown,
 }
+#[cfg(feature = "hardware")]
 pub use probe::{ProbeInfo, ProbeManager, ProbeType, TargetInfo, WireProtocol};
 pub use session::{DebugCommand, DebugEvent, SessionHandle};
 pub use stack::StackFrame;
+#[cfg(feature = "hardware")]
 pub use svd::SvdManager;
 pub use symbols::{SourceInfo, SymbolManager};

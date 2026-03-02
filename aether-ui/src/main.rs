@@ -52,7 +52,7 @@ pub struct AetherApp {
     session_handle: Option<Arc<aether_core::SessionHandle>>,
     event_receiver: Option<tokio::sync::broadcast::Receiver<aether_core::DebugEvent>>,
     registers: HashMap<u16, u64>,
-    core_status: Option<probe_rs::CoreStatus>,
+    core_status: Option<aether_core::CoreStatus>,
     failed_requests: Vec<String>,
 
     // Memory state
@@ -154,9 +154,8 @@ pub struct SessionExport {
 
 impl AetherApp {
     fn export_session(&self) {
-        if let Some(path) = rfd::FileDialog::new()
-            .add_filter("Aether Session", &["json"])
-            .save_file()
+        if let Some(path) =
+            rfd::FileDialog::new().add_filter("Aether Session", &["json"]).save_file()
         {
             let export = SessionExport {
                 rtt_buffers: self.rtt_buffers.clone(),
@@ -173,9 +172,8 @@ impl AetherApp {
     }
 
     fn import_session(&mut self) {
-        if let Some(path) = rfd::FileDialog::new()
-            .add_filter("Aether Session", &["json"])
-            .pick_file()
+        if let Some(path) =
+            rfd::FileDialog::new().add_filter("Aether Session", &["json"]).pick_file()
         {
             if let Ok(json) = std::fs::read_to_string(path) {
                 if let Ok(export) = serde_json::from_str::<SessionExport>(&json) {
@@ -314,6 +312,7 @@ impl AetherApp {
         }
     }
 
+    #[cfg(feature = "hardware")]
     fn refresh_probes(&mut self) {
         match self.probe_manager.list_probes() {
             Ok(probes) => {
@@ -370,6 +369,7 @@ impl AetherApp {
         });
     }
 
+    #[cfg(feature = "hardware")]
     fn connect_probe(&mut self) {
         if let Some(index) = self.selected_probe {
             self.connection_status = ConnectionStatus::Connecting;
@@ -456,6 +456,7 @@ impl AetherApp {
         }
     }
 
+    #[cfg(feature = "hardware")]
     fn start_flashing(&mut self) {
         let file_path = if let Some(path) = &self.selected_file {
             path.clone()
@@ -1818,15 +1819,21 @@ stub.Resume(aether_pb2.Empty())
         ui.add_space(8.0);
         ui.collapsing("⚡ Connection", |ui| {
             ui.vertical(|ui| {
-                ui.horizontal(|ui| {
+                #[cfg(feature = "hardware")]
+                {
                     if ui.button("⟲ Refresh").clicked() {
                         self.refresh_probes();
                     }
                     if ui.button("⚡ Connect").clicked() {
                         self.connect_probe();
                     }
-                });
+                }
+                #[cfg(not(feature = "hardware"))]
+                {
+                    ui.label("Physical probling only available on Desktop.");
+                }
 
+                #[cfg(feature = "hardware")]
                 egui::ScrollArea::vertical().id_source("probes").max_height(100.0).show(ui, |ui| {
                     for (i, probe) in self.probes.iter().enumerate() {
                         let is_selected = self.selected_probe == Some(i);
@@ -1960,19 +1967,22 @@ stub.Resume(aether_pb2.Empty())
                 }
             });
 
-            if ui
-                .add_enabled(
-                    self.selected_file.is_some()
-                        && self.connection_status == ConnectionStatus::Connected,
-                    egui::Button::new("🚀 Flash"),
-                )
-                .clicked()
+            #[cfg(feature = "hardware")]
             {
-                self.start_flashing();
-            }
+                if ui
+                    .add_enabled(
+                        self.selected_file.is_some()
+                            && self.connection_status == ConnectionStatus::Connected,
+                        egui::Button::new("🚀 Flash"),
+                    )
+                    .clicked()
+                {
+                    self.start_flashing();
+                }
 
-            if let Some(p) = self.flashing_progress {
-                ui.add(egui::ProgressBar::new(p).text(&self.flashing_status));
+                if let Some(p) = self.flashing_progress {
+                    ui.add(egui::ProgressBar::new(p).text(&self.flashing_status));
+                }
             }
         });
     }
@@ -2034,7 +2044,7 @@ impl eframe::App for AetherApp {
                 if ui.button("📂 Import").clicked() {
                     self.import_session();
                 }
-                
+
                 ui.add_space(12.0);
 
                 // Window Menu for tab recovery

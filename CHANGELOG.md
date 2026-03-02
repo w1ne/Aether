@@ -8,10 +8,13 @@
   - Overhauled view icons with high-unicode symbols (`⫘`, `✍`, `📈`, `⛃`, `🔎`, `🖴`, `☷`).
   - Improved font fallback for Linux environments.
   - Tab recovery mechanism for closed views.
-- **Release Strategy**:
-  - Automated CI/CD releases for Linux, Windows, and iOS.
-  - Comprehensive "build from scratch" documentation (`BUILD.md`).
-  - Formal release process for maintainers (`RELEASING.md`).
+- **Release Strategy**: Automated CI/CD for Linux, Windows, and iOS via GitHub Actions.
+- **Build Documentation**: Added `docs/BUILD.md` and `docs/RELEASING.md`.
+
+## [0.2.1] - 2026-03-02
+
+### Fixed
+- **iOS Build**: Fixed build failure on iOS by making hardware dependencies optional. The app now builds for iOS as a remote-only debugger client.
 
 ### Fixed
 - Non-exhaustive match in agent-api for session handle types.

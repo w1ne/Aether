@@ -51,7 +51,7 @@ jobs:
       - name: Install Protoc
         run: brew install protobuf
       - name: Build Static Library
-        run: cargo build --release --package aether-ui --target aarch64-apple-ios
+        run: cargo build --release --package aether-ui --target aarch64-apple-ios --no-default-features
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:

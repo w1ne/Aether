@@ -12,7 +12,7 @@ The LabWired extension for VS Code is a **DAP (Debug Adapter Protocol)** bridge.
 
 ## The Aether "Orchestrator" Model
 
-Aether acts as the **Unified Host** for both LabWired (Simulation) and Probe-rs (Hardware). 
+Aether acts as the **Unified Host** for both LabWired (Simulation) and Probe-rs (Hardware).
 
 ### 1. Atomic Lockstep Control
 Aether's core engine holds a handle to both sessions. When you click "Step," Aether:
@@ -32,10 +32,10 @@ Because Aether exposes a gRPC API for the *entire orchestrated session*, an AI a
 
 ## Use Case: Hardware-in-the-Loop (HIL) Hardening
 
-Aether is used to verify that a simulator's model of a custom peripheral (e.g., a proprietary FPGA bridge) is bit-accurate to the real silicon. 
+Aether is used to verify that a simulator's model of a custom peripheral (e.g., a proprietary FPGA bridge) is bit-accurate to the real silicon.
 
 1.  Attach Aether to the Real Hardware.
 2.  Attach Aether to the LabWired Model.
 3.  Enable `ShadowMode`.
-4.  Run a regression suite. 
+4.  Run a regression suite.
 5.  Aether automatically generates a **Parity Audit Log** highlighting every instruction where the physical hardware behavior diverged from the simulation code.

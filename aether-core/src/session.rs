@@ -7,9 +7,13 @@ use crate::debug::DebugManager;
 use crate::VarType;
 use anyhow::{Context as _, Result};
 use crossbeam_channel::{Receiver, Sender};
+#[cfg(feature = "hardware")]
 use probe_rs::flashing::{FlashProgress, ProgressEvent};
-use probe_rs::{CoreStatus, MemoryInterface, Session};
+#[cfg(feature = "hardware")]
+use probe_rs::{MemoryInterface, Session};
+#[cfg(feature = "hardware")]
 use probe_rs_debug::SteppingMode;
+use crate::CoreStatus;
 use std::collections::HashMap;
 use std::thread;
 use std::time::{Duration, Instant};
@@ -166,6 +170,7 @@ impl SessionHandle {
         (Self { command_tx: cmd_tx, event_tx: evt_tx.clone(), thread_handle: None }, cmd_rx, evt_tx)
     }
 
+    #[cfg(feature = "hardware")]
     pub fn new(session: Option<Session>) -> Result<Self> {
         let (cmd_tx, cmd_rx) = crossbeam_channel::unbounded();
         // create a broadcast channel with capacity 100
@@ -217,6 +222,7 @@ impl SessionHandle {
                 let cmd_opt = cmd_rx.try_recv().ok();
 
                 if let Some(cmd) = cmd_opt {
+                    #[allow(unreachable_patterns)]
                     match cmd {
                         DebugCommand::EnableTrace(config) => {
                             if let Some(s) = sessions.get_mut(&active_target) {
@@ -378,6 +384,7 @@ impl SessionHandle {
                         }
                         // Core commands
                         // Core commands
+                        #[allow(unreachable_patterns)]
                         core_cmd => {
                             let target_names = if let Some((ref m, ref s)) = shadow_sync {
                                 if matches!(core_cmd, DebugCommand::Halt | DebugCommand::Resume | DebugCommand::Step | DebugCommand::StepOver | DebugCommand::StepInto | DebugCommand::StepOut | DebugCommand::Reset | DebugCommand::ShadowStep) {
@@ -609,7 +616,7 @@ impl SessionHandle {
                                     } else {
                                         // 2. Register Check (Exhaustive)
                                         let mut diverged = false;
-                                        
+
                                         // Check R0-R12, SP, LR, PC (register indices 0-15)
                                         for reg_idx in 0..16 {
                                             let mut m_val = None;
@@ -738,6 +745,28 @@ impl SessionHandle {
                     }
                 }
                 thread::sleep(Duration::from_millis(10));
+            }
+        });
+
+        Ok(Self {
+            command_tx: cmd_tx,
+            event_tx: evt_tx,
+            thread_handle: Some(thread_handle),
+        })
+    }
+
+    #[cfg(not(feature = "hardware"))]
+    pub fn new(_session: Option<crate::probe_rs::Session>) -> Result<Self> {
+        let (cmd_tx, cmd_rx) = crossbeam_channel::unbounded();
+        let (evt_tx, _) = tokio::sync::broadcast::channel(100);
+
+        let thread_handle = thread::spawn(move || {
+            loop {
+                if let Ok(cmd) = cmd_rx.recv() {
+                    if matches!(cmd, DebugCommand::Exit) {
+                        return;
+                    }
+                }
             }
         });
 

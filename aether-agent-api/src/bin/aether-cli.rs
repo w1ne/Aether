@@ -1,4 +1,4 @@
-#![allow(clippy::pedantic, clippy::nursery)]
+#![allow(clippy::pedantic, clippy::nursery, missing_docs)]
 //! Aether CLI - Command Line Interface for Aether Debugger Agent.
 
 use aether_agent_api::proto::aether_debug_client::AetherDebugClient;

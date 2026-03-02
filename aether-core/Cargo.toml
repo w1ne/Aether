@@ -7,11 +7,11 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-probe-rs.workspace = true
-svd-parser.workspace = true
-svd-rs.workspace = true
-capstone.workspace = true
-probe-rs-debug.workspace = true
+probe-rs = { workspace = true, optional = true }
+svd-parser = { workspace = true, optional = true }
+svd-rs = { workspace = true, optional = true }
+capstone = { workspace = true, optional = true }
+probe-rs-debug = { workspace = true, optional = true }
 typed-path = "0.12"
 gimli = "0.31"
 object = "0.36"
@@ -22,6 +22,10 @@ serde.workspace = true
 serde_json.workspace = true
 crossbeam-channel.workspace = true
 tokio = { version = "1.0", features = ["sync"] }
+
+[features]
+default = ["hardware"]
+hardware = ["probe-rs", "svd-parser", "svd-rs", "capstone", "probe-rs-debug"]
 
 [[bench]]
 name = "core_bench"
