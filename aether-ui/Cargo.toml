@@ -20,16 +20,16 @@ assets = [
     ["assets/icon.png", "usr/share/icons/hicolor/512x512/apps/io.github.w1ne.Aether.png", "644"],
 ]
 
-[package.metadata.rpm]
+[package.metadata.generate-rpm]
 package = "aether-ui"
 
-[package.metadata.rpm.cargo]
+[package.metadata.generate-rpm.cargo]
 buildflags = ["--release"]
 
-[package.metadata.rpm.targets]
+[package.metadata.generate-rpm.targets]
 aether-ui = { path = "/usr/bin/aether-ui" }
 
-[package.metadata.rpm.files]
+[package.metadata.generate-rpm.files]
 "../io.github.w1ne.Aether.desktop" = { path = "/usr/share/applications/io.github.w1ne.Aether.desktop" }
 "assets/icon.png" = { path = "/usr/share/icons/hicolor/512x512/apps/io.github.w1ne.Aether.png" }
 

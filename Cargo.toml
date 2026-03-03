@@ -4,7 +4,7 @@ members = ["aether-agent-api","aether-core", "aether-ui"]
 exclude = ["aether-demo-fw"]
 
 [workspace.package]
-version = "0.2.10"
+version = "0.2.11"
 edition = "2021"
 authors = ["Aether Contributors"]
 license = "MIT OR Apache-2.0"

@@ -1,3 +1,9 @@
+## [0.2.11] - 2026-03-04
+
+### Fixed
+- **RPM Build**: Fixed metadata table names (`generate-rpm`) in `Cargo.toml`.
+- **Flatpak Build**: Allowed namespace creation (`--privileged`) inside the CI container.
+
 ## [0.2.10] - 2026-03-03
 
 ### Fixed
