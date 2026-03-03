@@ -28,6 +28,5 @@ modules:
         path: .
     build-options:
       append-path: /usr/lib/sdk/rust-stable/bin
-      no-network: false # Allow cargo to download crates
       env:
         CARGO_HOME: /run/build/aether/cargo

@@ -1,3 +1,9 @@
+## [0.2.10] - 2026-03-03
+
+### Fixed
+- **Linux Packaging**: Corrected the build order in CI to ensure `.deb` and `.rpm` packages are generated before renaming the standalone binary.
+- **Flatpak Build**: Added explicit Flathub remote configuration in the CI container to resolve dependency resolution issues.
+
 ## [0.2.9] - 2026-03-03
 
 ### Changed
