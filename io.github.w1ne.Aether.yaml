@@ -16,12 +16,18 @@ modules:
   - name: aether
     buildsystem: simple
     build-commands:
+      # Build the application
       - cargo build --release --workspace --exclude aether-demo-fw
+      # Install the binary
       - install -D target/release/aether-ui /app/bin/aether-ui
+      # Install desktop file and icon
+      - install -D io.github.w1ne.Aether.desktop /app/share/applications/io.github.w1ne.Aether.desktop
+      - install -D aether-ui/assets/icon.png /app/share/icons/hicolor/512x512/apps/io.github.w1ne.Aether.png
     sources:
       - type: dir
         path: .
     build-options:
       append-path: /usr/lib/sdk/rust-stable/bin
+      no-network: false # Allow cargo to download crates
       env:
         CARGO_HOME: /run/build/aether/cargo

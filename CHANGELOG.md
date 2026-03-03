@@ -1,3 +1,8 @@
+## [0.2.8] - 2026-03-03
+
+### Fixed
+- **Flatpak Build**: Resolved a CI failure by allowing network access during the compilation stage and ensuring desktop assets are correctly installed in the sandbox.
+
 ## [0.2.7] - 2026-03-03
 
 ### Added
