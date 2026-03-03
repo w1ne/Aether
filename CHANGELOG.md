@@ -1,3 +1,9 @@
+## [0.2.12] - 2026-03-04
+
+### Fixed
+- **RPM Build**: Fixed `cargo-generate-rpm` `assets` array metadata format in `Cargo.toml`.
+- **Flatpak Build**: Added `--share=network` build argument to allow cargo to fetch dependencies during sandbox build.
+
 ## [0.2.11] - 2026-03-04
 
 ### Fixed
