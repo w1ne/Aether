@@ -1,3 +1,8 @@
+## [0.2.9] - 2026-03-03
+
+### Changed
+- **Linux CI Runner**: Switched from Ubuntu 20.04 to Ubuntu 22.04 to improve build reliability while maintaining binary compatibility with current LTS distributions (like Pop!_OS 22.04).
+
 ## [0.2.8] - 2026-03-03
 
 ### Fixed
