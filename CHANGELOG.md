@@ -1,3 +1,8 @@
+## [0.2.13] - 2026-03-04
+
+### Fixed
+- **Flatpak Build**: Upgraded Flatpak SDK to `24.08` to provide a newer Rust toolchain capable of compiling `edition2024` dependencies (e.g., `moxcms`).
+
 ## [0.2.12] - 2026-03-04
 
 ### Fixed
