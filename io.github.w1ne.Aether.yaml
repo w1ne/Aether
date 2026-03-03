@@ -1,0 +1,27 @@
+app-id: io.github.w1ne.Aether
+runtime: org.freedesktop.Platform
+runtime-version: '23.08'
+sdk: org.freedesktop.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+command: aether-ui
+finish-args:
+  - --share=ipc
+  - --share=network
+  - --socket=x11
+  - --socket=wayland
+  - --device=all
+  - --filesystem=host
+modules:
+  - name: aether
+    buildsystem: simple
+    build-commands:
+      - cargo build --release --workspace --exclude aether-demo-fw
+      - install -D target/release/aether-ui /app/bin/aether-ui
+    sources:
+      - type: dir
+        path: .
+    build-options:
+      append-path: /usr/lib/sdk/rust-stable/bin
+      env:
+        CARGO_HOME: /run/build/aether/cargo

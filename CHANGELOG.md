@@ -1,3 +1,12 @@
+## [0.2.7] - 2026-03-03
+
+### Added
+- **Universal Linux Support**:
+  - **Flatpak**: Added a universal sandboxed bundle (`.flatpak`) for 'run everywhere' compatibility.
+  - **Native Packages**: Now providing native **.deb** (Debian/Ubuntu) and **.rpm** (Fedora/RHEL) packages for better system integration.
+- **Improved Distribution**: Standardized Linux binaries are now built on an Ubuntu 20.04 baseline for maximum backward compatibility with older distributions (like Pop!_OS 22.04).
+- **Application Identity**: Integrated a professional logo and desktop entry for a cleaner desktop experience on Linux.
+
 ## [0.2.6] - 2026-03-03
 
 ### Added

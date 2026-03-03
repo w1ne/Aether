@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   build-linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
       - name: Install Rust
@@ -20,14 +20,25 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev protobuf-compiler libusb-1.0-0-dev libudev-dev
       - name: Build
-        run: cargo build --release --workspace --exclude aether-demo-fw
-      - name: Prepare Artifact
-        run: mv target/release/aether-ui target/release/aether-linux-x64
-      - name: Upload Artifact
+        run: |
+          cargo build --release --workspace --exclude aether-demo-fw
+          mv target/release/aether-ui target/release/aether-linux-x64
+      - name: Install Packaging Tools
+        run: |
+          cargo install cargo-deb
+          cargo install cargo-generate-rpm
+      - name: Build DEB
+        run: cargo deb --package aether-ui --no-build
+      - name: Build RPM
+        run: cargo generate-rpm --package aether-ui
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: aether-linux
-          path: target/release/aether-linux-x64
+          name: aether-linux-packages
+          path: |
+            target/release/aether-linux-x64
+            target/debian/*.deb
+            target/generate-rpm/*.rpm
 
   build-windows:
     runs-on: windows-latest
@@ -79,9 +90,25 @@ jobs:
           name: aether-macos
           path: target/release/aether-macos-universal
 
+  build-flatpak:
+    runs-on: ubuntu-latest
+    container:
+      image: bilelmoussaoui/flatpak-github-actions:freedesktop-23.08
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build Flatpak
+        run: |
+          flatpak-builder --user --disable-rofiles-fuse --install-deps-from=flathub --repo=repo --force-clean build io.github.w1ne.Aether.yaml
+          flatpak build-bundle repo aether.flatpak io.github.w1ne.Aether
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aether-flatpak
+          path: aether.flatpak
+
 
   create-release:
-    needs: [build-linux, build-windows, build-macos]
+    needs: [build-linux, build-windows, build-macos, build-flatpak]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -97,5 +124,8 @@ jobs:
             aether-windows-x64.exe
             aether-windows-x86.exe
             aether-macos-universal
+            *.deb
+            *.rpm
+            *.flatpak
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

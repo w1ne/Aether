@@ -5,6 +5,33 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
+description = "A high-performance embedded systems debugger"
+categories = ["development-tools", "embedded-development"]
+
+[package.metadata.deb]
+maintainer = "Aether Contributors <contributors@aether.io>"
+copyright = "2026, Aether Contributors"
+extended-description = "A high-performance embedded systems debugger built with Rust and egui."
+section = "devel"
+priority = "optional"
+assets = [
+    ["target/release/aether-ui", "usr/bin/aether-ui", "755"],
+    ["../io.github.w1ne.Aether.desktop", "usr/share/applications/io.github.w1ne.Aether.desktop", "644"],
+    ["assets/icon.png", "usr/share/icons/hicolor/512x512/apps/io.github.w1ne.Aether.png", "644"],
+]
+
+[package.metadata.rpm]
+package = "aether-ui"
+
+[package.metadata.rpm.cargo]
+buildflags = ["--release"]
+
+[package.metadata.rpm.targets]
+aether-ui = { path = "/usr/bin/aether-ui" }
+
+[package.metadata.rpm.files]
+"../io.github.w1ne.Aether.desktop" = { path = "/usr/share/applications/io.github.w1ne.Aether.desktop" }
+"assets/icon.png" = { path = "/usr/share/icons/hicolor/512x512/apps/io.github.w1ne.Aether.png" }
 
 [dependencies]
 aether-core = { path = "../aether-core", default-features = false }

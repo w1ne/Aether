@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Aether Debugger
+Comment=High-performance embedded systems debugger
+Exec=aether-ui
+Icon=io.github.w1ne.Aether
+Terminal=false
+Type=Application
+Categories=Development;Debugger;
+Keywords=Embedded;Rust;Debug;STM32;ESP32;J-Link;ST-Link;
