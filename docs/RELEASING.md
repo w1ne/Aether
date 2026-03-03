@@ -26,7 +26,7 @@ This document describes the process for creating a new release of AetherDebugger
 
 4.  **Finalize Release**:
     - Review the generated release on GitHub.
-    - Add release notes summarizing the changes (see `CHANGELOG.md`).
+    - Add release notes summarizing the changes using the template at `docs/RELEASE_TEMPLATE.md`.
     - Publish the release.
 
 ## Checklist

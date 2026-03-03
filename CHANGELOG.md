@@ -1,17 +1,26 @@
+## [0.2.6] - 2026-03-03
+
+### Added
+- **Multi-Architecture Support**:
+  - **Windows**: Added 32-bit (x86) support alongside the existing 64-bit version.
+  - **macOS**: Switched to a **Universal Binary** supporting both Apple Silicon (M1/M2/M3) and Intel-based Macs.
+- **Improved Release Workflow**: Artifacts are now clearly labeled by architecture to simplify installation in diverse engineering environments.
+
 ## [0.2.5] - 2026-03-02
 
-### Fixed
-- **iOS artifact output**: Re-added `[lib]` section with `crate-type = ["staticlib"]` to `aether-ui` so `cargo build --target aarch64-apple-ios` produces `libaether_ui.a` as expected by the release workflow.
-
-## [0.2.4] - 2026-03-02
+### Added
+- **Desktop Focus**: Re-affirmed Aether as a desktop-first tool for Windows, macOS, and Linux.
+- **WGPU Support for All Platforms**: Native WGPU rendering support across all desktop environments for improved performance and Metal/Vulkan compatibility.
 
 ### Changed
-- **egui 0.33 upgrade**: Updated `eframe`/`egui` from `0.28` to `0.33`, `egui_plot` to `0.34`, and `egui_dock` to `0.18`. This resolves a hardcoded upstream bug that blocked the iOS native build (`ViewportId::ROOT` missing import in `eframe 0.28`). iOS static library is built via the `wgpu` backend with OpenGL/glutin disabled.
-
-## [0.2.3] - 2026-03-02
+- **egui 0.33 Ecosystem Upgrade**: Major upgrade from `egui/eframe 0.28` to `0.33`. Includes updates to `egui_plot` (0.34) and `egui_dock` (0.18).
+- **Core Portability**: Workspace crates (`aether-core`, `aether-agent-api`) now support a `hardware`-free build mode for simulation-only use.
+- **Hardware Dependency Modularization**: Fully decoupled hardware-specific dependencies (`probe-rs`, `hidapi`) behind a `hardware` feature.
 
 ### Fixed
-- **iOS CI Cross-Compilation & Hardware Modularization**: Fully decoupled hardware-specific dependencies (`probe-rs`, `hidapi`) behind a `hardware` feature across all workspace crates. Fixed CI cross-compilation by correctly configuring `aether-ui` as a static library for iOS and migrating `syntect` to a pure-Rust regex engine (`fancy-regex`) to prevent macOS SDK compilation conflicts.
+- **eframe Workspace Compilation**: Resolved a critical upstream bug in `eframe 0.28` that caused workspace compilation errors on some macOS SDKs.
+- **CI Release Permissions**: Fixed GitHub Actions workflow permissions (`contents: write`) to allow automated release creation and asset uploading.
+- **Syntect C-Dependency Resolution**: Migrated `syntect` to pure-Rust `fancy-regex` to prevent platform-specific C toolchain conflicts.
 
 
 ## [0.2.2] - 2026-03-02

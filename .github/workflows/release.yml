@@ -31,22 +31,29 @@ jobs:
 
   build-windows:
     runs-on: windows-latest
+    strategy:
+      matrix:
+        target: [x86_64-pc-windows-msvc, i686-pc-windows-msvc]
     steps:
       - uses: actions/checkout@v3
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
       - name: Install Protoc
         run: choco install protoc
       - name: Build
-        run: cargo build --release --workspace --exclude aether-demo-fw
+        run: cargo build --release --workspace --exclude aether-demo-fw --target ${{ matrix.target }}
       - name: Prepare Artifact
         shell: pwsh
-        run: Move-Item target/release/aether-ui.exe target/release/aether-windows-x64.exe
+        run: |
+          $arch = if ("${{ matrix.target }}" -like "*i686*") { "x86" } else { "x64" }
+          Move-Item target/${{ matrix.target }}/release/aether-ui.exe target/release/aether-windows-$arch.exe
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: aether-windows
-          path: target/release/aether-windows-x64.exe
+          name: aether-windows-${{ matrix.target }}
+          path: target/release/aether-windows-*.exe
 
   build-macos:
     runs-on: macos-latest
@@ -54,39 +61,27 @@ jobs:
       - uses: actions/checkout@v3
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-apple-darwin, aarch64-apple-darwin
       - name: Install Protoc
         run: brew install protobuf
       - name: Build
-        run: cargo build --release --workspace --exclude aether-demo-fw
-      - name: Prepare Artifact
-        run: mv target/release/aether-ui target/release/aether-macos-x64
+        run: |
+          cargo build --release --workspace --exclude aether-demo-fw --target x86_64-apple-darwin
+          cargo build --release --workspace --exclude aether-demo-fw --target aarch64-apple-darwin
+      - name: Prepare Universal Binary
+        run: |
+          mkdir -p target/release
+          lipo -create target/x86_64-apple-darwin/release/aether-ui target/aarch64-apple-darwin/release/aether-ui -output target/release/aether-macos-universal
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: aether-macos
-          path: target/release/aether-macos-x64
+          path: target/release/aether-macos-universal
 
-
-  build-ios:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-apple-ios
-      - name: Install Protoc
-        run: brew install protobuf
-      - name: Build Static Library
-        run: cargo build --release --package aether-ui --target aarch64-apple-ios --no-default-features
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: aether-ios-lib
-          path: target/aarch64-apple-ios/release/libaether_ui.a
 
   create-release:
-    needs: [build-linux, build-windows, build-macos, build-ios]
+    needs: [build-linux, build-windows, build-macos]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -100,7 +95,7 @@ jobs:
           files: |
             aether-linux-x64
             aether-windows-x64.exe
-            aether-macos-x64
-            libaether_ui.a
+            aether-windows-x86.exe
+            aether-macos-universal
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
