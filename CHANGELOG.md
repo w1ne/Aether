@@ -1,49 +1,18 @@
 ## [0.2.14] - 2026-03-04
 
-### Fixed
-- **Flatpak Build**: Resized application icon to 512x512 to comply with flatpak-builder export requirements.
-
-## [0.2.13] - 2026-03-04
-
-### Fixed
-- **Flatpak Build**: Upgraded Flatpak SDK to `24.08` to provide a newer Rust toolchain capable of compiling `edition2024` dependencies (e.g., `moxcms`).
-
-## [0.2.12] - 2026-03-04
-
-### Fixed
-- **RPM Build**: Fixed `cargo-generate-rpm` `assets` array metadata format in `Cargo.toml`.
-- **Flatpak Build**: Added `--share=network` build argument to allow cargo to fetch dependencies during sandbox build.
-
-## [0.2.11] - 2026-03-04
-
-### Fixed
-- **RPM Build**: Fixed metadata table names (`generate-rpm`) in `Cargo.toml`.
-- **Flatpak Build**: Allowed namespace creation (`--privileged`) inside the CI container.
-
-## [0.2.10] - 2026-03-03
-
-### Fixed
-- **Linux Packaging**: Corrected the build order in CI to ensure `.deb` and `.rpm` packages are generated before renaming the standalone binary.
-- **Flatpak Build**: Added explicit Flathub remote configuration in the CI container to resolve dependency resolution issues.
-
-## [0.2.9] - 2026-03-03
-
-### Changed
-- **Linux CI Runner**: Switched from Ubuntu 20.04 to Ubuntu 22.04 to improve build reliability while maintaining binary compatibility with current LTS distributions (like Pop!_OS 22.04).
-
-## [0.2.8] - 2026-03-03
-
-### Fixed
-- **Flatpak Build**: Resolved a CI failure by allowing network access during the compilation stage and ensuring desktop assets are correctly installed in the sandbox.
-
-## [0.2.7] - 2026-03-03
-
 ### Added
 - **Universal Linux Support**:
   - **Flatpak**: Added a universal sandboxed bundle (`.flatpak`) for 'run everywhere' compatibility.
   - **Native Packages**: Now providing native **.deb** (Debian/Ubuntu) and **.rpm** (Fedora/RHEL) packages for better system integration.
-- **Improved Distribution**: Standardized Linux binaries are now built on an Ubuntu 20.04 baseline for maximum backward compatibility with older distributions (like Pop!_OS 22.04).
 - **Application Identity**: Integrated a professional logo and desktop entry for a cleaner desktop experience on Linux.
+
+### Changed
+- **Linux CI Runner**: Switched from Ubuntu 20.04 to Ubuntu 22.04 to improve build reliability while maintaining binary compatibility with current LTS distributions (like Pop!_OS 22.04).
+
+### Fixed
+- **Linux Packaging**: Corrected the build order in CI to ensure `.deb` and `.rpm` packages are properly generated, and fixed `cargo-generate-rpm` `assets` array metadata formatting.
+- **Flatpak Sandbox Constraints**: Resolved CI build failures by adding explicit Flathub remote configuration, allowing namespace creation (`--privileged`), passing `--share=network` for cargo dependency fetching, upgrading SDK to `24.08` for `edition2024` compilation support, and resizing the desktop icon to `512x512` to pass export validation.
+
 
 ## [0.2.6] - 2026-03-03
 
