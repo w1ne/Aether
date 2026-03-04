@@ -1,3 +1,8 @@
+## [0.2.14] - 2026-03-04
+
+### Fixed
+- **Flatpak Build**: Resized application icon to 512x512 to comply with flatpak-builder export requirements.
+
 ## [0.2.13] - 2026-03-04
 
 ### Fixed
